@@ -321,7 +321,7 @@ window.Oefen=(()=>{
     const mask=(t,u)=>u.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…');
     S={kind,end:0,good:0,bad:0,sec};
     const intro=()=>{el.innerHTML=`${top('Vandaag')}<h2>${kind==='reken'?'Rekensprint':'Woordjessprint'}</h2>
-      <div class="card stack"><p>${kind==='reken'?'Typ het antwoord en druk op Enter. Een komma mag.':'Je ziet een uitleg. Tik het goede begrip.'}</p>
+      <div class="card stack"><p>${kind==='reken'?'Korte sommen, zo snel als je kunt. Typ het antwoord en druk op Enter (een komma of een breuk als 3/4 mag), of tik het goede teken. Weet je het niet? Tik op <b>Sla over</b> en ga door: op een toets doe je dat ook.':'Je ziet een uitleg. Tik het goede begrip.'}</p>
       <p class="sub">${Math.round(sec/60)} minuten. Zoveel mogelijk goed. Fout kost je niets, alleen tijd.</p></div>
       <button class="btn" id="go">Start</button>`;
       el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};el.querySelector('#go').onclick=run};
@@ -333,13 +333,19 @@ window.Oefen=(()=>{
       if(!left())return;
       const head=`<div class="top"><span class="tag">${kind==='reken'?'Rekensprint':'Woordjessprint'}</span><b class="count" id="clk"></b></div>
         <div class="row" style="justify-content:space-between"><span><b style="color:var(--ok)">${S.good}</b> goed</span><span class="sub">${S.bad} fout</span></div>`;
-      if(kind==='reken'){cur=gens[Math.random()*gens.length|0]();
-        el.innerHTML=head+`<div class="card q">${fmt(cur.q)}</div><form id="sf" class="row"><input id="sa" class="cell" style="width:140px;font-size:1.2rem" inputmode="decimal" autocomplete="off" aria-label="Antwoord"> <span>${cur.e}</span><button class="btn">OK</button></form><div id="sfb"></div>`;
-        const i=el.querySelector('#sa');i.focus();
-        el.querySelector('#sf').onsubmit=e=>{e.preventDefault();const x=parseFloat(i.value.replace(/\./g,'').replace(',','.').replace(/^−/,'-'));
-          const ok=isFinite(x)&&Math.abs(x-cur.a)<=Math.max(0.011,Math.abs(cur.a)*0.005);ok?S.good++:S.bad++;
-          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">Het was ${String(cur.a).replace('.',',')} ${cur.e}</div></div>`;
-          i.disabled=true;setTimeout(next,ok?350:1300)};
+      if(kind==='reken'&&window.REKEN){const RK=window.REKEN;cur=RK.volgende(cur&&cur.k);const t0=Date.now();
+        const toon=v=>typeof v==='number'?RK.k(Math.round(v*100)/100):v;
+        const klaar=(ok,skip)=>{RK.uitslag(cur.k,ok,Date.now()-t0);ok?S.good++:skip?S.skip=(S.skip||0)+1:S.bad++;
+          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">${skip?'Overgeslagen. ':''}Het was ${toon(cur.a)} ${cur.e&&cur.e!=='euro'?cur.e:''}${cur.e==='euro'?'euro':''}</div></div>`;
+          el.querySelectorAll('#sf input,#sf button,[data-o]').forEach(x=>x.disabled=true);setTimeout(next,ok?300:1300)};
+        el.innerHTML=head+`<div class="card q"><small class="sub">${cur.naam} · niveau ${cur.l}</small><div style="font-size:1.25rem;margin-top:4px">${fmt(cur.q)}</div></div>`+
+          (cur.opts?`<div class="opts" id="sf">${cur.opts.map(o=>`<button class="opt" data-o="${o}" style="font-size:1.4rem">${o}</button>`).join('')}</div>`
+          :`<form id="sf" class="row"><input id="sa" class="cell" style="width:140px;font-size:1.2rem" inputmode="decimal" autocomplete="off" aria-label="Antwoord"> <span>${cur.e||''}</span><button class="btn">OK</button></form>`)+
+          `<div class="row" style="margin-top:8px"><button class="btn ghost" id="skip" type="button">Sla over</button></div><div id="sfb"></div>`;
+        el.querySelector('#skip').onclick=()=>klaar(false,true);
+        if(cur.opts)el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===cur.a;x.classList.add(ok?'ok':'bad');klaar(ok)});
+        else{const i=el.querySelector('#sa');i.focus();
+          el.querySelector('#sf').onsubmit=e=>{e.preventDefault();if(!i.value.trim())return;klaar(RK.klopt(RK.lees(i.value),cur.a))}}
       }else{const b=shuf(beg),[t,u]=b[0],opts=shuf([t,b[1][0],b[2][0],b[3][0]]);
         el.innerHTML=head+`<div class="card q">${mask(t,u)}</div><div class="opts">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join('')}</div>`;
         el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===t;ok?S.good++:S.bad++;
@@ -350,6 +356,7 @@ window.Oefen=(()=>{
       const best=Oefen.ctx.sprintDone(kind,S.good);
       el.innerHTML=`<span class="tag">${kind==='reken'?'Rekensprint':'Woordjessprint'}</span>
       <div class="card stack"><div class="score">${S.good}</div><p>goed in ${Math.round(sec/60)} minuten. ${S.good>best.oud?'<b>Nieuw record!</b>':'Je record is '+best.oud+'.'}</p></div>
+      ${kind==='reken'&&window.REKEN?`<div class="card stack"><b>Jouw niveau per soort</b><table class="tbl" style="width:100%">${window.REKEN.niveaus().map(x=>`<tr><td>${x.naam}</td><td style="white-space:nowrap">niveau ${x.l}/3</td><td class="sub" style="white-space:nowrap">${x.sec!=null?x.sec.toString().replace('.',',')+' s/som':''}</td></tr>`).join('')}</table><p class="sub" style="font-size:.9rem">Drie keer goed op rij: een niveau hoger. Sneller worden telt ook: kijk of de seconden per som omlaag gaan.</p></div>`:''}
       <div class="stack"><button class="btn" id="again">Nog een sprint</button><button class="btn ghost" id="hm">Naar vandaag</button></div>`;
       el.querySelector('#again').onclick=()=>sprint(el,kind,sec);el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()}}
     intro();
