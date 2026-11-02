@@ -166,7 +166,7 @@ window.Oefen=(()=>{
     return `<div class="top"><button class="link" id="stop">← Stoppen</button><span class="tag">${R.cleared.size} / ${R.total} klaar</span></div>
     <div class="bar"><i style="width:${Math.round(R.cleared.size/R.total*100)}%"></i></div>
     ${it.retry?`<div class="again">${q.gen?'Deze had je net fout. Nu dezelfde soort som met andere getallen: reken hem zelf uit.':it.alt?'Deze had je net fout. Nog een keer, nu anders gevraagd!':'Deze had je net fout. Nog een keer!'}</div>`:it.old?`<div class="again">${q.gen?'Deze soort som had je eerder fout. Nu met andere getallen: reken hem zelf uit.':it.alt?'Deze vraag had je eerder fout. Hij is nu anders gevraagd.':'Deze vraag had je eerder fout. Nog een keer!'}</div>`:''}
-    <div class="row">${chip(s)}<span class="tag">${nrTag(q)}</span></div>
+    <div class="row">${chip(s)}<span class="tag">${q.gen&&/^\d/.test(q.nr)?'Zoals opgave '+q.nr:nrTag(q)}</span></div>
     <div class="card q">${fmt(q.q)}</div>
     ${!R.exam?`${q.denk?`<details class="denk"${guided?' open':''}><summary>Hoe pak ik dit aan?</summary>${fmt(q.denk)}</details>`:''}
     ${V.SNAP[q.o]&&V.snapInVraag!==false?`<details class="denk"><summary>Snap het: waarom werkt dit?</summary>${V.snapHtml(q.o)}</details>`:''}`:''}`}
