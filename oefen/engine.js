@@ -1,0 +1,366 @@
+/* ============================================================
+   Oefenmotor: hetzelfde voor elk vak.
+   Een vak staat in vakken/<id>.js en vult VAKDATA[id] met
+   {SECS, SNAP, BEG, Q, PN, snapHtml, sprint?, leer?, custom?, reken?}.
+   Vraagsoorten: meerkeuze (standaard, f = [antwoord, waarom fout] of alleen tekst, uitleg in st of u),
+   t:'open' (zelf nakijken met kernpunten k en voorbeeldantwoorden vb), type:<naam> (V.custom[naam] tekent hem).
+   BEG = [begrip, uitleg, paragraaf?].
+   De pagina geeft Oefen.ctx: state(vid), save(vid), sprintDone(kind,score,best), home().
+   ============================================================ */
+window.VAKDATA=window.VAKDATA||{};
+function mth(x){
+  x=x.replace(/-/g,'−');
+  x=x.replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>');
+  x=x.replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');
+  x=x.replace(/√\{([^{}]*)\}/g,'<span class="rt">√<span class="rad">$1</span></span>');
+  x=x.replace(/\^(−?[0-9]+|[a-z])/g,'<sup>$1</sup>');
+  x=x.replace(/\[\[(.+?)\|(.+?)\]\]/g,'<span class="fr"><span>$1</span><span>$2</span></span>');
+  return x;
+}
+function fmt(s){return String(s).replace(/\$([^$]+)\$/g,(_,x)=>'<span class="m">'+mth(x)+'</span>')}
+
+window.Oefen=(()=>{
+  let el,vid,V,ST,QM,R,K,S,focusPar=null,focusMode=null;
+  const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+  const smooth=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+  const secOf=id=>V.SECS.find(s=>s.id===id);
+  const nrTag=q=>/^\d/.test(q.nr)?'Opgave '+q.nr:q.nr;
+  const chip=s=>`<span class="sq" style="background:var(${s.c})">${s.nr}</span>`;
+  const hasSt=q=>!!(q.st&&q.st.length);
+  const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const uitl=q=>hasSt(q)?uitw(q):q.u?`<div>${fmt(q.u)}</div>`:'';
+  const begVan=p=>V.BEG.filter(b=>b[2]===p);
+  const uitw=q=>`<ol class="uitw">${q.st.map(x=>`<li><div><div class="why">${fmt(x.t)}</div><div class="res">${fmt(x.s)}</div></div></li>`).join('')}</ol>`;
+  const form=(q,alt)=>(!alt||!q.v)?q:Object.assign({},q,{q:q.v.q,a:q.v.a??q.a,f:q.v.f??q.f,st:q.v.st??q.st});
+  const wrongIn=id=>ST.wrong.filter(x=>QM[x]&&QM[x].o===id).length;
+  const pars=()=>[...new Set(V.SECS.filter(s=>s.par!=='mix').map(s=>s.par))];
+  const leerPars=()=>V.leer||pars();
+  const parIds=p=>V.Q.filter(q=>secOf(q.o).par===p).map(q=>q.id);
+  const cijfer=(g,t)=>Math.round((1+9*g/t)*10)/10;
+  const f1=n=>n.toFixed(1).replace('.',',');
+  const save=()=>Oefen.ctx.save(vid);
+  const top=(back,label)=>`<div class="top"><button class="link" id="back">← ${back}</button><span class="tag">${label||''}</span></div>`;
+
+  function load(id){vid=id;V=VAKDATA[id];QM=Object.fromEntries(V.Q.map(q=>[q.id,q]));
+    ST=Oefen.ctx.state(id);ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};}
+  function done(){Oefen.cur=null}
+
+  /* ---------- startscherm van een vak ---------- */
+  function home(){
+    Oefen.cur=vid;
+    const secBtn=s=>{const n=V.Q.filter(q=>q.o===s.id).length,b=ST.best[s.id],w=wrongIn(s.id);
+      return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
+    const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7;
+      return `<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>10 vragen zonder hulp, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best):''}</span></button>`};
+    const bh=focusMode==='bijhouden'&&focusPar,tv=focusMode==='toets';
+    const ok=leerPars().filter(p=>ST.ptoets[p]&&ST.ptoets[p].best>=7);
+    el.innerHTML=`
+    ${top('Alle vakken',V.kop)}
+    <h2>${V.naam}</h2>
+    ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
+      <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
+      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li></ol>
+      <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
+    ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
+      <p>${ok.length} van ${leerPars().length} paragrafen gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
+      <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li></ol></div>`:''}
+    <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
+      ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
+    ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${ptCard(p)}</div>`).join('')}
+    <div class="stack"><span class="tag">Door elkaar</span>
+      ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
+      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
+      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?'Ze komen terug in andere woorden.':'Nog niets fout gedaan'}</small></span></button>
+      <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
+    </div>
+    ${V.log&&V.log.length?`<div class="card"><span class="tag">Huiswerk in deze app</span><ul class="log">${V.log.map(l=>`<li><b>${l[0]}</b> ${l[1]}: ${l[2]}</li>`).join('')}</ul></div>`:''}`;
+    el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
+    el.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>section(b.dataset.s));
+    el.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>ptoets(b.dataset.pt));
+    el.querySelector('#kort').onclick=()=>start('oefen',kortIds(),'Korte ronde');
+    const ka=el.querySelector('#kaart');if(ka)ka.onclick=kaartMenu;
+    el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>kStart(shuf(begVan(b.dataset.bp)),false));
+    const q=x=>el.querySelector(x);
+    if(q('#bh-beg'))q('#bh-beg').onclick=()=>kStart(shuf(begVan(focusPar)),false);
+    if(q('#bh-pt'))q('#bh-pt').onclick=()=>ptoets(focusPar);
+    if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
+    if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
+    el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
+    el.querySelector('#fouten').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
+    el.querySelector('#spiek').onclick=spiek;
+    const f=focusPar&&!bh&&el.querySelector('#par-'+focusPar.replace('.','-'));
+    if(f)f.scrollIntoView({block:'start'});else scrollTo(0,0);
+  }
+  function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
+  function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix').forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
+  function ptoets(p){const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
+    const rest=shuf(parIds(p).filter(id=>!pick.includes(id)));let no=0;
+    const ids=[...pick,...rest].filter(id=>{if(QM[id].t!=='open')return true;return ++no<=3});
+    start('ptoets',shuf(ids.slice(0,10)),'Paragraaftoets '+(V.PN[p]||p),null,p)}
+  const rulesHtml=s=>s.rules.map(r=>`<div class="rule"><b>${fmt(r[0])}</b>${r[1]?`<div class="res">${fmt(r[1])}</div>`:''}${r[2]?`<div class="why">${fmt(r[2])}</div>`:''}</div>`).join('');
+
+  function section(id){
+    const s=secOf(id),ids=V.Q.filter(q=>q.o===id).map(q=>q.id),w=wrongIn(id);
+    el.innerHTML=`${top(V.naam,s.sub.split(' · ')[0])}
+    <h2 class="row">${chip(s)} ${s.name}</h2>
+    <div class="card spiek"><span class="tag">Zo werkt het</span>${rulesHtml(s)}</div>
+    ${V.SNAP[id]?`<div class="card snapcard"><span class="tag">Snap het: waarom werkt dit?</span>${V.snapHtml(id)}</div>`:''}
+    <div class="stack"><button class="btn" id="oef">Oefenen (${ids.length} vragen)</button>
+      ${V.Q.some(q=>q.o===id&&hasSt(q)&&!q.type)?'<button class="btn ghost" id="stap">Stap voor stap: ik krijg bij elke vraag hulp</button>':''}
+      ${w?`<button class="btn ghost" id="sfout" style="border-color:var(--bad)">Mijn foute vragen in dit onderdeel (${w})</button>`:''}</div>`;
+    el.querySelector('#back').onclick=home;
+    el.querySelector('#oef').onclick=()=>start('oefen',shuf(ids),s.name,id);
+    const sb=el.querySelector('#stap');if(sb)sb.onclick=()=>start('stap',ids,s.name,id);
+    const sf=el.querySelector('#sfout');if(sf)sf.onclick=()=>start('fout',shuf(ST.wrong.filter(x=>QM[x].o===id)),s.name+' · foute vragen',id);
+    scrollTo(0,0);
+  }
+  function spiek(){
+    el.innerHTML=`${top(V.naam)}<h2>Spiekbrief</h2>
+    ${V.SECS.map(s=>`<div class="card spiek"><h3>${chip(s)} ${s.name}</h3>${rulesHtml(s)}</div>`).join('')}
+    ${V.BEG.length?`<div class="card spiek"><h3><span class="sq" style="background:var(--c6)">B</span> Begrippen</h3>${V.BEG.map(b=>`<div class="rule"><b>${b[0]}</b><div class="why">${b[1]}</div></div>`).join('')}</div>`:''}`;
+    el.querySelector('#back').onclick=home;scrollTo(0,0);
+  }
+
+  /* ---------- kaartjes ---------- */
+  function kaartMenu(){
+    el.innerHTML=`${top(V.naam)}<h2>Begrippen-kaartjes</h2>
+    <p class="sub">Bedenk eerst zelf wat het betekent, tik dan op het kaartje. "Wist ik nog niet" gaat achteraan de stapel.</p>
+    <div class="stack"><button class="btn" id="b1">Begrip → uitleg</button><button class="btn ghost" id="b2">Uitleg → begrip</button>
+    ${ST.wrongB.length?`<button class="btn ghost" id="b3">Alleen mijn lastige begrippen (${ST.wrongB.length})</button>`:''}</div>`;
+    el.querySelector('#back').onclick=home;
+    el.querySelector('#b1').onclick=()=>kStart(shuf(V.BEG),false);
+    el.querySelector('#b2').onclick=()=>kStart(shuf(V.BEG),true);
+    const b3=el.querySelector('#b3');if(b3)b3.onclick=()=>kStart(shuf(V.BEG.filter(b=>ST.wrongB.includes(b[0]))),false);
+    scrollTo(0,0);
+  }
+  function kStart(stack,rev){K={stack:stack.slice(),rev,tot:stack.length,done:0,first:{}};kaart()}
+  function kaart(){
+    if(!K.stack.length){const good=Object.values(K.first).filter(x=>x).length;
+      el.innerHTML=`<span class="tag">Begrippen-kaartjes</span><div class="card stack"><div class="score">${good} / ${K.tot}</div><p>meteen geweten.</p></div>
+      <div class="stack"><button class="btn" id="again">Nog een keer</button><button class="btn ghost" id="hm">Terug naar ${V.naam}</button></div>`;
+      el.querySelector('#again').onclick=kaartMenu;el.querySelector('#hm').onclick=home;return;}
+    const [t,u]=K.stack[0],front=K.rev?u:t,back=K.rev?t:u;
+    el.innerHTML=`<div class="top"><button class="link" id="stop">← Stoppen</button><span class="tag">${K.done} / ${K.tot} klaar</span></div>
+    <div class="bar"><i style="width:${Math.round(K.done/K.tot*100)}%"></i></div>
+    <button class="card flip" id="fl">${K.rev?`<span>${front}</span>`:`<b>${front}</b>`}<span class="sub">Tik om om te draaien</span></button>
+    <div class="row" id="kb" hidden><button class="btn" id="wel" style="flex:1">Wist ik</button><button class="btn ghost" id="niet" style="flex:1">Wist ik nog niet</button></div>`;
+    const fl=el.querySelector('#fl');
+    fl.onclick=()=>{fl.innerHTML=K.rev?`<span class="why">${front}</span><b>${back}</b>`:`<b>${front}</b><span>${back}</span>`;el.querySelector('#kb').hidden=false;fl.onclick=null};
+    el.querySelector('#stop').onclick=kaartMenu;
+    el.querySelector('#wel').onclick=()=>{if(!(t in K.first))K.first[t]=true;ST.wrongB=ST.wrongB.filter(x=>x!==t);save();K.stack.shift();K.done++;kaart()};
+    el.querySelector('#niet').onclick=()=>{if(!(t in K.first))K.first[t]=false;if(!ST.wrongB.includes(t))ST.wrongB.push(t);save();K.stack.push(K.stack.shift());kaart()};
+    scrollTo(0,0);
+  }
+
+  /* ---------- oefenen ---------- */
+  function start(mode,ids,title,sec,par,hw){
+    const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets';
+    R={mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
+    ask();
+  }
+  function kop(it,q,s,guided){
+    return `<div class="top"><button class="link" id="stop">← Stoppen</button><span class="tag">${R.cleared.size} / ${R.total} klaar</span></div>
+    <div class="bar"><i style="width:${Math.round(R.cleared.size/R.total*100)}%"></i></div>
+    ${it.retry?`<div class="again">${it.alt?'Deze had je net fout. Nog een keer, nu anders gevraagd!':'Deze had je net fout. Nog een keer!'}</div>`:it.old?`<div class="again">${it.alt?'Deze vraag had je eerder fout. Hij is nu anders gevraagd.':'Deze vraag had je eerder fout. Nog een keer!'}</div>`:''}
+    <div class="row">${chip(s)}<span class="tag">${nrTag(q)}</span></div>
+    <div class="card q">${fmt(q.q)}</div>
+    ${!R.exam?`${q.denk?`<details class="denk"${guided?' open':''}><summary>Hoe pak ik dit aan?</summary>${fmt(q.denk)}</details>`:''}
+    ${V.SNAP[q.o]&&V.snapInVraag!==false?`<details class="denk"><summary>Snap het: waarom werkt dit?</summary>${V.snapHtml(q.o)}</details>`:''}`:''}`}
+  function stopRonde(){if(R&&R.hw&&Oefen._hw)return hwHome(Oefen._hw);R&&R.sec?section(R.sec):home()}
+  function ask(){
+    if(R.i>=R.queue.length)return end();
+    const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
+    if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
+    if(q.t==='open')return askOpen(q,it,s);
+    const opts=shuf([[q.a,1],...q.f.map(x=>Array.isArray(x)?x:[x,''])]),guided=R.mode==='stap'&&hasSt(q),two=opts.some(o=>o[0].includes('<svg'));
+    el.innerHTML=`${kop(it,q,s,guided)}
+    <div id="steps" class="stack"></div>
+    <div id="optwrap" class="stack" ${guided?'hidden':''}>
+      <span class="tag" id="kies">${V.reken!==false&&/[0-9]/.test(q.a)&&!two?'Reken het uit in je schrift. Kies dan het goede antwoord':'Kies het goede antwoord'}</span>
+      <div class="opts${two?' two':''}">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${fmt(o[0])}</button>`).join('')}</div>
+    </div>
+    ${!R.exam&&!guided&&hasSt(q)?'<button class="btn ghost" id="help">Help mij stap voor stap</button>':''}
+    <div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    const hb=el.querySelector('#help');if(hb)hb.onclick=()=>{hb.remove();R.helped[q.id]=1;guide(q,0)};
+    if(guided){R.helped[q.id]=1;guide(q,0)}
+    el.querySelectorAll('.opt[data-k]').forEach(b=>b.onclick=()=>answer(q,opts,+b.dataset.k,it));
+    scrollTo(0,0);
+  }
+  function guide(q,n){
+    const box=el.querySelector('#steps');
+    if(n>=q.st.length){const w=el.querySelector('#optwrap');w.hidden=false;el.querySelector('#kies').textContent='Alle stappen gedaan. Kies nu het goede antwoord';w.scrollIntoView({behavior:smooth,block:'nearest'});return}
+    const x=q.st[n],d=document.createElement('div');d.className='step';
+    d.innerHTML=`<span class="tag">Stap ${n+1} van ${q.st.length}</span><div>${fmt(x.t)}</div>`+
+      (x.mc?`${x.v?`<b>${fmt(x.v)}</b>`:''}<div class="opts">${shuf(x.mc).map(o=>`<button class="opt" data-ok="${o[1]===1?1:0}" data-why="${encodeURIComponent(o[1]===1?'':o[1])}">${fmt(o[0])}</button>`).join('')}</div><div class="sw"></div>`
+           :`<button class="btn ghost sh">Laat zien</button>`);
+    box.appendChild(d);
+    const finish=()=>{if(x.s){const r=document.createElement('div');r.className='res';r.innerHTML=fmt(x.s);d.appendChild(r)}
+      const nb=document.createElement('button');nb.className='btn';nb.textContent=n+1<q.st.length?'Volgende stap':'Naar het antwoord';
+      nb.onclick=()=>{nb.remove();d.className='done-step';guide(q,n+1)};d.appendChild(nb);nb.focus()};
+    if(x.mc)d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const sw=d.querySelector('.sw');
+      if(b.dataset.ok==='1'){b.classList.add('ok');d.querySelectorAll('.opt').forEach(o=>o.disabled=true);sw.innerHTML='<div class="fb ok"><div class="head">Goed zo!</div></div>';finish()}
+      else{b.classList.add('bad');b.disabled=true;R.stepErr[q.id]=1;if(!ST.wrong.includes(q.id)){ST.wrong.push(q.id);save()}
+        sw.innerHTML=`<div class="fb bad"><div class="head">Nog niet.</div>${fmt(decodeURIComponent(b.dataset.why))} Probeer het nog een keer.</div>`}});
+    else d.querySelector('.sh').onclick=e=>{e.target.remove();finish()};
+    d.scrollIntoView({behavior:smooth,block:'nearest'});
+  }
+  function answer(q,opts,k,it){
+    const ok=opts[k][1]===1;
+    el.querySelectorAll('.opt[data-k]').forEach((b,j)=>{b.disabled=true;if(opts[j][1]===1)b.classList.add('ok');else if(j===k)b.classList.add('bad');else b.classList.add('dim')});
+    const hb=el.querySelector('#help');if(hb)hb.remove();
+    if(!(q.id in R.first)){R.first[q.id]=ok;
+      if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
+      /* pas uit de stapel als hij in een LATERE ronde in één keer goed gaat */
+      if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);
+      save();}
+    if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
+    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:it.alt?false:!!QM[q.id].v})}
+    const fb=el.querySelector('#fb');
+    const ul=uitl(q);
+    fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
+      :`<div class="fb bad"><div class="head">Niet goed</div>${opts[k][1]?`<div><b>Dit ging er mis:</b></div><div class="mistake">${fmt(opts[k][1])}</div>`:''}
+        <div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
+        ${!R.exam?'<p class="why" style="margin-top:10px">Deze vraag komt zo nog een keer terug, in andere woorden.</p>':''}</div>`;
+    fb.insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>');
+    fb.querySelector('#next').onclick=()=>{R.i++;ask()};
+    fb.scrollIntoView({behavior:smooth,block:'start'});
+  }
+  /* afronden van een vraag die niet meerkeuze is (open vraag of eigen vraagsoort van een vak) */
+  function finishCustom(q,it,ok,html){
+    if(!(q.id in R.first)){R.first[q.id]=ok;
+      if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
+      if(ok&&R.was.has(q.id))ST.wrong=ST.wrong.filter(x=>x!==q.id);
+      save();}
+    if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
+    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:it.alt?false:!!QM[q.id].v})}
+    const fb=el.querySelector('#fb');
+    fb.innerHTML=(html||'')+(!ok&&!R.exam?'<p class="why" style="margin-top:10px">Deze komt zo nog een keer terug.</p>':'')+'<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>';
+    fb.querySelector('#next').onclick=()=>{R.i++;ask()};
+  }
+  function askCustom(q,it,s){
+    el.innerHTML=`${kop(it,q,s,R.mode==='stap')}<div id="teken"></div><div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    const api={smooth,finish:(ok,html)=>finishCustom(q,it,ok,html),scroll:()=>el.querySelector('#teken').scrollIntoView({behavior:smooth,block:'start'})};
+    api.redraw=()=>V.custom[q.type](q,it,el.querySelector('#teken'),api);
+    api.redraw();scrollTo(0,0);
+  }
+  function askOpen(q,it,s){
+    el.innerHTML=`${kop(it,q,s,false)}
+    <div class="card stack"><label class="sub" for="ans">Schrijf je antwoord op, hier of in je schrift:</label>
+      <textarea id="ans" class="ta" placeholder="Mijn antwoord…"></textarea>
+      <button class="btn" id="see">Bekijk het modelantwoord</button><div id="kp"></div></div><div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    el.querySelector('#see').onclick=()=>{el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
+      const box=el.querySelector('#kp');
+      box.innerHTML=`<div class="tip stack"><b>Modelantwoord: vink aan wat jij ook had</b>
+        <ul class="kp">${q.k.map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
+        ${q.vb?`<div class="card stack"><b>${q.vb.length>1?'Voorbeeldantwoorden (twee kanten, allebei goed)':'Voorbeeldantwoord'}</b>${q.vb.map(x=>`<p>${fmt(x)}</p>`).join('')}</div>`:''}
+        <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
+      const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
+      const upd=()=>{okb.disabled=!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
+      const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>')};
+      okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
+      box.scrollIntoView({behavior:smooth,block:'start'})};
+    scrollTo(0,0);
+  }
+  /* ---------- huiswerk uit het boek: precies de opgaven van die dag, stap voor stap ---------- */
+  function hwMark(id){if(!R.hw)return;const l=ST.hw[R.hw]=ST.hw[R.hw]||[];if(!l.includes(id)){l.push(id);save()}}
+  const nrNum=q=>{const m=String(q.nr||'').replace(/^(Opdracht|Opgave) /,'').match(/^(\d+)([a-z]?)(?![0-9])/);return m?[+m[1],m[2]]:null}; /* ook 'Opdracht 6a/b' */
+  function hwIds(nrs,par){const want=nrs.map(Number);
+    return V.Q.filter(q=>{const n=nrNum(q);return n&&want.includes(n[0])&&(!par||secOf(q.o).par===par)})
+      .map((q,i)=>({q,i,n:nrNum(q)})).sort((a,b)=>a.n[0]-b.n[0]||(a.n[1]<b.n[1]?-1:a.n[1]>b.n[1]?1:a.i-b.i)).map(x=>x.q.id)}
+  function hwHome(H){
+    Oefen.cur=vid;
+    const ids=hwIds(H.nrs,H.par),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
+    const ontbreekt=H.nrs.filter(n=>!ids.some(id=>nrNum(QM[id])[0]===+n));
+    const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>/^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1);
+    const titel='Huiswerk: '+W+' '+H.nrs.join(', ');
+    el.innerHTML=`${top('Vandaag','Huiswerk')}
+    <h2>${H.titel||'Je huiswerk'}</h2>
+    <div class="card stack plan"><span class="tag">${Wc} ${H.nrs.join(', ')}</span>
+      <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af.':'Je doet elke opgave stap voor stap. Bij elke stap kies je zelf, en bij een fout zie je waarom. Reken mee in je schrift: dan heb je je huiswerk meteen af.'}</p>
+      <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
+      <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
+      ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
+    <div class="stack">${rest.length?`<button class="btn" id="hwgo">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`:'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
+      ${gedaan.length?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
+      <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
+    el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
+    const go=el.querySelector('#hwgo');if(go)go.onclick=()=>start('stap',rest,titel,null,null,H.key);
+    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];save();start('stap',ids,titel,null,null,H.key)};
+    el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
+    Oefen._hw=H;scrollTo(0,0);
+  }
+  function end(){
+    const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
+    const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
+    if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
+    if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0};ST.ptoets[R.par]={best:Math.max(o.best,c),laatst:c}}
+    save();
+    const wrong=R.ids.filter(id=>!R.first[id]);
+    const msg=R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
+      :pct===100?'Alles in één keer goed!':pct>=80?'Heel goed gedaan!':pct>=55?'Goed bezig. Oefen je fouten nog even.':'Niet erg, zo leer je het. Oefen je fouten nog een keer.';
+    el.innerHTML=`<span class="tag">${R.title}</span>
+    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}</div>
+    ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
+    <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
+      <button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':'Nieuwe ronde'}</button>
+      <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
+    const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
+    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    el.querySelector('#hm').onclick=R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;scrollTo(0,0);
+  }
+
+  /* ---------- sprint: zoveel mogelijk in een paar minuten ---------- */
+  function sprint(target,kind,sec){
+    el=target;Oefen.cur='sprint';
+    const gens=Object.values(VAKDATA).flatMap(v=>v.sprint||[]);
+    const beg=Object.values(VAKDATA).flatMap(v=>v.BEG||[]);
+    const mask=(t,u)=>u.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…');
+    S={kind,end:0,good:0,bad:0,sec};
+    const intro=()=>{el.innerHTML=`${top('Vandaag')}<h2>${kind==='reken'?'Rekensprint':'Woordjessprint'}</h2>
+      <div class="card stack"><p>${kind==='reken'?'Typ het antwoord en druk op Enter. Een komma mag.':'Je ziet een uitleg. Tik het goede begrip.'}</p>
+      <p class="sub">${Math.round(sec/60)} minuten. Zoveel mogelijk goed. Fout kost je niets, alleen tijd.</p></div>
+      <button class="btn" id="go">Start</button>`;
+      el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};el.querySelector('#go').onclick=run};
+    let cur,timer;
+    const left=()=>Math.max(0,Math.ceil((S.end-Date.now())/1000));
+    const clock=()=>{const l=left(),c=el.querySelector('#clk');if(c)c.textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0');if(!l)finish()};
+    function run(){S.end=Date.now()+sec*1000;S.good=0;S.bad=0;timer=setInterval(clock,250);next()}
+    function next(){
+      if(!left())return;
+      const head=`<div class="top"><span class="tag">${kind==='reken'?'Rekensprint':'Woordjessprint'}</span><b class="count" id="clk"></b></div>
+        <div class="row" style="justify-content:space-between"><span><b style="color:var(--ok)">${S.good}</b> goed</span><span class="sub">${S.bad} fout</span></div>`;
+      if(kind==='reken'){cur=gens[Math.random()*gens.length|0]();
+        el.innerHTML=head+`<div class="card q">${fmt(cur.q)}</div><form id="sf" class="row"><input id="sa" class="cell" style="width:140px;font-size:1.2rem" inputmode="decimal" autocomplete="off" aria-label="Antwoord"> <span>${cur.e}</span><button class="btn">OK</button></form><div id="sfb"></div>`;
+        const i=el.querySelector('#sa');i.focus();
+        el.querySelector('#sf').onsubmit=e=>{e.preventDefault();const x=parseFloat(i.value.replace(/\./g,'').replace(',','.').replace(/^−/,'-'));
+          const ok=isFinite(x)&&Math.abs(x-cur.a)<=Math.max(0.011,Math.abs(cur.a)*0.005);ok?S.good++:S.bad++;
+          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">Het was ${String(cur.a).replace('.',',')} ${cur.e}</div></div>`;
+          i.disabled=true;setTimeout(next,ok?350:1300)};
+      }else{const b=shuf(beg),[t,u]=b[0],opts=shuf([t,b[1][0],b[2][0],b[3][0]]);
+        el.innerHTML=head+`<div class="card q">${mask(t,u)}</div><div class="opts">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join('')}</div>`;
+        el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===t;ok?S.good++:S.bad++;
+          el.querySelectorAll('[data-o]').forEach(y=>{y.disabled=true;if(y.dataset.o===t)y.classList.add('ok');else if(y===x)y.classList.add('bad')});setTimeout(next,ok?300:1100)});}
+      clock();
+    }
+    function finish(){clearInterval(timer);if(S.done)return;S.done=1;
+      const best=Oefen.ctx.sprintDone(kind,S.good);
+      el.innerHTML=`<span class="tag">${kind==='reken'?'Rekensprint':'Woordjessprint'}</span>
+      <div class="card stack"><div class="score">${S.good}</div><p>goed in ${Math.round(sec/60)} minuten. ${S.good>best.oud?'<b>Nieuw record!</b>':'Je record is '+best.oud+'.'}</p></div>
+      <div class="stack"><button class="btn" id="again">Nog een sprint</button><button class="btn ghost" id="hm">Naar vandaag</button></div>`;
+      el.querySelector('#again').onclick=()=>sprint(el,kind,sec);el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()}}
+    intro();
+  }
+
+  return {ctx:null,cur:null,
+    vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
+    huiswerk(target,id,H){el=target;load(id);focusPar=H.par||null;focusMode=null;hwHome(H)},
+    hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
+    sprint,
+    load(id){load(id);return ST},
+    pars(id){const v=VAKDATA[id];return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
+    stop(){Oefen.cur=null}};
+})();

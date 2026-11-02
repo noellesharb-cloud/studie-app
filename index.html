@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#F6F9FD">
+<title>Studie-app klas 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+
+/* Natuurkunde H3 + H5: zelfde huisstijl en motor als de wiskunde-apps */
+:root{
+  --bg:#F6F9FD; --card:#FFFFFF; --ink:#1D2842; --soft:#5B6784; --line:#D3DEEE; --grid:#E6EDF7;
+  --ok:#1E8A4C; --bad:#D93A33; --okbg:#E7F5EC; --badbg:#FDECEB; --hl:#FFE14D; --tip:#FFF7D1; --pen:#2457C5;
+  --c1:#FF8F8A; --c2:#FFE14D; --c3:#8FE0A3; --c4:#93CBFF; --c5:#FFB45E; --c6:#CDB0FF; --chipink:#1D2842;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  --math:"STIX Two Text","Cambria Math",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B2B; --card:#1C2539; --ink:#EAF0FB; --soft:#A3B0CC; --line:#2E3A55; --grid:#253048;
+  --ok:#5FD08C; --bad:#FF7A72; --okbg:#173326; --badbg:#3A1E22; --tip:#332D17; --pen:#8FB4FF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B2B; --card:#1C2539; --ink:#EAF0FB; --soft:#A3B0CC; --line:#2E3A55; --grid:#253048;
+  --ok:#5FD08C; --bad:#FF7A72; --okbg:#173326; --badbg:#3A1E22; --tip:#332D17; --pen:#8FB4FF; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+#app{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--display);font-weight:800;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:2rem}
+h2{font-size:1.35rem}
+.hl{background:linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 92%,transparent 92%);color:inherit}
+p{margin:0}
+.sub{color:var(--soft)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:flex;flex-direction:column;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:12px 18px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:focus-visible,.opt:focus-visible,.sec:focus-visible,.link:focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+.link{background:none;border:0;padding:0;color:var(--soft);text-decoration:underline;font-size:.95rem}
+.sec{display:flex;gap:14px;align-items:center;text-align:left;width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.sec:hover{border-color:var(--soft)}
+.sq{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--chipink);font-size:.95rem}
+.sec b{display:block;font-size:1.05rem}
+.sec small{color:var(--soft)}
+.sec .best{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums;color:var(--soft);font-size:.9rem;white-space:nowrap}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.q{font-size:1.15rem}
+.q .m{font-size:1.3rem}
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.opt{width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1.15rem;min-height:56px;min-width:0}
+.opt:hover:not(:disabled){border-color:var(--soft)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.bad{border-color:var(--bad);background:var(--badbg)}
+.opt.dim{opacity:.55}
+.fb{border-left:5px solid var(--ok);background:var(--card);border-radius:0 14px 14px 0;padding:14px 16px;border-top:1.5px solid var(--line);border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.fb.bad{border-left-color:var(--bad)}
+.fb .head{font-weight:700;font-size:1.1rem;margin-bottom:6px}
+.fb.ok .head{color:var(--ok)} .fb.bad .head{color:var(--bad)}
+.mistake{background:var(--badbg);border-radius:10px;padding:10px 12px;margin:6px 0 10px}
+.again{background:var(--tip);border-radius:10px;padding:8px 12px;font-weight:700}
+details.denk{background:var(--tip);border-radius:14px;padding:10px 14px}
+details.denk summary{cursor:pointer;font-weight:700}
+details.denk[open] summary{margin-bottom:6px}
+ol.uitw{margin:8px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+ol.uitw li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:8px}
+ol.uitw li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+ol.uitw li>div{min-width:0}
+.res{font-size:1.2rem;margin-top:4px;overflow-x:auto;padding:4px 0}
+.why{color:var(--soft);font-size:.95rem}
+.step{border:1.5px dashed var(--soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--card)}
+.step .opts{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.step .opt{font-size:1.05rem;min-height:46px;padding:10px 12px}
+.done-step{border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;background:var(--card)}
+.spiek h3{font-family:var(--display);font-weight:800;margin:0 0 6px;font-size:1.1rem;display:flex;gap:10px;align-items:center}
+.spiek .sq{width:30px;height:30px;font-size:.8rem;border-radius:8px}
+.rule{padding:8px 0;border-top:1px solid var(--line)}
+.rule:first-of-type{border-top:0}
+.rule .res{font-size:1.15rem}
+input[type=date]{font:inherit;padding:6px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.count{font-family:var(--display);font-weight:800;font-size:1.4rem}
+.score{font-family:var(--display);font-weight:800;font-size:3rem;line-height:1;font-variant-numeric:tabular-nums}
+.wl{display:flex;flex-direction:column;gap:8px}
+.wl .card{padding:12px 14px}
+.log{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:.95rem}
+.log b{margin-right:6px}
+/* wiskunde-opmaak */
+.m{font-family:var(--math);font-size:1.12em;white-space:nowrap}
+.m sup{font-size:.68em;line-height:0;vertical-align:.62em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .12em;line-height:1.12}
+.fr>span{padding:0 .18em}
+.fr>span:first-child{border-bottom:1.4px solid currentColor}
+details.snap{border-top:1px solid var(--line);padding:10px 0}
+details.snap:first-of-type{border-top:0}
+details.snap summary{cursor:pointer;font-weight:700}
+details.snap[open] summary{margin-bottom:8px}
+details.snap>div{line-height:1.6}
+.snapcard{background:var(--tip);border:0}
+/* tabellen en grafieken zoals in het boek */
+.tw{overflow-x:auto;max-width:100%;margin:8px 0}
+.tb{border-collapse:collapse;font-family:var(--math);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.tb th,.tb td{padding:5px 14px;text-align:center;border-left:1.5px solid var(--c1)}
+.tb th{border-left:none;font-weight:400;text-align:left;padding-left:4px;white-space:nowrap}
+.tb tr:first-child th,.tb tr:first-child td{border-bottom:1.5px solid var(--c1)}
+.plot{width:100%;height:auto;display:block;margin:6px 0}
+.plot .g{stroke:var(--grid);stroke-width:1}
+.plot .ax{stroke:var(--ink);stroke-width:1.5}
+.plot .ln{stroke:var(--bad);stroke-width:2.5;fill:none}
+.plot .pt{fill:var(--pen)}
+.plot text{fill:var(--soft);font-family:var(--body);font-size:11px}
+.plot .al{fill:var(--ink);font-family:var(--math);font-style:italic;font-size:14px}
+.opt .tw,.opt .plot{margin:0}
+.plot .ln2{stroke:var(--pen);stroke-width:2.5;fill:none}
+.plot .ln3{stroke:var(--ink);stroke-width:2.5;fill:none}
+.plot .as{stroke:var(--soft);stroke-width:1.5;stroke-dasharray:5 4}
+.plot .fl{fill:var(--ink);font-family:var(--display);font-size:14px;font-weight:800}
+.rt{white-space:nowrap}
+.rad{border-top:1.4px solid currentColor;padding:0 .08em 0 .06em;margin-left:-.02em}
+.m sub{font-size:.65em}
+.tapwrap svg{width:100%;max-width:100%!important;cursor:crosshair;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1.5px solid var(--line);border-radius:12px;background:var(--card)}
+.tapwrap.done svg{cursor:default}
+.plot .ptbad line{stroke:var(--bad);stroke-width:3;stroke-linecap:round}
+.tin td,.tin th{padding:5px 4px}
+.tin td.gezet{color:var(--ok);font-weight:700}
+input.cell{width:50px;font:inherit;font-family:var(--math);text-align:center;border:1.5px solid var(--line);border-radius:8px;padding:5px 4px;background:var(--card);color:var(--ink)}
+input.cell.ok{border-color:var(--ok);background:var(--okbg)}
+input.cell.bad{border-color:var(--bad);background:var(--badbg)}
+input.cell:focus-visible{outline:3px solid var(--c4);outline-offset:1px}
+ul.ul{margin:4px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* extra voor natuurkunde: kaartjes en thermometers */
+.flip{min-height:190px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;cursor:pointer;font-size:1.2rem}
+.flip b{font-family:var(--display);font-weight:800;font-size:1.5rem}
+.flip .why{font-size:1rem}
+.therm{display:block;margin:6px auto;height:auto}
+.therm .tube{fill:var(--card);stroke:var(--ink);stroke-width:1.5}
+.therm .col{fill:var(--bad)}
+.therm .tk{stroke:var(--ink);stroke-width:1}
+.therm text{fill:var(--ink);font-family:var(--body);font-size:11px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.95rem;color:var(--soft)}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.note{background:var(--tip);border-radius:14px;padding:12px 14px;font-size:.95rem}
+
+/* ===== studie-app ===== */
+/* Layout: één smalle kolom schriftpapier, zelfde familie als de oefenapps. Drie tabbladen: Vandaag (leerblokken), Cijfers (per vak), Week (plan tegenover gedaan). */
+:root{
+  --bg:#F6F9FD; --card:#FFFFFF; --ink:#1D2842; --soft:#5B6784; --line:#D3DEEE;
+  --ok:#1E8A4C; --okbg:#E7F5EC; --warn:#B86400; --warnbg:#FFF1DE; --bad:#D93A33; --badbg:#FDECEB;
+  --hl:#FFE14D; --tip:#FFF7D1; --chipink:#1D2842; --bar:#93CBFF; --flame:#FF8A1F; --flame2:#FFD23F;
+  --c1:#FF8F8A; --c2:#FFE14D; --c3:#8FE0A3; --c4:#93CBFF; --c5:#FFB45E; --c6:#CDB0FF; --c7:#F7B3D6;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B2B; --card:#1C2539; --ink:#EAF0FB; --soft:#A3B0CC; --line:#2E3A55;
+  --ok:#5FD08C; --okbg:#173326; --warn:#FFB45E; --warnbg:#3A2C17; --bad:#FF7A72; --badbg:#3A1E22; --tip:#332D17; --bar:#4F7FB8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B2B; --card:#1C2539; --ink:#EAF0FB; --soft:#A3B0CC; --line:#2E3A55;
+  --ok:#5FD08C; --okbg:#173326; --warn:#FFB45E; --warnbg:#3A2C17; --bad:#FF7A72; --badbg:#3A1E22; --tip:#332D17; --bar:#4F7FB8; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+#app{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--display);font-weight:800;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:2rem} h2{font-size:1.25rem}
+.hl{background:linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 92%,transparent 92%)}
+p{margin:0}
+.sub{color:var(--soft)}
+.tag{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:flex;flex-direction:column;gap:12px}
+button{font:inherit;color:inherit;cursor:pointer}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.seg button{background:transparent;border:0;padding:8px 16px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs button{padding:8px 4px}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:10px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.link{background:none;border:0;padding:0;color:var(--soft);text-decoration:underline;font-size:.9rem}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-family:var(--display);font-size:1.8rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:.85rem;color:var(--soft)}
+.vak{display:flex;flex-direction:column;gap:12px}
+.vhead{display:flex;gap:12px;align-items:center}
+.sq{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--chipink);font-size:.9rem}
+.sq.s{width:34px;height:34px;font-size:.75rem;border-radius:8px}
+.vhead .nm{flex:1;min-width:0}
+.vhead .nm b{display:block;font-size:1.1rem}
+.gem{text-align:right;font-variant-numeric:tabular-nums}
+.gem b{font-family:var(--display);font-size:1.6rem;display:block;line-height:1}
+.gem small{color:var(--soft);font-size:.8rem}
+.need{border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.need.ok{background:var(--okbg)} .need.warn{background:var(--warnbg)} .need.bad{background:var(--badbg)} .need.none{background:var(--tip)}
+.need .big{font-weight:700}
+.need.ok .big{color:var(--ok)} .need.warn .big{color:var(--warn)} .need.bad .big{color:var(--bad)}
+.alt{font-size:.88rem;color:var(--soft);font-variant-numeric:tabular-nums}
+details.tt summary{cursor:pointer;font-weight:700;font-size:.95rem}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);font-weight:700;padding:6px 4px;border-bottom:1.5px solid var(--line)}
+td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.p{color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{min-width:120px}
+input.in{width:62px;font:inherit;text-align:center;border:1.5px solid var(--line);border-radius:8px;padding:5px 4px;background:var(--card);color:var(--ink);font-variant-numeric:tabular-nums}
+input.in.w{width:50px}
+input.in.low{border-color:var(--bad);background:var(--badbg)}
+input.in.q{border-style:dashed}
+input.dt,select.sel,input.nm,input.tm{font:inherit;font-size:.9rem;border:1.5px solid var(--line);border-radius:8px;padding:5px 6px;background:var(--card);color:var(--ink)}
+input.nm{width:100%}
+.x{background:none;border:0;color:var(--soft);font-size:1.1rem;padding:2px 6px}
+.note{background:var(--tip);border-radius:14px;padding:12px 14px;font-size:.92rem;display:flex;flex-direction:column;gap:6px}
+.state{color:var(--soft);font-size:.9rem}
+/* vandaag */
+.daynav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.daynav b{font-family:var(--display);font-size:1.3rem}
+.prog{height:12px;border-radius:12px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.blk{display:flex;gap:12px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left;width:100%}
+.blk.done{background:var(--okbg);border-color:var(--ok)}
+.blk .ck{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--soft);display:grid;place-items:center;font-weight:800;color:var(--ok)}
+.blk.done .ck{border-color:var(--ok);background:var(--card)}
+.blk .tx{flex:1;min-width:0}
+.blk .tx small{display:block;color:var(--soft);font-size:.85rem}
+.blk .mn{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.toets{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.toets:first-of-type{border-top:0}
+.toets .tx{flex:1;min-width:0}
+.cd{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+/* week */
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:150px}
+.wk .col{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.wk .bars{position:relative;width:100%;max-width:34px;flex:1;display:flex;align-items:flex-end}
+.wk .plan{position:absolute;left:0;right:0;bottom:0;border:1.5px dashed var(--soft);border-radius:6px 6px 0 0}
+.wk .done{position:relative;width:100%;background:var(--ok);border-radius:6px 6px 0 0}
+.wk .lbl{font-size:.78rem;color:var(--soft)}
+.wk .val{font-size:.75rem;font-variant-numeric:tabular-nums}
+.vbar{display:grid;grid-template-columns:44px 1fr 92px;gap:10px;align-items:center;font-size:.92rem}
+.vbar .tr{height:10px;background:var(--line);border-radius:10px;overflow:hidden;position:relative}
+.vbar .tr i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:10px}
+.vbar .nr{text-align:right;font-variant-numeric:tabular-nums;color:var(--soft)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--soft)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.streak .sn{font-family:var(--display);font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.dot{text-align:center;font-size:.78rem;color:var(--soft);border:1.5px solid var(--line);border-radius:999px;padding:4px 0}
+.dot.on{background:var(--flame);border-color:var(--flame);color:#1D2842;font-weight:700}
+.dot.now{outline:2px solid var(--ink);outline-offset:1px}
+div.blk{cursor:default}
+button.ck{background:transparent;padding:0;cursor:pointer;width:32px!important;height:32px!important;font-size:1.05rem}
+button.ck:disabled{cursor:default}
+.blk .tx b.hn{display:block}
+details.hwd{margin-top:6px}
+details.hwd summary{cursor:pointer;font-size:.9rem;color:var(--soft);font-weight:700}
+details.hwd ul{margin:6px 0 0;padding-left:18px;font-size:.95rem;display:flex;flex-direction:column;gap:3px}
+details.hwd li.kop{list-style:none;margin-left:-18px;font-weight:700;margin-top:4px}
+.blk:has(details[open]){align-items:flex-start}
+.hwdag{font-weight:700;font-size:.95rem;margin-top:4px}
+.blk .tx .link{display:inline-block;margin-top:4px}
+a.sec{color:inherit;text-decoration:none}
+.sec.pt{border-style:dashed}.sec.pt.gehaald{border-style:solid;border-color:var(--ok)}
+.stack.focus>.tag{color:var(--ink)}
+#app.login section{display:none!important}
+.set{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;font-size:.95rem}
+@media (max-width:440px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
+small.afw{display:block;color:var(--bad);font-weight:700}
+.gr{font-family:"Gentium Book Plus","Gentium Plus","Noto Serif",Georgia,serif;font-size:1.12em}
+.c-nom{--mk:#FF8F8A}.c-gen{--mk:#8FE0A3}.c-dat{--mk:#FFE14D}.c-acc{--mk:#93CBFF}
+.mk{background:var(--mk);color:#1D2842;border-radius:5px;padding:0 3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.proef{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--tip);border-radius:14px;padding:10px 14px;font-size:.95rem}
+.proef .seg{margin-left:auto}
+.btn.sm{padding:6px 12px;font-size:.9rem}
+.note.warn{border-color:var(--bad)}
+.plan ol.pl{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.plan .link{font-size:1rem;color:var(--ink)}
+textarea.ta{width:100%;min-height:110px;font:inherit;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.tip{background:var(--tip);border-radius:12px;padding:12px 14px}
+ul.kp{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+ul.kp label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+ul.kp input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--ok)}
+ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
+/* Duits: rijtjes en vraagzinnen bouwen, Akkusativ blauw met Kleurhulp */
+.de{font-size:1.2rem;line-height:1.7;margin:4px 0}
+.nl{color:var(--soft);font-style:italic}
+.prompt{font-size:1.1rem;background:var(--bg);border-radius:10px;padding:8px 12px;margin-top:6px}
+.acc{border-radius:5px;padding:0 3px;transition:background .2s}
+.card.kh .acc,#app:has(.fb) .card.q .acc{background:#93CBFF;color:#1D2842}
+.khbtn{display:inline-block;margin-top:6px;font-size:.9rem;font-weight:700;border:1.5px solid #93CBFF;border-radius:999px;padding:4px 12px;background:transparent}
+.card.kh .khbtn{background:#93CBFF;color:#1D2842}
+.chip{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;font-size:1.1rem;font-weight:700}
+.chip:hover:not(:disabled){border-color:var(--soft)}
+.chip:disabled{opacity:.25;cursor:default}
+.build .chip:disabled{opacity:1}
+.chip:focus-visible,.slot:focus-visible,.khbtn:focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.rij{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center}
+.rij .p{color:var(--soft);font-size:1.05rem}
+.slot{min-height:44px;border:1.5px dashed var(--soft);border-radius:10px;padding:6px 12px;text-align:left;font-size:1.1rem;font-weight:700;background:transparent;color:var(--ink)}
+.slot.filled{border-style:solid;border-color:var(--line);background:var(--card)}
+.slot.next{border-color:var(--ink)}
+.slot.ok{border-color:var(--ok);background:var(--okbg)} .slot.bad{border-color:var(--bad);background:var(--badbg)}
+.slot small{font-weight:400;color:var(--ok);margin-left:8px}
+.build{min-height:56px;border:1.5px dashed var(--soft);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.build.ok{border:1.5px solid var(--ok);background:var(--okbg)} .build.bad{border:1.5px solid var(--bad);background:var(--badbg)}
+.build .leeg{color:var(--soft);padding:0 6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <header class="stack" style="gap:8px">
+    <span class="tag">Klas 2 · schooljaar 2026–2027 · volgens het PTO</span>
+    <h1>Mijn <span class="hl">studie-app</span></h1>
+  </header>
+  <div class="seg tabs" role="tablist" aria-label="Onderdelen">
+    <button id="tab-vandaag" data-tab="vandaag">Vandaag</button><button id="tab-oefenen" data-tab="oefenen">Oefenen</button><button id="tab-cijfers" data-tab="cijfers">Cijfers</button><button id="tab-week" data-tab="week">Week</button>
+  </div>
+  <div id="state" class="state">Laden…</div>
+  <section id="v-vandaag" class="stack"></section>
+  <section id="v-oefenen" class="stack" hidden></section>
+  <section id="v-cijfers" class="stack" hidden></section>
+  <section id="v-week" class="stack" hidden></section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="oefen/engine.js"></script>
+<script src="vakken/na.js"></script>
+<script src="vakken/wi.js"></script>
+<script src="vakken/ak.js"></script>
+<script src="vakken/gr.js"></script>
+<script src="vakken/lv.js"></script>
+<script src="vakken/du.js"></script>
+<script src="huiswerk.js"></script>
+<script>
+/* ---------- basis ---------- */
+const $=s=>document.querySelector(s);
+const stateEl=$('#state');
+const COL=['--c1','--c2','--c3','--c4','--c5','--c6','--c7'];
+const DAGEN=['zo','ma','di','wo','do','vr','za'],DAGL=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+const MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const DEF={v:3,doel:7,basis:20,blok:25,start:'16:00',totNormaal:150,totZwaar:360,maxDagSchool:150,maxDagWeekend:0,sprintMin:3,oefenMin:20,bijMin:20,record:0,streakStart:'2026-11-02'};
+let VAK=[],SET=Object.assign({},DEF),LOG={},db=null,canWrite=true,open=new Set(),tab='vandaag',dag=today();
+try{tab=localStorage.getItem('tab')||'vandaag'}catch(e){}
+const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null};
+const f1=n=>n==null?'–':n.toFixed(1).replace('.',',');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function today(){const d=new Date();return iso(d)}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function pd(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function addDays(s,n){const d=pd(s);d.setDate(d.getDate()+n);return iso(d)}
+function diffDays(a,b){return Math.round((pd(b)-pd(a))/864e5)}
+function nice(s){const d=pd(s);return DAGL[d.getDay()]+' '+d.getDate()+' '+MAAND[d.getMonth()]}
+function weekId(s){const d=pd(s);const t=new Date(d);t.setDate(d.getDate()+3-((d.getDay()+6)%7));const w1=new Date(t.getFullYear(),0,4);return t.getFullYear()+'-W'+String(1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7)).padStart(2,'0')}
+function monday(s){const d=pd(s);return addDays(s,-((d.getDay()+6)%7))}
+const mins=n=>n>=60?`${Math.floor(n/60)} u ${n%60?String(n%60).padStart(2,'0')+' min':''}`.trim():n+' min';
+const vakOf=id=>VAK.find(v=>v.id===id);
+
+/* ---------- cijfers: rekenen ---------- */
+function calc(v){
+  let S=0,Wd=0,Wr=0,nr=0;
+  (v.toetsen||[]).forEach(t=>{const w=num(t.weging)??1;if(w<=0)return;const c=num(t.cijfer);
+    if(c!=null){S+=c*w;Wd+=w}else{Wr+=w;nr++}});
+  const gem=Wd?S/Wd:null;
+  const nodig=d=>Wr?(d*(Wd+Wr)-S)/Wr:null;
+  return {gem,Wd,Wr,nr,nodig};
+}
+function status(c,d){
+  if(!c.Wd&&!c.Wr)return {k:'none',t:'Nog geen toetsen'};
+  if(!c.Wr)return c.gem>=d?{k:'ok',t:'Klaar: doel gehaald'}:{k:'bad',t:'Klaar: doel niet gehaald'};
+  const n=c.nodig(d);
+  if(c.Wd===0)return {k:'none',t:`Nog geen cijfers. Haal gemiddeld een ${f1(d)} op ${c.nr} ${c.nr===1?'toets':'toetsen'}.`,n};
+  if(n<=1)return {k:'ok',t:'Je doel zit al bijna zeker goed',n};
+  if(n<=d)return {k:'ok',t:`Nodig: gemiddeld ${f1(n)}`,n};
+  if(n<=8.5)return {k:'warn',t:`Nodig: gemiddeld ${f1(n)}`,n};
+  if(n<=10)return {k:'bad',t:`Nodig: gemiddeld ${f1(n)} (heel lastig)`,n};
+  return {k:'bad',t:`Niet meer haalbaar (nodig: ${f1(n)})`,n};
+}
+/* een vak heeft "druk" als ze hoger moet scoren dan haar doel */
+const druk=v=>{const c=calc(v);if(!c.Wd||!c.Wr)return false;return c.nodig(SET.doel)>SET.doel};
+
+/* ---------- leerplan ---------- */
+const schooldag=s=>{const g=pd(s).getDay();return g>=1&&g<=5};
+const vrijZa=s=>{const g=pd(s).getDay();return g===5||g===6};
+/* vakken met een oefenapp in deze studie-app, en vakken die nog een losse app hebben */
+const APPS=()=>Object.keys(VAKDATA);
+const LOSSE={}; /* alle oefenapps zitten nu in de studie-app */
+/* toetsweek = een week met 4 of meer toetsen: dan geen gewoon huiswerk */
+function toetsDagen(){const m={};VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum)m[t.datum]=(m[t.datum]||0)+1}));return m}
+function inToetsweek(s){const m=toetsDagen(),w=weekId(s);return Object.entries(m).filter(([d])=>weekId(d)===w).reduce((a,[,n])=>a+n,0)>=4}
+function volgendeSchooldag(s){let d=addDays(s,1);while(!schooldag(d))d=addDays(d,1);return d}
+/* ---------- huiswerk uit SOMtoday (huiswerk.js) ---------- */
+const HW=()=>window.HUISWERK||[];
+const hwCompleet=d=>!!window.HUISWERK_COMPLEET_TOT&&d<=window.HUISWERK_COMPLEET_TOT;
+const hwVoor=d=>HW().filter(h=>h.d===d);
+function hwVak(n){const k=String(n||'').toLowerCase();return VAK.find(v=>v.id===k)||VAK.find(v=>String(v.naam||'').toLowerCase().includes(k))}
+function hwLog(id){for(const w of Object.values(LOG))for(const e of (w.entries||[]))if(e.key==='hwt-'+id)return e;return null}
+const hwDone=h=>!!(h.klaar||hwLog(h.id));
+function hwRow(h,b,kort){const v=hwVak(h.vak),done=hwDone(h),naam=v?v.naam:h.vak.charAt(0).toUpperCase()+h.vak.slice(1);
+  const chip=v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:'';
+  const wat=(h.wat||[]).length?`<details class="hwd"><summary>Wat moet je doen?</summary><ul>${h.wat.map(l=>l.startsWith('# ')?`<li class="kop">${esc(l.slice(2))}</li>`:`<li>${esc(l)}</li>`).join('')}</ul></details>`:'';
+  const app=h.app&&LOSSE[h.app]?`<a class="link" href="${LOSSE[h.app].url}" target="_blank" rel="noopener">Open ${esc(LOSSE[h.app].naam)}</a>`:h.app&&window.VAKDATA&&VAKDATA[h.app]?`${hwKnop(h)}<button class="link" data-go="${h.app}" data-par="${esc(h.par||'')}" data-mode="bijhouden">Oefen in de app</button>`:'';
+  return `<div class="blk${done?' done':''}"><button class="ck" data-hwt="${esc(h.id)}" data-min="${h.min}" data-vak="${v?v.id:'hw'}" aria-pressed="${done}" aria-label="${done?'Afgevinkt':'Afvinken'}: ${esc(naam)}, ${esc(h.t)}" ${canWrite&&!h.klaar?'':'disabled'}>${done?'✓':''}</button>${chip}
+    <span class="tx"><b class="hn">${esc(naam)}</b>${esc(h.t)}<small>${kort?nice(h.d)+' · ':'Voor '+nice(h.d)+' · '}${h.klaar?'al afgevinkt in SOMtoday':done?'gedaan':'tik het vakje af als het af is'}</small>${!done&&hwAfgewezen(h.id)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}${wat}${app}${afwKnop(hwLog(h.id),h.klaar)}</span><span class="mn">${h.min} min</span></div>`}
+/* huiswerk dat in de app staat: knop die precies die opgaven opent, stap voor stap */
+function hwKnop(h){if(!h.opg||!h.opg.length)return '';const n=Oefen.hwStand(h.app,h.id);
+  return `<span class="row" style="margin:8px 0 4px"><button class="btn sm" data-hwapp="${esc(h.id)}" data-stop>${n?'Verder met je huiswerk in de app':'Maak je huiswerk stap voor stap'}</button><span class="sub" style="font-size:.85rem">opgave ${h.opg.join(', ')}${n?` · ${n} vragen klaar`:''}</span></span>`}
+function openHw(id){const h=HW().find(x=>x.id===id);if(!h)return;const v=hwVak(h.vak);fromSprint=false;show('oefenen');
+  Oefen.huiswerk($('#v-oefenen'),h.app,{key:h.id,nrs:h.opg,par:h.par||null,titel:`${v?v.naam:h.vak}: huiswerk voor ${nice(h.d)}`})}
+function hwAfgewezen(id){for(const w of Object.values(LOG))for(const e of (w.entries||[]))if(e.key==='nee-hwt-'+id)return true;return false}
+/* knop voor de ouder bij iets wat ze zelf heeft afgevinkt */
+function afwKnop(e,klaar){if(!isOuder()||!e||klaar||!canWrite)return '';
+  return `<span class="row" style="margin-top:6px"><span class="sub" style="font-size:.85rem">Zelf afgevinkt${e.t?' om '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):''}.</span><button class="btn ghost sm" data-afw="${esc(e.key)}" data-afwd="${e.d}" data-stop>Afwijzen</button></span>`}
+function huiswerkMin(s){if(vrijZa(s))return 0;const g=pd(s).getDay();const nd=volgendeSchooldag(s),T=hwVoor(nd);
+  if(T.length&&hwCompleet(nd))return T.reduce((a,h)=>a+(h.min||0),0);
+  if(inToetsweek(volgendeSchooldag(s))||inToetsweek(s)&&g!==0)return 0;
+  const lu=VAK.reduce((a,v)=>a+(num(v.lesuren)??0),0),gen=Math.round(lu*SET.basis/5/5)*5;
+  return T.length?Math.max(gen,T.reduce((a,h)=>a+(h.min||0),0)):gen}
+/* leertijd per toets terug in de tijd verdelen, eerste toets eerst, met een maximum per dag.
+   Vrijdag en zaterdag: alleen een sprint. */
+const zwaarT=(v,t)=>(num(t.weging)??1)>=3||druk(v);
+/* bijhouden: direct na het huiswerk van een vak met een oefenapp, 20 minuten dezelfde paragraaf in de app */
+function bijhouden(s){if(vrijZa(s))return [];const nd=volgendeSchooldag(s),seen=new Set(),R=[];
+  hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||!APPS().includes(v.id)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
+    R.push({vid:v.id,par:h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id),h})});
+  /* past het niet binnen het maximum, dan wordt elk bijhoudblok even korter (niet korter dan 10 min) */
+  const room=SET.maxDagSchool-huiswerkMin(s),m=R.length?Math.max(10,Math.min(SET.bijMin,Math.floor(room/R.length/5)*5)):0;
+  R.forEach(x=>x.min=m);return R}
+/* beheersing: hoeveel van de paragrafen heeft ze met een 7 of hoger afgesloten? Dat maakt de toetsvoorbereiding korter */
+function beheersing(vid){const ps=Oefen.pars(vid),st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
+  const proef=(st.best||{}).toets,proefOk=proef!=null&&1+9*proef/100>=7,frac=ps.length?g/ps.length:0;
+  return {g,n:ps.length,proefOk,f:Math.max(0.3,1-0.5*frac-(frac===1&&proefOk?0.2:0))}}
+let SCHED=null;
+function schedule(){
+  if(SCHED)return SCHED;
+  const A={},used=d=>huiswerkMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0),van=startDag()||today();
+  const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null)L.push({v,t})}));
+  L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
+  const eerste=new Set();
+  L.forEach(({v,t})=>{const z=zwaarT(v,t),vol=z?SET.totZwaar:SET.totNormaal;
+    /* de oefenapp hoort bij de eerstvolgende toets van dat vak; alleen daar telt beheersing mee */
+    const app=APPS().includes(v.id)&&!eerste.has(v.id)&&t.datum>=today();if(app)eerste.add(v.id);
+    const bh=app&&VAKDATA[v.id].volledig!==false?beheersing(v.id):null;let tot=bh?Math.round(vol*bh.f/5)*5:vol,d=addDays(t.datum,-1),k=0;
+    (A._tot=A._tot||{})[v.id+'|'+t.id]={vol,tot,bh};
+    while(tot>0&&k<70&&d>=van){const cap=(vrijZa(d)?SET.maxDagWeekend:SET.maxDagSchool)-used(d);
+      const room=Math.min(z?60:45,cap,tot);
+      if(room>=15){(A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});tot-=room}
+      d=addDays(d,-1);k++}
+    if(tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot});});
+  return SCHED=A;
+}
+/* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
+function volgendePar(vid){const st=OEF[vid]||{},p=Oefen.pars(vid);return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
+function blokken(s){
+  const B=[],split=m=>{const r=[];let left=m;while(left>0){const x=Math.min(SET.blok,left);r.push(x);left-=x}return r};
+  if(vrijZa(s))return [{key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint. Eén is genoeg voor je reeks, meer mag.'}];
+  const nd=volgendeSchooldag(s),T=hwVoor(nd);
+  const BH=bijhouden(s);
+  T.forEach(h=>{const v=hwVak(h.vak);B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
+    const b=BH.find(x=>x.h===h);
+    if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
+      titel:`${V.naam}: ${V.PN[b.par]||b.par} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
+  const rest=hwCompleet(nd)&&T.length?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
+  const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
+  const SC=schedule();
+  (SC[s]||[]).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
+    ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
+      titel:`${p.v.naam}: ${app?'toetsvoorbereiding in de app':'leren'} voor ${p.t.naam}${ps.length>1?` · blok ${i+1} van ${ps.length}`:''}`,
+      uit:`Toets over ${p.n} ${p.n===1?'dag':'dagen'} (${nice(p.t.datum)})${p.zwaar?' · extra tijd: '+((num(p.t.weging)??1)>=3?'telt '+p.t.weging+'× mee':'je moet hier omhoog'):''}. `+
+        (bh?`Je beheerst ${bh.g} van de ${bh.n} paragrafen${bh.proefOk?' en je proeftoets is voldoende':''}. Daardoor is je toetsvoorbereiding ${Math.round(info.tot/60*10)/10} in plaats van ${info.vol/60} uur. De tijd telt vanzelf mee.`
+          :app?'De tijd telt vanzelf mee.':'Overhoor jezelf en tik het blok daarna af.')}))});
+  /* elke schooldag ook leren met de app, ook als er nog geen toets dichtbij is, zolang het binnen het maximum past */
+  const room=SET.maxDagSchool-B.reduce((a,b)=>a+b.min,0);
+  if(!B.some(b=>b.auto)&&APPS().length&&room>=10){
+    const next=id=>{let best=1e9;(vakOf(id)?.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null){const n=diffDays(s,t.datum);if(n>=0&&n<best)best=n}});return best};
+    const vid=APPS().slice().sort((a,b)=>next(a)-next(b))[0],par=volgendePar(vid);
+    B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:Math.min(SET.oefenMin,room),par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`});
+  }
+  if(!B.length)B.push({key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint.'});
+  return B;
+}
+const logDag=s=>((LOG[weekId(s)]||{}).entries||[]).filter(e=>e.d===s);
+const autoMin=(s,vid)=>logDag(s).filter(e=>e.soort==='oefenen'&&e.vak===vid).reduce((a,e)=>a+(e.sec||e.min*60||0),0)/60;
+/* status van elk blok: zelf afgevinkt, of vanzelf gehaald met oefentijd */
+function blokStatus(s){
+  const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need={},sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
+  return B.map(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
+    if(b.auto==='sprint')done=sprint;
+    else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=autoMin(s,b.auto),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
+    else if(b.hwt)done=hwDone(b.hwt);
+    else done=keys.has(b.key);
+    return Object.assign({},b,{done:done||ok,ok:ok&&!done,vraag:vraag&&!done&&!ok,prog})});
+}
+const gehaaldNu=s=>blokStatus(s).every(b=>b.done);
+/* een dag die gehaald was, blijft gehaald: ook als het plan later verandert (nieuwe toets, minder leertijd).
+   Alleen als jij als ouder iets afwijst, vervalt die stempel. */
+const stempel=s=>logDag(s).some(e=>e.key==='dag-gehaald');
+const gehaald=s=>(s<today()&&stempel(s))||gehaaldNu(s);
+function stempelBij(){if(!canWrite||!db)return;const d=today(),nu=gehaaldNu(d),st=stempel(d);
+  if(nu&&!st)addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now()},true);
+  else if(!nu&&st)delLog(d,'dag-gehaald',true)}
+const NIETMEE=['vraag','stempel','afgewezen'];
+const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).reduce((a,e)=>a+(e.sec?e.sec/60:(e.min||0)),0));
+const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&CONFIG.ouder.toLowerCase()===String(WIE).toLowerCase());
+const planMin=s=>blokken(s).reduce((a,b)=>a+b.min,0);
+function startDag(){return SET.streakStart||DEF.streakStart}
+function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(gehaald(d))n++;d=addDays(d,-1);
+  while(d>=st&&gehaald(d)){n++;d=addDays(d,-1)}return n}
+
+/* ---------- opslaan ---------- */
+let chain=Promise.resolve();
+function write(fn){if(!db||!canWrite)return;chain=chain.then(fn).catch(e=>{
+  stateEl.textContent=e&&e.code==='invalid_argument'?'Je kunt dit bekijken, maar niet aanpassen.':'Opslaan lukte niet. Probeer het zo nog eens.';
+  if(e&&e.code==='invalid_argument'){canWrite=false;render()}})}
+function saveVak(v){const body=JSON.parse(JSON.stringify(v));delete body.id;write(()=>db.collection('vakken').doc(v.id).set(body))}
+function saveSet(){write(()=>db.collection('instellingen').doc('plan').set(Object.assign({},SET)))}
+function saveLog(wid){const body={entries:(LOG[wid]||{entries:[]}).entries};write(()=>db.collection('log').doc(wid).set(body))}
+function addLog(e,stil){const wid=weekId(e.d);LOG[wid]=LOG[wid]||{entries:[]};LOG[wid].entries=[...LOG[wid].entries.filter(x=>!(x.d===e.d&&x.key==='nee-'+e.key)),e];saveLog(wid);if(!stil)render()}
+function delLog(d,key,stil){const wid=weekId(d);if(!LOG[wid])return;LOG[wid].entries=LOG[wid].entries.filter(e=>!(e.d===d&&e.key===key));saveLog(wid);if(!stil)render()}
+/* ouder wijst een zelf afgevinkt blok af: het vinkje gaat weg, de dag telt niet meer tot het weer af is */
+function afwijzen(d,key){const wid=weekId(d);if(!LOG[wid])return;
+  LOG[wid].entries=[...LOG[wid].entries.filter(e=>!(e.d===d&&(e.key===key||e.key==='dag-gehaald'))),{d,key:'nee-'+key,vak:'hw',soort:'afgewezen',min:0,door:window.WIE,t:Date.now()}];
+  saveLog(wid);render()}
+const afgewezen=(d,key)=>logDag(d).some(e=>e.key==='nee-'+key);
+
+/* ---------- goedkeuren: gedaan buiten de app, met toestemming van de ouder ---------- */
+function goedkeur(b){if(b.done&&!b.ok)return '';if(!b.auto)return '';
+  if(b.ok)return isOuder()?`<button class="link" data-ontok="${b.key}" data-stop>Goedkeuring intrekken</button>`:'';
+  if(isOuder())return `<span class="row" style="margin-top:6px">${b.vraag?'<span class="sub">Vraagt om goedkeuring.</span>':''}<button class="btn" data-ok="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-stop>${b.vraag?'Goedkeuren':'Afvinken als ouder'}</button>${b.vraag?`<button class="btn ghost" data-nee="${b.key}" data-stop>Afwijzen</button>`:''}</span>`;
+  if(b.vraag)return '<small class="sub" style="display:block;margin-top:6px">Wacht op goedkeuring van je ouder.</small>';
+  if(!b.auto)return '';
+  return `<button class="link" data-vraag="${b.key}" data-vak="${b.vak}" data-stop>Wel gedaan, maar niet in de app? Vraag goedkeuring</button>`}
+/* ---------- tab: vandaag ---------- */
+const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
+function rVandaag(){
+  const B=blokStatus(dag),L=logDag(dag),open=B.filter(b=>!b.done);
+  const zelf=B.filter(b=>!b.auto&&b.done&&!b.ok&&(b.hwt?hwLog(b.hwt.id)&&!b.hwt.klaar:L.some(e=>e.key===b.key)));
+  const rest=(schedule()._rest||[]).filter(r=>r.t.datum>=today()&&r.tot>=15);
+  const plan=B.reduce((a,b)=>a+b.min,0),gedaan=gedaanMin(dag);
+  const extra=L.filter(e=>!B.some(b=>b.key===e.key)&&!String(e.key).startsWith('hwt-')&&e.soort!=='oefenen'&&e.soort!=='sprint'&&e.soort!=='goedgekeurd'&&!NIETMEE.includes(e.soort));
+  const komend=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&diffDays(dag,t.datum)>=0)komend.push({v,t,n:diffDays(dag,t.datum)})}));komend.sort((a,b)=>a.n-b.n);
+  const n=streak(),isToday=dag===today(),week=[...Array(7)].map((_,i)=>addDays(today(),i-6));const st=startDag();
+  if(n>(SET.record||0)&&canWrite){SET.record=n;saveSet()}
+  const chip=v=>v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:'';
+  $('#v-vandaag').innerHTML=`
+  <div class="card streak">
+    <div class="row" style="gap:14px;flex-wrap:nowrap">${FLAME}<div style="flex:1;min-width:0"><b class="sn">${n}</b> <span>${n===1?'dag':'dagen'} op rij</span>
+      <div class="sub" style="font-size:.9rem">${gehaald(today())?'Vandaag gehaald. Morgen weer!':open.length&&isToday?`Nog ${open.length} ${open.length===1?'blok':'blokken'} voor je reeks vandaag.`:'Maak vandaag je dagplan af voor je reeks.'}${SET.record?` · record ${SET.record}`:''}</div></div></div>
+    <div class="dots">${week.map(d=>`<span class="dot${st&&d>=st&&gehaald(d)?' on':''}${d===today()?' now':''}" title="${nice(d)}">${DAGEN[pd(d).getDay()]}</span>`).join('')}</div>
+  </div>
+  <div class="card stack">
+    <div class="daynav"><button class="btn ghost" id="prev" aria-label="Vorige dag">←</button><b>${isToday?'Vandaag, ':''}${nice(dag)}</b><button class="btn ghost" id="next" aria-label="Volgende dag">→</button></div>
+    <div class="row" style="justify-content:space-between"><span><b>${mins(gedaan)}</b> <span class="sub">van ${mins(plan)} gedaan</span></span><span class="sub">Start om <b>${esc(SET.start)}</b></span></div>
+    <div class="prog"><i style="width:${plan?Math.min(100,gedaan/plan*100):0}%"></i></div>
+  </div>
+  ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past binnen ${mins(SET.maxDagSchool)} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Je kunt bij Week → Instellingen het maximum per dag verhogen of op zaterdag leertijd toevoegen. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt.</span></div>`:''}
+  ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
+  ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
+  <div class="stack">${B.map(b=>{const v=vakOf(b.vak),gk=goedkeur(b);
+    if(b.auto==='sprint')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span><span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
+      <span class="row" style="margin-top:8px"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
+    if(b.hwt)return hwRow(b.hwt,b,false);
+    if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
+      <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
+    return `<button class="blk${b.done?' done':''}" data-blk="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-soort="${b.soort}" ${canWrite?'':'disabled'}>
+      <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`}).join('')}</div>
+  ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
+  ${extra.length?`<div class="card stack"><span class="tag">Zelf gelogd</span>${extra.map(e=>`<div class="row" style="justify-content:space-between"><span><b>${esc(vakOf(e.vak)?.naam||'Huiswerk')}</b> · ${esc(e.soort==='huiswerk'?'huiswerk gemaakt':e.soort==='leren'?'geleerd':e.soort)}</span><span><b>${e.min} min</b> ${canWrite?`<button class="x" data-dellog="${esc(e.key)}" aria-label="Verwijder">×</button>`:''}</span></div>`).join('')}</div>`:''}
+  ${canWrite?`<details class="card"><summary style="cursor:pointer;font-weight:700">Iets anders gedaan? Zelf tijd toevoegen</summary>
+    <div class="row" style="margin-top:10px">
+      <label class="stack" style="gap:2px;font-size:.9rem">Vak<select class="sel" id="lg-vak">${VAK.slice().sort((a,b)=>(a.volgorde??0)-(b.volgorde??0)).map(v=>`<option value="${v.id}">${esc(v.naam)}</option>`).join('')}</select></label>
+      <label class="stack" style="gap:2px;font-size:.9rem">Wat<select class="sel" id="lg-soort"><option value="huiswerk">huiswerk gemaakt</option><option value="leren">geleerd</option><option value="oefenapp">in een oefenapp</option></select></label>
+      <label class="stack" style="gap:2px;font-size:.9rem">Minuten<input class="in" id="lg-min" inputmode="numeric" value="25"></label>
+      <button class="btn" id="lg-add">Toevoegen</button></div><p class="sub" style="font-size:.85rem;margin-top:6px">Zelf gelogde tijd telt mee in je minuten, maar niet voor de oefenblokken: die meet de app zelf.</p></details>`:''}
+  ${(()=>{const nd=vrijZa(dag)?null:volgendeSchooldag(dag),L2=HW().filter(h=>h.d>dag&&h.d!==nd&&diffDays(dag,h.d)<=8).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+    if(!L2.length)return '';let last='';
+    return `<div class="card stack"><span class="tag">Huiswerk dat eraan komt</span><span class="sub" style="font-size:.9rem">Vooruitwerken mag: vink af wat al af is, dan staat het later niet meer open.</span>${L2.map(h=>{const kop=h.d!==last?`<div class="hwdag">${nice(h.d).replace(/^./,c=>c.toUpperCase())}</div>`:'';last=h.d;return kop+hwRow(h,null,true)}).join('')}</div>`})()}
+  <div class="card"><span class="tag">Toetsen die eraan komen</span>
+    ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee</small></span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
+      :`<p class="sub" style="margin-top:6px">Nog geen toetsdata ingevuld.</p>`}
+  </div>
+  <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Heb je huiswerk voor een vak dat in de app zit, dan oefen je daarna 20 minuten dezelfde paragraaf in de app: zo blijft het hangen. Blokken in de app vinken zichzelf af: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; op vrijdag en zaterdag is één sprint genoeg.</span></div>`;
+  $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
+  const keys=new Set(L.map(e=>e.key));
+  document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
+    if(keys.has(k))delLog(dag,k);else addLog({d:dag,key:k,vak:b.dataset.vak,soort:b.dataset.soort,min:+b.dataset.min,t:Date.now()})});
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openVak(b.dataset.go,b.dataset.par||null,b.dataset.mode||null));
+  document.querySelectorAll('[data-hwapp]').forEach(b=>b.onclick=e=>{e.stopPropagation();openHw(b.dataset.hwapp)});
+  document.querySelectorAll('[data-afw]').forEach(b=>b.onclick=e=>{e.stopPropagation();afwijzen(b.dataset.afwd,b.dataset.afw)});
+  document.querySelectorAll('[data-hwt]').forEach(b=>b.onclick=()=>{const id=b.dataset.hwt,e=hwLog(id);
+    if(e)delLog(e.d,e.key);else addLog({d:dag<=today()?dag:today(),key:'hwt-'+id,vak:b.dataset.vak,soort:'huiswerk',min:+b.dataset.min,t:Date.now()})});
+  document.querySelectorAll('[data-vraag]').forEach(b=>b.onclick=e=>{e.stopPropagation();addLog({d:dag,key:'vraag-'+b.dataset.vraag,vak:b.dataset.vak,soort:'vraag',min:0,t:Date.now()})});
+  document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.ok;const wid=weekId(dag);
+    if(LOG[wid])LOG[wid].entries=LOG[wid].entries.filter(x=>!(x.d===dag&&x.key==='vraag-'+k));
+    addLog({d:dag,key:'ok-'+k,vak:b.dataset.vak,soort:'goedgekeurd',min:+b.dataset.min,door:WIE,t:Date.now()})});
+  document.querySelectorAll('[data-nee]').forEach(b=>b.onclick=e=>{e.stopPropagation();delLog(dag,'vraag-'+b.dataset.nee)});
+  document.querySelectorAll('[data-ontok]').forEach(b=>b.onclick=e=>{e.stopPropagation();delLog(dag,'ok-'+b.dataset.ontok)});
+  const dk=$('#dagok');if(dk)dk.onclick=()=>addLog({d:dag,key:'ok-dag',vak:'hw',soort:'goedgekeurd',min:0,door:WIE,t:Date.now()});
+  document.querySelectorAll('[data-sprint]').forEach(b=>b.onclick=()=>openSprint(b.dataset.sprint));
+  document.querySelectorAll('[data-dellog]').forEach(b=>b.onclick=()=>delLog(dag,b.dataset.dellog));
+  const la=$('#lg-add');if(la)la.onclick=()=>{const m=num($('#lg-min').value);if(!m||m<=0||m>300){stateEl.textContent='Vul een aantal minuten in (1 tot 300).';return}
+    addLog({d:dag,key:'x'+Date.now().toString(36),vak:$('#lg-vak').value,soort:$('#lg-soort').value,min:Math.round(m),t:Date.now()})};
+}
+
+/* ---------- tab: oefenen ---------- */
+let OEF={},fromSprint=false;
+function rOefenen(){
+  if(Oefen.cur)return; /* niet midden in een ronde opnieuw tekenen */
+  const sp=OEF.sprints||{};
+  $('#v-oefenen').innerHTML=`
+  <span class="tag">Vakken in deze app</span>
+  ${APPS().map(id=>{const V=VAKDATA[id],st=OEF[id]||{},ps=Oefen.pars(id),ok=ps.filter(p=>(st.ptoets||{})[p]&&st.ptoets[p].best>=7).length,v=vakOf(id);
+    return `<button class="sec" data-vak="${id}"><span class="sq" style="background:var(${COL[(v?.volgorde??0)%COL.length]})">${esc(V.afk)}</span><span><b>${esc(V.naam)}</b><small>${esc(V.kop)} · ${ok} van ${ps.length} paragrafen gehaald${(st.wrong||[]).length?` · <span style="color:var(--bad)">${st.wrong.length} fout</span>`:''}</small></span></button>`}).join('')}
+  <span class="tag">Sprints</span>
+  <div class="row"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></div>
+  <p class="sub" style="font-size:.9rem">Record rekensprint: <b>${sp.reken||0}</b> · woordjessprint: <b>${sp.woord||0}</b></p>
+  <p class="sub" style="font-size:.9rem">Andere vakken komen erbij zodra de leerstof binnen is.</p>`;
+  document.querySelectorAll('#v-oefenen [data-vak]').forEach(b=>b.onclick=()=>openVak(b.dataset.vak));
+  document.querySelectorAll('#v-oefenen [data-sprint]').forEach(b=>b.onclick=()=>openSprint(b.dataset.sprint));
+}
+function show(t){tab=t;try{localStorage.setItem('tab',tab)}catch(e){};document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));['vandaag','oefenen','cijfers','week'].forEach(x=>$('#v-'+x).hidden=x!==tab)}
+function openVak(id,par,mode){fromSprint=false;show('oefenen');Oefen.vakHome($('#v-oefenen'),id,par,mode)}
+function openSprint(kind){fromSprint=true;show('oefenen');Oefen.sprint($('#v-oefenen'),kind,SET.sprintMin*60)}
+const saveT={};
+function oefenCtx(){return {
+  state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{}};return OEF[id]},
+  save:id=>{clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
+  sprintDone:(kind,score)=>{const sp=OEF.sprints=OEF.sprints||{},oud=sp[kind]||0;
+    if(score>oud){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
+    addLog({d:today(),key:'sprint-'+kind+'-'+Date.now().toString(36),vak:'sprint',soort:'sprint',min:SET.sprintMin,score,t:Date.now()},true);
+    return {oud}},
+  home:()=>{Oefen.stop();if(fromSprint){fromSprint=false;tab='vandaag'}render()}}}
+/* oefentijd meten: alleen als je in een vak bezig bent en de laatste 2 minuten iets hebt gedaan */
+let lastAct=Date.now(),ACT={},flushT=0;
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{lastAct=Date.now()},{passive:true}));
+setInterval(()=>{
+  if(!Oefen.cur||Oefen.cur==='sprint'||tab!=='oefenen'||document.hidden||Date.now()-lastAct>120000)return;
+  const d=today(),k=d+'|'+Oefen.cur;ACT[k]=(ACT[k]||0)+1;
+  if(++flushT>=30){flushT=0;flushAct()}
+},1000);
+function flushAct(){Object.entries(ACT).forEach(([k,s])=>{if(!s)return;const [d,vid]=k.split('|'),wid=weekId(d);
+  LOG[wid]=LOG[wid]||{entries:[]};const key='auto-'+vid;let e=LOG[wid].entries.find(x=>x.d===d&&x.key===key);
+  if(!e){e={d,key,vak:vid,soort:'oefenen',sec:0,min:0};LOG[wid].entries=[...LOG[wid].entries,e]}
+  e.sec=(e.sec||0)+s;e.min=Math.floor(e.sec/60);ACT[k]=0;saveLog(wid)})}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushAct()});
+
+/* ---------- tab: cijfers ---------- */
+function rCijfers(){
+  const cs=VAK.map(v=>calc(v));
+  const gems=cs.map(c=>c.gem).filter(g=>g!=null);
+  const allG=VAK.flatMap(v=>(v.toetsen||[]).map(t=>num(t.cijfer)).filter(x=>x!=null));
+  const onv=allG.filter(x=>x<5.5).length;
+  const risk=VAK.filter((v,i)=>{const s=status(cs[i],SET.doel);return s.k==='bad'||s.k==='warn'}).length;
+  const dr=i=>{const c=cs[i];if(!c.Wd)return -1e3;if(!c.Wr)return -500+(SET.doel-c.gem);return c.nodig(SET.doel)};
+  const order=VAK.map((v,i)=>i).sort((a,b)=>dr(b)-dr(a)||(VAK[a].volgorde??0)-(VAK[b].volgorde??0));
+  $('#v-cijfers').innerHTML=`
+  <div class="card row" style="justify-content:space-between">
+    <span><b>Mijn doel</b> <span class="sub">voor elk vak</span></span>
+    <div class="seg" role="group" aria-label="Doel">${[6,7,8].map(d=>`<button data-doel="${d}" aria-pressed="${SET.doel===d}" ${canWrite?'':'disabled'}>${d}</button>`).join('')}</div>
+  </div>
+  ${VAK.length?`<div class="stats">
+    <div class="stat"><b>${f1(gems.length?gems.reduce((a,b)=>a+b,0)/gems.length:null)}</b><span>gemiddeld over ${gems.length} ${gems.length===1?'vak':'vakken'} met cijfers</span></div>
+    <div class="stat"><b>${onv} / ${allG.length}</b><span>cijfers onder de 5,5</span></div>
+    <div class="stat"><b>${risk}</b><span>${risk===1?'vak moet':'vakken moeten'} hoger dan je doel</span></div></div>`:''}
+  ${order.map(i=>vakHtml(VAK[i],cs[i],i)).join('')}
+  <div class="note">
+    <b>Zo rekent deze pagina</b>
+    <span>Gemiddelde = (cijfer × weging + …) gedeeld door de totale weging. "Nodig" = wat je gemiddeld moet halen op alle toetsen die nog geen cijfer hebben.</span>
+    <span>Een weging met een stippelrand komt niet uit het PTO en staat voorlopig op 1. Vraag de docent hoe vaak de toets meetelt. Vul ook de datum van elke toets in: dan plant de pagina het leren.</span>
+  </div>`;
+  document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet();render()});
+  document.querySelectorAll('#v-cijfers details.tt').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.v):open.delete(d.dataset.v)});
+}
+function vakHtml(v,c,i){
+  const s=status(c,SET.doel);
+  const alt=c.Wr?[6,7,8].map(d=>{const n=c.nodig(d);return `voor een ${d}: ${n<=1?'al goed':n>10?'niet haalbaar':f1(n)}`}).join(' · '):'';
+  const dis=canWrite?'':'disabled';
+  const rows=(v.toetsen||[]).map(t=>{const cf=num(t.cijfer);return `<tr>
+    <td class="p">P${esc(t.periode)}</td>
+    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}</td>
+    <td><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" value="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}></td>
+    <td><input class="in w${t.wegingOnzeker?' q':''}" id="w-${v.id}-${t.id}" inputmode="decimal" data-v="${v.id}" data-t="${t.id}" data-f="weging" value="${esc(t.weging)}" aria-label="Weging ${esc(t.naam)}" ${dis}></td>
+    <td><input class="in${cf!=null&&cf<5.5?' low':''}" id="c-${v.id}-${t.id}" inputmode="decimal" placeholder="–" data-v="${v.id}" data-t="${t.id}" data-f="cijfer" value="${esc(t.cijfer??'')}" aria-label="Cijfer ${esc(t.naam)}" ${dis}></td>
+    <td>${t.eigen&&canWrite?`<button class="x" data-del="${v.id}|${t.id}" aria-label="Verwijder toets">×</button>`:''}</td></tr>`}).join('');
+  return `<div class="card vak">
+    <div class="vhead"><span class="sq" style="background:var(${COL[(v.volgorde??i)%COL.length]})">${esc(v.afk)}</span>
+      <div class="nm"><b>${esc(v.naam)}</b><span class="sub" style="font-size:.85rem">${c.Wd?`${(v.toetsen||[]).filter(t=>num(t.cijfer)!=null).length} cijfers`:'nog geen cijfers'} · nog ${c.nr} ${c.nr===1?'toets':'toetsen'}</span></div>
+      <div class="gem"><b>${f1(c.gem)}</b><small>gemiddeld</small></div></div>
+    <div class="need ${s.k}"><span class="big">${s.t}</span>${alt?`<span class="alt">${alt}</span>`:''}</div>
+    <details class="tt" data-v="${v.id}" ${open.has(v.id)?'open':''}><summary>Toetsen, data en cijfers</summary>
+      <div class="tw"><table><tr><th>Per.</th><th>Toets</th><th>Datum</th><th>Weging</th><th>Cijfer</th><th></th></tr>${rows}</table></div>
+      <div class="row" style="margin-top:8px;justify-content:space-between">
+        <label class="sub" style="font-size:.9rem">Lesuren per week <input class="in w" id="l-${v.id}" inputmode="numeric" data-v="${v.id}" data-f="lesuren" value="${esc(v.lesuren??'')}" ${dis}></label>
+        ${canWrite?`<button class="btn ghost" data-add="${v.id}">+ Toets erbij</button>`:''}</div>
+    </details></div>`;
+}
+
+/* ---------- tab: week ---------- */
+function rWeek(){
+  const ma=monday(dag),days=[...Array(7)].map((_,i)=>addDays(ma,i));
+  const P=days.map(planMin),G=days.map(gedaanMin),max=Math.max(60,...P,...G);
+  const totP=P.reduce((a,b)=>a+b,0),totG=G.reduce((a,b)=>a+b,0);
+  const perVak={},lab=id=>id==='hw'?'<b>HW</b>':id==='sprint'?'<b>SP</b>':'<b>?</b>';days.forEach(d=>{blokken(d).forEach(b=>{perVak[b.vak]=perVak[b.vak]||{p:0,g:0};perVak[b.vak].p+=b.min});
+    logDag(d).forEach(e=>{perVak[e.vak]=perVak[e.vak]||{p:0,g:0};perVak[e.vak].g+=Math.round(e.sec?e.sec/60:(e.min||0))})});
+  const vk=Object.entries(perVak).sort((a,b)=>b[1].p-a[1].p);
+  const dis=canWrite?'':'disabled';
+  $('#v-week').innerHTML=`
+  <div class="card stack">
+    <div class="daynav"><button class="btn ghost" id="wprev" aria-label="Vorige week">←</button><b>Week van ${nice(ma)}</b><button class="btn ghost" id="wnext" aria-label="Volgende week">→</button></div>
+    <div class="row" style="justify-content:space-between"><span><b>${mins(totG)}</b> <span class="sub">gedaan van ${mins(totP)} gepland</span></span><span class="sub">${totP?Math.round(totG/totP*100):0}%</span></div>
+    <div class="wk" role="img" aria-label="Minuten per dag, gepland en gedaan">${days.map((d,i)=>`<div class="col"><span class="val">${G[i]||''}</span><div class="bars"><div class="plan" style="height:${P[i]/max*100}%"></div><div class="done" style="height:${G[i]/max*100}%"></div></div><span class="lbl" style="${d===today()?'font-weight:700;color:var(--ink)':''}">${DAGEN[pd(d).getDay()]}${startDag()&&d>=startDag()&&d<=today()?(gehaald(d)?' ✓':' ·'):''}</span></div>`).join('')}</div>
+    <div class="legend"><span><i style="border:1.5px dashed var(--soft)"></i>gepland</span><span><i style="background:var(--ok)"></i>gedaan</span></div>
+  </div>
+  <div class="card stack"><span class="tag">Per vak deze week</span>
+    ${vk.length?vk.map(([id,x])=>{const v=vakOf(id);return `<div class="vbar"><span>${v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:lab(id)}</span><div class="tr"><i style="width:${x.p?Math.min(100,x.g/x.p*100):(x.g?100:0)}%"></i></div><span class="nr">${x.g} / ${x.p} min</span></div>`}).join(''):'<p class="sub">Nog niets gepland of gedaan deze week.</p>'}
+  </div>
+  <div class="row" style="justify-content:space-between"><span class="sub" style="font-size:.9rem">Ingelogd als ${esc(window.WIE||'')}</span><button class="link" id="logout">Uitloggen</button></div>
+  <details class="card"><summary style="cursor:pointer;font-weight:700">Instellingen van het leerplan</summary>
+    <div class="set" style="margin-top:12px">
+      <label for="s-start">Vaste starttijd</label><input class="tm" type="time" id="s-start" data-s="start" value="${esc(SET.start)}" ${dis}>
+      <label for="s-basis">Huiswerk per lesuur (min)</label><input class="in" id="s-basis" data-s="basis" inputmode="numeric" value="${SET.basis}" ${dis}>
+      <label for="s-blok">Lengte van een blok (min)</label><input class="in" id="s-blok" data-s="blok" inputmode="numeric" value="${SET.blok}" ${dis}>
+      <label for="s-tn">Totale leertijd gewone toets (min)</label><input class="in" id="s-tn" data-s="totNormaal" inputmode="numeric" value="${SET.totNormaal}" ${dis}>
+      <label for="s-tz">Totale leertijd zware toets (min)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
+      <label for="s-ms">Maximaal per schooldag, alles samen (min)</label><input class="in" id="s-ms" data-s="maxDagSchool" inputmode="numeric" value="${SET.maxDagSchool}" ${dis}>
+      <label for="s-mw">Leren op vrijdag en zaterdag (min)</label><input class="in" id="s-mw" data-s="maxDagWeekend" inputmode="numeric" value="${SET.maxDagWeekend}" ${dis}>
+      <label for="s-bm">Bijhouden na huiswerk, per vak (min)</label><input class="in" id="s-bm" data-s="bijMin" inputmode="numeric" value="${SET.bijMin}" ${dis}>
+      <label for="s-om">Dagelijks oefenen in de app (min)</label><input class="in" id="s-om" data-s="oefenMin" inputmode="numeric" value="${SET.oefenMin}" ${dis}>
+      <label for="s-sm">Lengte van een sprint (min)</label><input class="in" id="s-sm" data-s="sprintMin" inputmode="numeric" value="${SET.sprintMin}" ${dis}>
+    </div>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Na huiswerk voor een vak dat in de app zit, komt bijhouden: dezelfde paragraaf in de app. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint.</p>
+  </details>`;
+  $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
+  $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
+  document.querySelectorAll('[data-s]').forEach(el=>el.onchange=()=>{const k=el.dataset.s;
+    if(k==='start'){SET.start=el.value||DEF.start}else{const n=num(el.value);if(n==null||n<0||n>600){el.value=SET[k];return}SET[k]=Math.round(n)}
+    saveSet();render()});
+}
+
+/* ---------- invoer cijfers ---------- */
+$('#v-cijfers').addEventListener('change',e=>{
+  const el=e.target;if(!el.dataset.f||!el.dataset.v)return;
+  const v=vakOf(el.dataset.v);if(!v)return;
+  if(el.dataset.f==='lesuren'){const n=num(el.value);v.lesuren=n==null?null:Math.max(0,Math.round(n));saveVak(v);render();return}
+  const t=v.toetsen.find(x=>x.id===el.dataset.t);if(!t)return;
+  const f=el.dataset.f;let val=el.value.trim();
+  if(f==='weging'||f==='cijfer'){const n=num(val);
+    if(val!==''&&(n==null||n<0||(f==='cijfer'&&(n<1||n>10)))){el.value=t[f]??'';stateEl.textContent='Vul een cijfer tussen 1 en 10 in.';return}
+    val=val===''?(f==='weging'?1:null):Math.round(n*10)/10;
+    if(f==='weging')t.wegingOnzeker=false;}
+  if(f==='datum')val=val||null;
+  if(t[f]===val)return;
+  t[f]=val;stateEl.textContent='';saveVak(v);render();
+});
+$('#v-cijfers').addEventListener('click',e=>{
+  const a=e.target.closest('[data-add]'),d=e.target.closest('[data-del]');
+  if(a){const v=vakOf(a.dataset.add);v.toetsen.push({id:'e'+Date.now().toString(36),periode:2,naam:'Overhoring',weging:1,cijfer:null,datum:null,eigen:true});open.add(v.id);saveVak(v);render();}
+  if(d){const [vid,tid]=d.dataset.del.split('|');const v=vakOf(vid);v.toetsen=v.toetsen.filter(t=>t.id!==tid);saveVak(v);render();}
+});
+
+/* ---------- tabs en tekenen ---------- */
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{flushAct();if(b.dataset.tab==='oefenen'&&tab==='oefenen'&&Oefen.cur){Oefen.stop()}tab=b.dataset.tab;try{localStorage.setItem('tab',tab)}catch(e){};render()});
+const GELADEN={};
+function render(){
+  SCHED=null;
+  if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen)stempelBij();
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
+  ['vandaag','oefenen','cijfers','week'].forEach(t=>$('#v-'+t).hidden=t!==tab);
+  const foc=document.activeElement&&document.activeElement.id;
+  if(tab==='vandaag')rVandaag();else if(tab==='oefenen')rOefenen();else if(tab==='cijfers')rCijfers();else rWeek();
+  if(foc){const el=document.getElementById(foc);if(el&&el!==document.activeElement)el.focus()}
+}
+
+Oefen.ctx=oefenCtx();
+
+/* ---------- opslag in Supabase (tabel "docs": coll, id, data) ----------
+   Zelfde vorm als de opslag die de pagina gebruikt: collection(c).onSnapshot / doc(id).set */
+let SB=null;
+function loginForm(msg){return new Promise(res=>{
+  document.querySelector('.tabs').hidden=true;document.getElementById('app').classList.add('login');
+  stateEl.innerHTML=`<form id="lf" class="card stack" style="max-width:420px">
+    <b>Inloggen</b><span class="sub" style="font-size:.9rem">${msg||'Log in met het account dat je van je ouder hebt gekregen.'}</span>
+    <label>E-mail<br><input class="nm" id="lf-e" type="email" autocomplete="username" required></label>
+    <label>Wachtwoord<br><input class="nm" id="lf-p" type="password" autocomplete="current-password" required></label>
+    <button class="btn">Inloggen</button><button type="button" class="link" id="lf-new">Nog geen account? Maak er een aan</button><span id="lf-m" style="color:var(--bad)"></span></form>`;
+  document.getElementById('lf-new').onclick=async()=>{const em=document.getElementById('lf-e').value.trim(),pw=document.getElementById('lf-p').value,m=document.getElementById('lf-m');
+    if(!em||pw.length<6){m.textContent='Vul je e-mail in en een wachtwoord van minstens 6 tekens, en tik dan nog een keer.';return}
+    const {data,error}=await SB.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
+    if(error){m.textContent='Account maken lukte niet: '+error.message;return}
+    if(data.session){stateEl.textContent='';document.querySelector('.tabs').hidden=false;document.getElementById('app').classList.remove('login');res(data.session);return}
+    m.style.color='var(--ok)';m.textContent='Gelukt. Open de mail van Supabase en tik op de link. Kom daarna terug en log in.'};
+  document.getElementById('lf').onsubmit=async e=>{e.preventDefault();
+    const {data,error}=await SB.auth.signInWithPassword({email:document.getElementById('lf-e').value.trim(),password:document.getElementById('lf-p').value});
+    if(error){document.getElementById('lf-m').textContent='Dat klopt niet. Controleer je e-mail en wachtwoord.';return}
+    stateEl.textContent='';document.querySelector('.tabs').hidden=false;document.getElementById('app').classList.remove('login');res(data.session)};
+})}
+async function startDb(){
+  if(window.DEMO)return window.DEMO.db(); /* proefversie: voorbeeldgegevens, geen Supabase */
+  if(!window.supabase||!window.CONFIG||!CONFIG.url||CONFIG.url.includes('JOUW')){stateEl.textContent='De app is nog niet gekoppeld. Vul config.js in (zie de stappen).';return null}
+  SB=supabase.createClient(CONFIG.url,CONFIG.key);
+  let {data:{session}}=await SB.auth.getSession();
+  if(!session)session=await loginForm();
+  window.WIE=session.user.email;
+  const cache={},L={};
+  const snapC=(c,p)=>({docs:Object.entries(cache[c]||{}).map(([id,d])=>({id,exists:true,data:()=>d})),metadata:{fromCache:false,hasPendingWrites:!!p}});
+  const notify=(c,p)=>(L[c]||[]).forEach(f=>f(p));
+  async function load(c){const {data,error}=await SB.from('docs').select('id,data').eq('coll',c);
+    if(error)throw {code:'unavailable',message:error.message};
+    cache[c]=Object.fromEntries(data.map(r=>[r.id,r.data]));notify(c,false)}
+  const refresh=()=>Object.keys(L).forEach(c=>load(c).catch(()=>{}));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+  setInterval(()=>{if(!document.hidden&&!(Oefen.cur))refresh()},60000);
+  return {collection:c=>({
+    onSnapshot(f,err){(L[c]=L[c]||[]).push(p=>f(snapC(c,p)));load(c).catch(e=>err&&err(e));return()=>{}},
+    doc:id=>({
+      async set(b){cache[c]=cache[c]||{};cache[c][id]=JSON.parse(JSON.stringify(b));notify(c,true);
+        const {error}=await SB.from('docs').upsert({coll:c,id,data:b,updated_at:new Date().toISOString()});
+        if(error)throw {code:'unavailable',message:error.message}},
+      onSnapshot(f,err){(L[c]=L[c]||[]).push(()=>f({exists:!!(cache[c]||{})[id],data:()=>(cache[c]||{})[id]}));load(c).catch(e=>err&&err(e));return()=>{}}
+    })})};
+}
+
+(async()=>{
+  render();
+  const timer=setTimeout(()=>{if(!VAK.length&&!document.getElementById('lf'))stateEl.textContent='De gegevens zijn nog niet bereikbaar. Laad de pagina later opnieuw.'},10000);
+  db=await startDb();
+  if(!db){clearTimeout(timer);return}
+  const busy=()=>{const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='SELECT')};
+  db.collection('vakken').onSnapshot(snap=>{
+    if(!snap.metadata.fromCache)clearTimeout(timer);
+    VAK=snap.docs.map(d=>Object.assign({id:d.id},JSON.parse(JSON.stringify(d.data()))));GELADEN.vakken=1;
+    stateEl.textContent=VAK.length?'':'Er staan nog geen vakken in.';
+    if(busy()&&snap.metadata.hasPendingWrites)return;
+    render();
+  },()=>{clearTimeout(timer);stateEl.textContent='De cijfers konden niet geladen worden.'});
+  db.collection('instellingen').doc('plan').onSnapshot(s=>{const x=s.exists?s.data():{};SET=Object.assign({},DEF,x);if((x.v||1)<2){SET.maxDagWeekend=0;SET.v=2}if((SET.v||1)<3){SET.maxDagSchool=150;SET.bijMin=20;SET.v=3}if(!busy())render()},()=>{});
+  db.collection('oefen').onSnapshot(snap=>{GELADEN.oefen=1;snap.docs.forEach(d=>{if(Oefen.cur!==d.id)OEF[d.id]=JSON.parse(JSON.stringify(d.data()))});if(!busy())render()},()=>{});
+  db.collection('log').onSnapshot(snap=>{const L={};snap.docs.forEach(d=>L[d.id]=JSON.parse(JSON.stringify(d.data())));LOG=L;GELADEN.log=1;if(!busy())render()},()=>{});
+})();
+</script>
+
+</body></html>
