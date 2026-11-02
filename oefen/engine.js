@@ -375,7 +375,8 @@ window.Oefen=(()=>{
       if(!left())return;
       const head=`<div class="top"><span class="tag">${kind==='reken'?'Rekensprint':'Woordjessprint'}</span><b class="count" id="clk"></b></div>
         <div class="row" style="justify-content:space-between"><span><b style="color:var(--ok)">${S.good}</b> goed</span><span class="sub">${S.bad} fout</span></div>`;
-      if(kind==='reken'&&window.REKEN){const RK=window.REKEN;cur=RK.volgende(cur&&cur.k);const t0=Date.now();
+      if(kind==='reken'&&!window.REKEN){el.innerHTML=head+'<div class="card">De rekensprint wordt nog geladen. Ververs de pagina.</div>';return}
+      if(kind==='reken'){const RK=window.REKEN;cur=RK.volgende(cur&&cur.k);const t0=Date.now();
         const toon=v=>typeof v==='number'?RK.k(Math.round(v*100)/100):v;
         const klaar=(ok,skip)=>{RK.uitslag(cur.k,ok,Date.now()-t0);ok?S.good++:skip?S.skip=(S.skip||0)+1:S.bad++;
           el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">${skip?'Overgeslagen. ':''}Het was ${toon(cur.a)} ${cur.e&&cur.e!=='euro'?cur.e:''}${cur.e==='euro'?'euro':''}</div></div>`;
