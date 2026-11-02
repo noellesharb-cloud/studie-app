@@ -220,7 +220,7 @@ function drawZin(q,it,box,api){
 }
 
 const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a']];
-return {id:'du',naam:'Duits',afk:'DU',kop:'Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
+return {woorden:{taal:'Duits',typen:true,lijst:VOC.map(v=>[v[0],v[1]])},id:'du',naam:'Duits',afk:'DU',kop:'Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
   leer:['ws','ex'],reken:false,volledig:false,snapInVraag:false,
   custom:{rij:drawRij,zin:drawZin},
   PN:{ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};

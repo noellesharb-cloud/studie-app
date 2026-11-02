@@ -360,13 +360,16 @@ window.Oefen=(()=>{
     el=target;Oefen.cur='sprint';
     const gens=Object.values(VAKDATA).flatMap(v=>v.sprint||[]);
     const beg=Object.values(VAKDATA).flatMap(v=>v.BEG||[]);
+    const TL=kind==='woord'&&window.WOORD?window.WOORD.talen():[];
     const mask=(t,u)=>u.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…');
     S={kind,end:0,good:0,bad:0,sec};
     const intro=()=>{el.innerHTML=`${top('Vandaag')}<h2>${kind==='reken'?'Rekensprint':'Woordjessprint'}</h2>
-      <div class="card stack"><p>${kind==='reken'?'Korte sommen, zo snel als je kunt. Typ het antwoord en druk op Enter (een komma of een breuk als 3/4 mag), of tik het goede teken. Weet je het niet? Tik op <b>Sla over</b> en ga door: op een toets doe je dat ook.':'Je ziet een uitleg. Tik het goede begrip.'}</p>
+      <div class="card stack"><p>${kind==='reken'?'Korte sommen, zo snel als je kunt. Typ het antwoord en druk op Enter (een komma of een breuk als 3/4 mag), of tik het goede teken. Weet je het niet? Tik op <b>Sla over</b> en ga door: op een toets doe je dat ook.':(TL.length?'Echte woordjes, zo snel als je kunt. Kies de taal. Woordjes die je fout hebt, komen vaker terug; woordjes die je goed kent, minder vaak.':'Je ziet een uitleg. Tik het goede begrip.')}</p>
       <p class="sub">${Math.round(sec/60)} minuten. Zoveel mogelijk goed. Fout kost je niets, alleen tijd.</p></div>
-      <button class="btn" id="go">Start</button>`;
-      el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};el.querySelector('#go').onclick=run};
+      ${kind==='woord'&&TL.length?`<div class="stack">${TL.map(t=>{const st=window.WOORD.stand(t.id);return `<button class="sec" data-taal="${t.id}"><span class="sq" style="background:var(--c${TL.indexOf(t)%6+1})">${t.taal.slice(0,2).toUpperCase()}</span><span><b>${t.taal}</b><small>${t.n} woordjes · ${st.kent} ken je · ${st.lastig} nog lastig · ${st.nieuw} nieuw</small></span></button>`}).join('')}</div>`:'<button class="btn" id="go">Start</button>'}`;
+      el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
+      const g=el.querySelector('#go');if(g)g.onclick=run;
+      el.querySelectorAll('[data-taal]').forEach(b=>b.onclick=()=>{S.vid=b.dataset.taal;run()})};
     let cur,timer;
     const left=()=>Math.max(0,Math.ceil((S.end-Date.now())/1000));
     const clock=()=>{const l=left(),c=el.querySelector('#clk');if(c)c.textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0');if(!l)finish()};
@@ -389,6 +392,21 @@ window.Oefen=(()=>{
         if(cur.opts)el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===cur.a;x.classList.add(ok?'ok':'bad');klaar(ok)});
         else{const i=el.querySelector('#sa');i.focus();
           el.querySelector('#sf').onsubmit=e=>{e.preventDefault();if(!i.value.trim())return;klaar(RK.klopt(RK.lees(i.value),cur.a))}}
+      }else if(S.vid&&window.WOORD){const WD=window.WOORD;cur=WD.volgende(S.vid,cur&&cur.w&&cur.w[0]);const W=cur;
+        const klaar=ok=>{WD.uitslag(S.vid,W.w,ok);ok?S.good++:S.bad++;
+          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">${esc(W.w[0])} = ${esc(W.w[1])}</div></div>`;
+          el.querySelectorAll('#sf input,#sf button,[data-o]').forEach(x=>x.disabled=true);setTimeout(next,ok?300:1600)};
+        const de=W.taal==='Duits'?['ä','ö','ü','ß']:[];
+        el.innerHTML=head+`<div class="card q"><small class="sub">${W.typen?'Typ in het '+W.taal:'Wat betekent dit?'}</small><div style="font-size:1.5rem;margin-top:4px${W.taal==='Grieks'&&!W.typen?';font-family:var(--greek,inherit)':''}">${esc(W.vraag)}</div></div>`+
+          (W.typen?`<form id="sf" class="stack"><div class="row"><input id="sa" class="cell" style="width:220px;font-size:1.15rem;text-align:left" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Antwoord"><button class="btn">OK</button></div>${de.length?`<div class="row">${de.map(c=>`<button type="button" class="btn ghost" data-ch="${c}" style="min-width:44px">${c}</button>`).join('')}</div>`:''}<span class="sub" style="font-size:.85rem">Bij een zelfstandig naamwoord ook der, die of das.</span></form>`
+          :`<div class="opts" id="sf">${W.opts.map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`)+
+          `<div class="row" style="margin-top:8px"><button class="btn ghost" id="skip" type="button">Weet ik niet</button></div><div id="sfb"></div>`;
+        el.querySelector('#skip').onclick=()=>klaar(false);
+        if(W.typen){const i=el.querySelector('#sa');i.focus();
+          el.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{i.value+=b.dataset.ch;i.focus()});
+          el.querySelector('#sf').onsubmit=e=>{e.preventDefault();if(!i.value.trim())return;const ok=WD.kloptTyp(i.value,W.goed);i.classList.add(ok?'ok':'bad');klaar(ok)}}
+        else el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===W.goed;
+          el.querySelectorAll('[data-o]').forEach(y=>{if(y.dataset.o===W.goed)y.classList.add('ok');else if(y===x)y.classList.add('bad')});klaar(ok)});
       }else{const b=shuf(beg),[t,u]=b[0],opts=shuf([t,b[1][0],b[2][0],b[3][0]]);
         el.innerHTML=head+`<div class="card q">${mask(t,u)}</div><div class="opts">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join('')}</div>`;
         el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===t;ok?S.good++:S.bad++;
@@ -401,7 +419,7 @@ window.Oefen=(()=>{
       <div class="card stack"><div class="score">${S.good}</div><p>goed in ${Math.round(sec/60)} minuten. ${S.good>best.oud?'<b>Nieuw record!</b>':'Je record is '+best.oud+'.'}</p></div>
       ${kind==='reken'&&window.REKEN?`<div class="card stack"><b>Jouw niveau per soort</b><table class="tbl" style="width:100%">${window.REKEN.niveaus().map(x=>`<tr><td>${x.naam}</td><td style="white-space:nowrap">niveau ${x.l}/3</td><td class="sub" style="white-space:nowrap">${x.sec!=null?x.sec.toString().replace('.',',')+' s/som':''}</td></tr>`).join('')}</table><p class="sub" style="font-size:.9rem">Drie keer goed op rij: een niveau hoger. Sneller worden telt ook: kijk of de seconden per som omlaag gaan.</p></div>`:''}
       <div class="stack"><button class="btn" id="again">Nog een sprint</button><button class="btn ghost" id="hm">Naar vandaag</button></div>`;
-      el.querySelector('#again').onclick=()=>sprint(el,kind,sec);el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()}}
+      el.querySelector('#again').onclick=()=>{const v=S.vid;sprint(el,kind,sec);if(v&&kind==='woord'){S.vid=v;run()}};el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()}}
     intro();
   }
 
