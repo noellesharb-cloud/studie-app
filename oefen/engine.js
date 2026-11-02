@@ -31,7 +31,11 @@ window.Oefen=(()=>{
   const uitl=q=>hasSt(q)?uitw(q):q.u?`<div>${fmt(q.u)}</div>`:'';
   const begVan=p=>V.BEG.filter(b=>b[2]===p);
   const uitw=q=>`<ol class="uitw">${q.st.map(x=>`<li><div><div class="why">${fmt(x.t)}</div><div class="res">${fmt(x.s)}</div></div></li>`).join('')}</ol>`;
-  const form=(q,alt)=>(!alt||!q.v)?q:Object.assign({},q,{q:q.v.q,a:q.v.a??q.a,f:q.v.f??q.f,st:q.v.st??q.st});
+  const form=(q,alt)=>(!alt||!q.v)?q:typeof q.v==='function'?Object.assign({},q,{denk:''},q.v()):Object.assign({},q,{q:q.v.q,a:q.v.a??q.a,f:q.v.f??q.f,st:q.v.st??q.st});
+  /* getypt antwoord: komma, punt, minteken of breuk (3/4, -2/3) */
+  const lees=v=>{v=String(v).trim().replace(/\s/g,'').replace(/^[−–]/,'-').replace(/^\((.*)\)$/,'$1');const b=v.match(/^(-?\d+(?:[.,]\d+)?)\/(-?\d+)$/);if(b)return parseFloat(b[1].replace(',','.'))/+b[2];return v===''?NaN:Number(v.replace(',','.'))};
+  const zelfde=(x,a)=>isFinite(x)&&Math.abs(x-a)<=Math.max(0.006,Math.abs(a)*0.002);
+  const retryAlt=(id,it)=>typeof QM[id].v==='function'?true:it.alt?false:!!QM[id].v;
   const wrongIn=id=>ST.wrong.filter(x=>QM[x]&&QM[x].o===id).length;
   const pars=()=>[...new Set(V.SECS.filter(s=>s.par!=='mix').map(s=>s.par))];
   const leerPars=()=>V.leer||pars();
@@ -161,7 +165,7 @@ window.Oefen=(()=>{
   function kop(it,q,s,guided){
     return `<div class="top"><button class="link" id="stop">← Stoppen</button><span class="tag">${R.cleared.size} / ${R.total} klaar</span></div>
     <div class="bar"><i style="width:${Math.round(R.cleared.size/R.total*100)}%"></i></div>
-    ${it.retry?`<div class="again">${it.alt?'Deze had je net fout. Nog een keer, nu anders gevraagd!':'Deze had je net fout. Nog een keer!'}</div>`:it.old?`<div class="again">${it.alt?'Deze vraag had je eerder fout. Hij is nu anders gevraagd.':'Deze vraag had je eerder fout. Nog een keer!'}</div>`:''}
+    ${it.retry?`<div class="again">${q.gen?'Deze had je net fout. Nu dezelfde soort som met andere getallen: reken hem zelf uit.':it.alt?'Deze had je net fout. Nog een keer, nu anders gevraagd!':'Deze had je net fout. Nog een keer!'}</div>`:it.old?`<div class="again">${q.gen?'Deze soort som had je eerder fout. Nu met andere getallen: reken hem zelf uit.':it.alt?'Deze vraag had je eerder fout. Hij is nu anders gevraagd.':'Deze vraag had je eerder fout. Nog een keer!'}</div>`:''}
     <div class="row">${chip(s)}<span class="tag">${nrTag(q)}</span></div>
     <div class="card q">${fmt(q.q)}</div>
     ${!R.exam?`${q.denk?`<details class="denk"${guided?' open':''}><summary>Hoe pak ik dit aan?</summary>${fmt(q.denk)}</details>`:''}
@@ -172,6 +176,7 @@ window.Oefen=(()=>{
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
     if(q.t==='open')return askOpen(q,it,s);
+    if(q.in)return askTyped(q,it,s);
     const opts=shuf([[q.a,1],...q.f.map(x=>Array.isArray(x)?x:[x,''])]),guided=R.mode==='stap'&&hasSt(q),two=opts.some(o=>o[0].includes('<svg'));
     el.innerHTML=`${kop(it,q,s,guided)}
     <div id="steps" class="stack"></div>
@@ -187,9 +192,46 @@ window.Oefen=(()=>{
     el.querySelectorAll('.opt[data-k]').forEach(b=>b.onclick=()=>answer(q,opts,+b.dataset.k,it));
     scrollTo(0,0);
   }
+  /* zelf het antwoord intypen (varianten met nieuwe getallen) */
+  function askTyped(q,it,s){
+    const guided=R.mode==='stap'&&hasSt(q);
+    el.innerHTML=`${kop(it,q,s,guided)}
+    <div id="steps" class="stack"></div>
+    <div id="optwrap" class="stack" ${guided?'hidden':''}>
+      <span class="tag" id="kies">Reken het uit in je schrift. Typ dan het antwoord</span>
+      <form id="tf" class="card stack">${q.in.length===2&&q.in[0].lab==='x'&&q.in[1].lab==='y'?'<span class="sub">Eerst x, dan y</span>':''}
+        <div class="row" style="flex-wrap:wrap;gap:10px">${q.in.map((x,i)=>`<label class="row" style="gap:6px"><span>${x.lab}</span><input class="cell" style="width:90px;font-size:1.1rem" data-i="${i}" inputmode="text" autocomplete="off" aria-label="${x.lab}"></label>`).join('')}</div>
+        <span class="sub" style="font-size:.85rem">Een komma, een minteken of een breuk als 3/4 mag.</span>
+        <button class="btn" id="tok">Controleer</button></form>
+    </div>
+    ${!R.exam&&!guided&&hasSt(q)?'<button class="btn ghost" id="help">Help mij stap voor stap</button>':''}
+    <div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    const hb=el.querySelector('#help');if(hb)hb.onclick=()=>{hb.remove();R.helped[q.id]=1;guide(q,0)};
+    if(guided){R.helped[q.id]=1;guide(q,0)}else{const f=el.querySelector('#tf input');if(f)f.focus()}
+    el.querySelector('#tf').onsubmit=e=>{e.preventDefault();
+      const ins=[...el.querySelectorAll('#tf input')],val=ins.map(i=>lees(i.value));
+      if(val.some(v=>!isFinite(v))){el.querySelector('#kies').textContent='Vul elk vakje in met een getal';return}
+      let goed;
+      if(q.in.every(x=>x.set)){const want=q.in.map(x=>x.v),left=want.slice();goed=val.map(v=>{const j=left.findIndex(a=>zelfde(v,a));if(j<0)return false;left.splice(j,1);return true})}
+      else goed=val.map((v,i)=>zelfde(v,q.in[i].v));
+      ins.forEach((i,j)=>{i.readOnly=true;i.classList.add(goed[j]?'ok':'bad')});
+      el.querySelector('#tok').remove();
+      const ok=goed.every(Boolean),hb2=el.querySelector('#help');if(hb2)hb2.remove();
+      if(!(q.id in R.first)){R.first[q.id]=ok;if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);save()}
+      if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
+      else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
+      const ul=uitl(q),fb=el.querySelector('#fb');
+      fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
+        :`<div class="fb bad"><div class="head">Niet goed</div><div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
+          ${!R.exam?'<p class="why" style="margin-top:10px">Deze soort som komt zo nog een keer terug, met andere getallen.</p>':''}</div>`;
+      fb.insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>');
+      fb.querySelector('#next').onclick=()=>{R.i++;ask()};fb.scrollIntoView({behavior:smooth,block:'start'})};
+    scrollTo(0,0);
+  }
   function guide(q,n){
     const box=el.querySelector('#steps');
-    if(n>=q.st.length){const w=el.querySelector('#optwrap');w.hidden=false;el.querySelector('#kies').textContent='Alle stappen gedaan. Kies nu het goede antwoord';w.scrollIntoView({behavior:smooth,block:'nearest'});return}
+    if(n>=q.st.length){const w=el.querySelector('#optwrap');w.hidden=false;el.querySelector('#kies').textContent=q.in?'Alle stappen gedaan. Typ nu het antwoord':'Alle stappen gedaan. Kies nu het goede antwoord';w.scrollIntoView({behavior:smooth,block:'nearest'});return}
     const x=q.st[n],d=document.createElement('div');d.className='step';
     d.innerHTML=`<span class="tag">Stap ${n+1} van ${q.st.length}</span><div>${fmt(x.t)}</div>`+
       (x.mc?`${x.v?`<b>${fmt(x.v)}</b>`:''}<div class="opts">${shuf(x.mc).map(o=>`<button class="opt" data-ok="${o[1]===1?1:0}" data-why="${encodeURIComponent(o[1]===1?'':o[1])}">${fmt(o[0])}</button>`).join('')}</div><div class="sw"></div>`
@@ -215,7 +257,7 @@ window.Oefen=(()=>{
       if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);
       save();}
     if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
-    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:it.alt?false:!!QM[q.id].v})}
+    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
     const fb=el.querySelector('#fb');
     const ul=uitl(q);
     fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
@@ -233,7 +275,7 @@ window.Oefen=(()=>{
       if(ok&&R.was.has(q.id))ST.wrong=ST.wrong.filter(x=>x!==q.id);
       save();}
     if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
-    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:it.alt?false:!!QM[q.id].v})}
+    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
     const fb=el.querySelector('#fb');
     fb.innerHTML=(html||'')+(!ok&&!R.exam?'<p class="why" style="margin-top:10px">Deze komt zo nog een keer terug.</p>':'')+'<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>';
     fb.querySelector('#next').onclick=()=>{R.i++;ask()};
