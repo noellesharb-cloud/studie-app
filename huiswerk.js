@@ -35,7 +35,7 @@ window.HUISWERK=[
 
   /* volgende week (nog niet compleet) */
   {id:'2026-11-09-ak',d:'2026-11-09',vak:'aardrijkskunde',t:'Taak 4: §3.4 Suezkanaal en Rode Zee',wat:['Bestudeer LB H3.4','Maak WB H3.4 opdracht 2, 3, 5, 6, 8','# Begrippen in je schrift (met betekenis) en leren','Containers, geopolitiek'],min:40,app:'ak',par:'3.4',opg:[2,3,5,6,8]},
-  {id:'2026-11-11-ak',d:'2026-11-11',vak:'aardrijkskunde',t:'Taak 5: §3.5 Turkije',wat:['Bestudeer LB H3.5','Maak WB H3.5 opdracht 1, 2, 3, 5, 6','# Begrippen in je schrift (met betekenis) en leren','Opkomend land, middenklasse, ruimtelijke ongelijkheid, toeristen','# Woensdag 11-11 in de les','Controle huiswerk H3 en oefentoets H3'],min:40,app:'ak',par:'3.5'},
+  {id:'2026-11-11-ak',d:'2026-11-11',vak:'aardrijkskunde',t:'Taak 5: §3.5 Turkije',wat:['Bestudeer LB H3.5','Maak WB H3.5 opdracht 1, 2, 3, 5, 6','# Begrippen in je schrift (met betekenis) en leren','Opkomend land, middenklasse, ruimtelijke ongelijkheid, toeristen','# Woensdag 11-11 in de les','Controle huiswerk H3 en oefentoets H3'],min:40,app:'ak',par:'3.5',opg:[1,2,3,5,6]},
   {id:'2026-11-09-na',d:'2026-11-09',vak:'natuurkunde',t:'L5.03',wat:['Maken ✎ o.11-14','Maken ★ o.12-15'],min:25,app:'na',par:'5.1',opg:[11,12,13,14,15]},
   {id:'2026-11-10-na',d:'2026-11-10',vak:'natuurkunde',t:'L5.04',wat:['Uitwerken practicum H5P12 IJking thermometer'],min:30}
 ];
