@@ -398,8 +398,10 @@ window.Oefen=(()=>{
   function sprint(target,kind,sec){
     el=target;Oefen.cur='sprint';
     const gens=Object.values(VAKDATA).flatMap(v=>v.sprint||[]);
-    const beg=Object.values(VAKDATA).flatMap(v=>v.BEG||[]);
-    const TL=kind==='woord'&&window.WOORD?window.WOORD.talen():[];
+    /* woordjes en begrippen alleen van vakken met een komende toets (de rekensprint is algemeen rekenen) */
+    const mee=id=>!Oefen.ctx.metToets||Oefen.ctx.metToets(id);
+    const beg=Object.values(VAKDATA).filter(v=>mee(v.id)).flatMap(v=>v.BEG||[]);
+    const TL=kind==='woord'&&window.WOORD?window.WOORD.talen().filter(t=>mee(t.id)):[];
     const mask=(t,u)=>u.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…');
     S={kind,end:0,good:0,bad:0,sec};
     const intro=()=>{el.innerHTML=`${top('Vandaag')}<h2>${kind==='reken'?'Rekensprint':'Woordjessprint'}</h2>
@@ -407,6 +409,7 @@ window.Oefen=(()=>{
       <p class="sub">${Math.round(sec/60)} minuten. Zoveel mogelijk goed. Fout kost je niets, alleen tijd.</p></div>
       ${kind==='woord'&&TL.length?`<div class="stack">${TL.map(t=>{const st=window.WOORD.stand(t.id);return `<button class="sec" data-taal="${t.id}"><span class="sq" style="background:var(--c${TL.indexOf(t)%6+1})">${t.taal.slice(0,2).toUpperCase()}</span><span><b>${t.taal}</b><small>${t.n} woordjes · ${st.kent} ken je · ${st.lastig} nog lastig · ${st.nieuw} nieuw</small></span></button>`}).join('')}</div>`:'<button class="btn" id="go">Start</button>'}`;
       el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
+      if(kind==='woord'&&!TL.length&&beg.length<4){const g0=el.querySelector('#go');if(g0)g0.outerHTML='<div class="card">Er komt nu geen toets met woordjes of begrippen. Doe een rekensprint.</div>'}
       const g=el.querySelector('#go');if(g)g.onclick=run;
       el.querySelectorAll('[data-taal]').forEach(b=>b.onclick=()=>{S.vid=b.dataset.taal;run()})};
     let cur,timer;
