@@ -75,9 +75,10 @@ window.Oefen=(()=>{
       <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li></ol></div>`:''}
     <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
       ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
-    ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)}</div>`).join('')}
+    ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)+(tvVak()&&tvParIds(p).length?`<button class="sec" data-tvp="${p}"><span class="sq" style="background:var(--line)">✎</span><span><b>Toetsvorm</b><small>5 vragen zonder opties en zonder hulp: zelf uitwerken op papier, dan nakijken</small></span></button>`:'')}</div>`).join('')}
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
+      ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
       <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
       <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?'Ze komen terug in andere woorden.':'Nog niets fout gedaan'}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
@@ -95,6 +96,8 @@ window.Oefen=(()=>{
     if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
+    if(q('#tvboek'))q('#tvboek').onclick=()=>start('tvorm',tvIds(),'Oefentoets uit het boek');
+    el.querySelectorAll('[data-tvp]').forEach(b=>b.onclick=()=>start('tvorm',tvParIds(b.dataset.tvp),'Toetsvorm '+(V.PN[b.dataset.tvp]||b.dataset.tvp),null,b.dataset.tvp));
     el.querySelector('#fouten').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
     el.querySelector('#spiek').onclick=()=>spiek();
     if(q('#b-diag'))q('#b-diag').onclick=()=>start('diag',shuf(diagIds(B.par)),'Instaptoets rekenregels',null,B.par);
@@ -135,10 +138,12 @@ window.Oefen=(()=>{
     ${V.SNAP[id]?`<div class="card snapcard"><span class="tag">Snap het: waarom werkt dit?</span>${V.snapHtml(id)}</div>`:''}
     <div class="stack"><button class="btn" id="oef">Oefenen (${ids.length} vragen)</button>
       ${V.Q.some(q=>q.o===id&&hasSt(q)&&!q.type)?'<button class="btn ghost" id="stap">Stap voor stap: ik krijg bij elke vraag hulp</button>':''}
+      ${tvVak()&&V.Q.some(q=>q.o===id&&hasSt(q)&&!q.type&&!q.in&&q.t!=='open')?'<button class="btn ghost" id="tvs">Toetsvorm: zonder antwoorden om uit te kiezen en zonder hulp</button>':''}
       ${w?`<button class="btn ghost" id="sfout" style="border-color:var(--bad)">Mijn foute vragen in dit onderdeel (${w})</button>`:''}</div>`;
     el.querySelector('#back').onclick=home;
     el.querySelector('#oef').onclick=()=>start('oefen',shuf(ids),s.name,id);
     const sb=el.querySelector('#stap');if(sb)sb.onclick=()=>start('stap',ids,s.name,id);
+    const tb=el.querySelector('#tvs');if(tb)tb.onclick=()=>start('tvorm',shuf(V.Q.filter(q=>q.o===id&&hasSt(q)&&!q.type&&!q.in&&q.t!=='open').map(q=>q.id)),s.name+' · toetsvorm',id);
     const sf=el.querySelector('#sfout');if(sf)sf.onclick=()=>start('fout',shuf(ST.wrong.filter(x=>QM[x].o===id)),s.name+' · foute vragen',id);
     scrollTo(0,0);
   }
@@ -200,8 +205,11 @@ window.Oefen=(()=>{
     if(R.i>=R.queue.length)return end();
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
+    /* vakken met open toetsen (levensbeschouwing): meerkeuzevraag met open versie wordt open gesteld, behalve bij opwarmen en herkansing */
+    if(QM[it.id].open&&R.mode!=='opwarm'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
     if(q.t==='open')return askOpen(q,it,s);
     if(q.in)return askTyped(q,it,s);
+    if(tvorm(q,it))return askToets(q,it,s);
     const opts=shuf([[q.a,1],...q.f.map(x=>Array.isArray(x)?x:[x,''])]),guided=R.mode==='stap'&&hasSt(q),two=opts.some(o=>o[0].includes('<svg'));
     el.innerHTML=`${kop(it,q,s,guided)}
     <div id="steps" class="stack"></div>
@@ -280,6 +288,7 @@ window.Oefen=(()=>{
       if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
       /* pas uit de stapel als hij in een LATERE ronde in één keer goed gaat */
       if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);
+      if(ok&&!R.exam&&!R.stepErr[q.id]&&hasSt(q)){ST.ok=ST.ok||[];if(!ST.ok.includes(q.id))ST.ok.push(q.id)}
       save();}
     if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
     else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
@@ -305,6 +314,47 @@ window.Oefen=(()=>{
     fb.innerHTML=(html||'')+(!ok&&!R.exam?'<p class="why" style="margin-top:10px">Deze komt zo nog een keer terug.</p>':'')+'<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>';
     fb.querySelector('#next').onclick=()=>{R.i++;ask()};
   }
+  /* ---------- toetsvorm (wiskunde, natuurkunde): de vraag zonder opties en zonder hulp, zoals op de toets.
+     Ze werkt de som uit op papier, typt het eindantwoord (als dat een getal is), ziet daarna de hele uitwerking
+     en vinkt aan welke stappen ze zelf goed had. Komt in toetsvorm: alles in 'Oefentoets uit het boek' en 'Toetsvorm' per paragraaf,
+     en in gewone rondes elke vraag die ze eerder al in één keer goed had (niet bij huiswerk, opwarmen of een herkansing). */
+  const eindGetal=a=>{const t=String(a??'').replace(/\$/g,'').replace(/−/g,'-').replace(/^\s*[a-zA-Z]\s*=\s*/,'').trim();
+    const m=t.match(/^(-?\d[\d.]*(?:,\d+)?)\s*[a-zA-Z°%³²µ\/^\d .]*$/);if(!m)return null;
+    let x=m[1];if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^\-?\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,'');
+    const n=Number(x);return isFinite(n)?n:null};
+  const tvVak=()=>V.reken!==false;
+  function tvorm(q,it){if(!tvVak()||!hasSt(q)||q.type||q.t==='open'||q.in||it.retry)return false;
+    if(R.mode==='tvorm')return true;
+    return !R.exam&&!['stap','opwarm','diag','fout'].includes(R.mode)&&(ST.ok||[]).includes(q.id)}
+  function askToets(q,it,s){
+    const g=eindGetal(q.a);
+    el.innerHTML=`${kop(it,q,s,false)}
+    <div class="card stack"><span class="tag">Toetsvorm</span><p>${g!=null?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
+      ${g!=null?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`:''}
+      <button class="btn" id="see">Klaar: laat de uitwerking zien</button><div id="kp"></div></div><div id="fb"></div>`;
+    el.querySelectorAll('details.denk').forEach(d=>d.remove());
+    el.querySelector('#stop').onclick=stopRonde;
+    const ti=el.querySelector('#ta');if(ti)ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};
+    el.querySelector('#see').onclick=()=>{
+      const typed=ti?ti.value.trim():'',goed=g==null?null:typed!==''&&zelfde(lees(typed),g);
+      if(ti){ti.disabled=true;ti.classList.add(goed?'ok':'bad')}
+      el.querySelector('#see').remove();
+      const box=el.querySelector('#kp');
+      box.innerHTML=`${g!=null?(goed?'<div class="fb ok"><div class="head">Je eindantwoord klopt.</div>Kijk nu of je uitwerking ook klopt.</div>':`<div class="fb bad"><div class="head">${typed?'Je eindantwoord klopt niet.':'Je hebt geen eindantwoord ingevuld.'}</div>Het antwoord is ${fmt(q.a)}. Zoek in de uitwerking waar het misging.</div>`):''}
+        <div class="tip stack"><b>${g!=null?'De uitwerking: vink aan welke stappen jij ook goed op papier had':'Het antwoord: vink aan welke punten jij ook had'}</b>
+        <ul class="kp">${q.st.map((x,i)=>`<li><label><input type="checkbox" data-i="${i}"><span><span class="why">${fmt(x.t)}</span>${x.s?`<br><b>${fmt(x.s)}</b>`:''}</span></label></li>`).join('')}</ul>
+        ${g==null?`<div><b>Antwoord:</b> ${fmt(q.a)}</div>`:''}</div>
+        <div class="row" id="kb"><button class="btn" id="okb">Ik had alles goed</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
+      const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
+      const upd=()=>{okb.disabled=goed===false||!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
+      const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>')};
+      okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
+      box.scrollIntoView({behavior:smooth,block:'start'})};
+    scrollTo(0,0);
+  }
+  const tvIds=()=>V.Q.filter(q=>/^Toetsvoorb/.test(q.nr||'')).sort((a,b)=>String(a.nr).localeCompare(String(b.nr),'nl',{numeric:true})).map(q=>q.id);
+  const tvParIds=p=>shuf(V.Q.filter(q=>secOf(q.o).par===p&&hasSt(q)&&!q.type&&q.t!=='open'&&!q.in).map(q=>q.id)).slice(0,5);
   function askCustom(q,it,s){
     el.innerHTML=`${kop(it,q,s,R.mode==='stap')}<div id="teken"></div><div id="fb"></div>`;
     el.querySelector('#stop').onclick=stopRonde;
@@ -383,7 +433,7 @@ window.Oefen=(()=>{
       <button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':'Nieuwe ronde'}</button>
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
-    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
   }
 

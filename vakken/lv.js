@@ -145,6 +145,47 @@ const Q=[
   v:{q:'Geef twee redenen waarom lijden voor een moslim zin kan hebben.'}}
 ];
 
+/* open toetsvragen: de toets van levensbeschouwing bestaat uit open vragen. Een meerkeuzevraag met 'open' wordt in rondes,
+   paragraaftoets en proeftoets als open vraag gesteld (schrijven, dan kernpunten aanvinken). Meerkeuze blijft voor opwarmen en herkansing. */
+const OPEN={
+ m1:{q:'Wat gebeurde er rond 570 n.Chr.?',k:['Mohammed werd (waarschijnlijk) geboren','in Mekka']},
+ m2:{q:'Wat gebeurde er rond 610 n.Chr.?',k:['Mohammed begon te prediken','nadat God zich voor het eerst aan hem had geopenbaard']},
+ m3:{q:'Wat gebeurde er in 622 n.Chr., en waarom?',k:['Mohammed en zijn volgelingen vertrokken van Mekka naar Medina','omdat de meeste bewoners van Mekka vonden dat hij onrust bracht (het verzet werd te groot)']},
+ m4:{q:'Wat gebeurde er rond 630 n.Chr.?',k:['Mekka gaf zich over aan Mohammed (niet andersom)','velen bekeerden zich alsnog tot de islam']},
+ m5:{q:'Wat gebeurde er in 632 n.Chr.?',k:['Mohammed stierf','hij werd opgevolgd door een kalief, een politiek leider']},
+ m6:{q:'Wat gebeurde er in 661 n.Chr., en waardoor?',k:['de moslimgemeenschap scheidde in soennieten en sjiieten','door problemen over het leiderschap (enkele leiders werden vermoord)']},
+ m7:{q:'Wat was de belangrijkste boodschap van Mohammed?',k:['er is maar één god']},
+ m8:{q:'Mohammed was meer dan alleen een religieus leider. Leg uit.',k:['hij was een religieus leider','hij was ook een politiek leider','en een militair leider']},
+ m9:{q:'Heeft Mohammed de islam helemaal zelf bedacht? Leg uit.',k:['nee','in zijn omgeving woonden joden, christenen en stammen met eigen goden','hij voegde zijn eigen ideeën toe aan die godsdiensten']},
+ m10:{q:'Welke twee groepen moslims zijn er sinds 661, en welke groep is het grootst?',k:['soennieten en sjiieten','de soennieten zijn het grootst: ongeveer 85%']},
+ m13:{q:'Waar en wanneer is de islam ontstaan?',k:['op het Arabisch schiereiland','in de zevende eeuw']},
+ g1:{q:'Wat betekent het woord "Allah"? Is het een eigennaam?',k:['het betekent "de God" (samentrekking van al + illah)','het is geen eigennaam']},
+ g2:{q:'Mohammed benadrukte dat God "enig" is. Wat bedoelde hij daarmee, en welk christelijk idee wees hij daarom af?',k:['God is ondeelbaar: niets of niemand deelt in zijn almacht','daarom wees hij de drie-eenheid af (Vader, Zoon en Heilige Geest)']},
+ g3:{q:'Wat is monotheïsme? Noem een voorbeeld.',k:['een godsdienst met één God','bijvoorbeeld de islam']},
+ g4:{q:'Leg uit waarom het in de islam verboden is God af te beelden.',k:['de mens kan nooit helemaal bevatten wie God is','daarom kun je nooit een goede afbeelding van God maken']},
+ g5:{q:'Hoeveel namen kent de islam voor God, en waarvoor dienen die namen? Noem ook twee voorbeelden.',k:['99 namen','ze helpen de mens om iets van God te begrijpen','twee voorbeelden, zoals de Enige, de Barmhartige, de Schepper, de Alwetende, de Genadevolle']},
+ g6:{q:'Wat is een subha? Leg uit waar de kralen voor staan.',k:['een bidsnoer met 100 kralen','99 kralen staan voor de 99 namen van God','de 100e kraal staat voor een onbekende naam: God kun je nooit helemaal kennen']},
+ g7:{q:'Noem een overeenkomst tussen het christelijke en het islamitische beeld van God.',k:['allebei geloven ze dat er maar één God is']},
+ g8:{q:'Leg uit wat het verschil is tussen het christelijke en het islamitische beeld van God.',k:['christenen geloven in een drie-eenheid: Vader, Zoon en Heilige Geest','voor moslims is God enig en ondeelbaar']},
+ e1:{q:'Wat doen engelen volgens de islam?',k:['ze vormen de verbinding tussen God en de schepping','ze brengen het gedrag van mensen in kaart','ze ontvangen de zielen van overledenen']},
+ e2:{q:'Wie is Djibriel, en waarom is hij belangrijk?',k:['de engel Gabriël','hij openbaarde de Koran aan Mohammed','hij vertelde Maria dat Jezus zou komen']},
+ e3:{q:'Wat is een profeet volgens de islam? Noem twee profeten die ook in de Bijbel voorkomen.',k:['een gezant of zendeling van God','twee voorbeelden, zoals Abraham, Mozes, Jacob of Jezus']},
+ e4:{q:'Welke drie profeten uit het Nieuwe Testament komen in de Koran voor?',k:['Zacharias','Johannes de Doper','Jezus']},
+ e5:{q:'Leg uit waarom Mohammed volgens moslims de laatste profeet is.',k:['eerdere profeten spraken tot één volk (bijvoorbeeld de joden)','Mohammed sprak tot de hele mensheid']},
+ k1:{q:'Welke eerdere boeken worden in de Koran genoemd, en uit welk deel van de Bijbel komen ze?',k:['de Tora (Taura) en de psalmen van David: uit de TeNaCh, ongeveer het Oude Testament','de evangeliën: uit het Nieuwe Testament']},
+ k2:{q:'Wat vond Mohammed van de joodse en christelijke heilige boeken? En wat is de Koran volgens moslims?',k:['ze bevatten veel waarheden','maar het zijn minder geslaagde pogingen om Gods openbaring te beschrijven','de Koran is de volledige en perfecte overschrijving van de Koran die bij God bestaat: de laatste openbaring']},
+ k3:{q:'Wat betekent "openbaren"?',k:['kenbaar maken aan mensen']},
+ k4:{q:'Leg uit hoe de Bijbel is opgebouwd. Gebruik: Oude Testament, Nieuwe Testament, TeNaCh en evangeliën.',k:['de Bijbel bestaat uit het Oude en het Nieuwe Testament','het Oude Testament is ongeveer de TeNaCh, de joodse bijbel','de evangeliën staan in het Nieuwe Testament']},
+ o1:{q:'Wat is het laatste oordeel, en wie weet wanneer het komt?',k:['de dag waarop God de daden van alle mensen weegt (ook: Dag des oordeels of Dag van de opstanding)','alleen God weet wanneer']},
+ o2:{q:'Beschrijf wat er volgens de islam gebeurt bij de opstanding uit de dood.',k:['de graven gaan open en de doden worden opgewekt','iedereen is dan 33 jaar oud','de opstanding is lichamelijk']},
+ o3:{q:'Waarom is de opstanding volgens de islam lichamelijk?',k:['alleen met een lichaam kan de mens hemels genieten en hels lijden']},
+ o4:{q:'Wat gebeurt er bij het laatste oordeel met de gezegenden en met de verdoemden?',k:['de daden van mensen worden gewogen','de gezegenden (rechterzijde) gaan naar het paradijs, waar ze God kunnen aanschouwen','de verdoemden (linkerzijde) gaan voor eeuwig naar de hel']},
+ l1:{q:'Hoe kijken veel moslims naar euthanasie? Leg uit waarom.',k:['veel moslims wijzen euthanasie af','het leven is door God gegeven','alleen God bepaalt hoe lang het leven duurt']},
+ l3:{q:'Hoe kunnen nabestaanden volgens de islam proberen het lijden van een overledene te verzachten? Noem twee manieren.',k:['twee van: smeekbeden tot God, een pelgrimstocht naar Mekka, vasten, geld geven aan goede doelen']},
+ l4:{q:'Vergelijk hoe er in de westerse cultuur en door veel moslims naar pijn en sterven wordt gekeken.',k:['westerse cultuur: sterven wordt vaak gezien als het einde, pijn bestrijd je zoveel mogelijk','veel moslims: pijn eerder geduldig accepteren, lijden kan zin hebben en euthanasie wordt vaak afgewezen']}
+};
+Q.forEach(q=>{if(OPEN[q.id])q.open=OPEN[q.id]});
+
 return {id:'lv',naam:'Levensbeschouwing',afk:'LV',kop:'Hoofdstuk 6 De islam · §1 en §2',SECS,SNAP:{},BEG,Q,snapHtml:()=>'',
   leer:['1','2'],reken:false,volledig:false,
   PN:{'1':'§1 Het ontstaan van de islam','2':'§2 De levensbeschouwing van de moslim','mix':'Door elkaar'}};
