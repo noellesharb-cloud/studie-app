@@ -318,17 +318,6 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 .build.ok{border:1.5px solid var(--ok);background:var(--okbg)} .build.bad{border:1.5px solid var(--bad);background:var(--badbg)}
 .build .leeg{color:var(--soft);padding:0 6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-
-/* stappen van een paragraaf (bijhouden) */
-.stappen{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-.stap{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--card);opacity:.55}
-.stap.nu{opacity:1;border:2px solid var(--ink)}
-.stap.ok{opacity:1}
-.stap .sn{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--grid);color:var(--ink)}
-.stap.ok .sn{background:var(--ok);color:#fff}
-.stap .tx{display:flex;flex-direction:column;gap:4px;min-width:0}
-.stap small{color:var(--soft)}
-.stap .btn{margin-top:8px;align-self:flex-start}
 </style>
 
 </head>
@@ -349,19 +338,19 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
-<script src="config.js?v=202611032030"></script>
-<script src="oefen/engine.js?v=202611032030"></script>
-<script src="oefen/reken.js?v=202611032030"></script>
-<script src="oefen/woord.js?v=202611032030"></script>
-<script src="vakken/na.js?v=202611032030"></script>
-<script src="vakken/wi.js?v=202611032030"></script>
-<script src="vakken/wi-var.js?v=202611032030"></script>
-<script src="vakken/wi-basis.js?v=202611032030"></script>
-<script src="vakken/ak.js?v=202611032030"></script>
-<script src="vakken/gr.js?v=202611032030"></script>
-<script src="vakken/lv.js?v=202611032030"></script>
-<script src="vakken/du.js?v=202611032030"></script>
-<script src="huiswerk.js?v=202611032030"></script>
+<script src="config.js?v=202611031805"></script>
+<script src="oefen/engine.js?v=202611031805"></script>
+<script src="oefen/reken.js?v=202611031805"></script>
+<script src="oefen/woord.js?v=202611031805"></script>
+<script src="vakken/na.js?v=202611031805"></script>
+<script src="vakken/wi.js?v=202611031805"></script>
+<script src="vakken/wi-var.js?v=202611031805"></script>
+<script src="vakken/wi-basis.js?v=202611031805"></script>
+<script src="vakken/ak.js?v=202611031805"></script>
+<script src="vakken/gr.js?v=202611031805"></script>
+<script src="vakken/lv.js?v=202611031805"></script>
+<script src="vakken/du.js?v=202611031805"></script>
+<script src="huiswerk.js?v=202611031805"></script>
 <script>
 /* ---------- basis ---------- */
 const $=s=>document.querySelector(s);
@@ -479,26 +468,6 @@ function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchool
   /* past het niet binnen het maximum, dan wordt elk bijhoudblok even korter (niet korter dan 10 min) */
   const room=SET.maxDagSchool-huiswerkMin(s)-opwarmMin(s),m=R.length?Math.max(10,Math.min(SET.bijMin,Math.floor(room/R.length/5)*5)):0;
   R.forEach(x=>x.min=m);return R}
-/* paragraaf over twee dagen. Dag 1 (bijhouden, na het huiswerk): begrippen en een oefenronde. Dag 2 (de volgende plandag):
-   de paragraaftoets. Vandaag en eerder: uit wat ze echt gedaan heeft (OEF[vid].route). Later: voorspeld uit het bijhoudblok van de dag ervoor. */
-const PT_MIN=15;
-const planVrij=s=>vrijDag(s)||(vrijZa(s)&&!(SET.maxDagWeekend>0));
-function vorigePlanDag(s){let d=addDays(s,-1),k=0;while(k<10&&planVrij(d)){d=addDays(d,-1);k++}return d}
-const ptGehaald=(vid,p)=>{const r=((OEF[vid]||{}).ptoets||{})[p];return !!(r&&r.best>=7)};
-function ptoetsDag(s){if(planVrij(s))return [];const R=[],seen=new Set(),add=(vid,par)=>{if(!seen.has(vid)){seen.add(vid);R.push({vid,par})}};
-  /* stap 1 en 2 gedaan vóór dag s: volgens de opgeslagen route, of volgens het logboek van de afgelopen week (als de route nog niet was opgeslagen) */
-  const ks=new Set(logDag(s).map(e=>e.key)),eerder=(vid,r,p)=>(r&&((r.d1&&r.d1<s)||(r.vorig&&r.vorig<s)))||[1,2,3,4,5,6,7].some(k=>logDag(addDays(s,-k)).some(e=>e.key==='klaar-bij1-'+vid+'-'+p));
-  APPS().filter(vid=>heeftToets(vid,s)).forEach(vid=>{const RT=(OEF[vid]||{}).route||{},ps=Oefen.pars(vid);
-    if(s<=today()){ps.filter(p=>eerder(vid,RT[p],p)&&(!ptGehaald(vid,p)||ks.has('klaar-bij2-'+vid+'-'+p)))
-      .sort((a,b)=>ks.has('klaar-bij2-'+vid+'-'+b)-ks.has('klaar-bij2-'+vid+'-'+a)).forEach(p=>add(vid,p));return}
-    const prev=vorigePlanDag(s);
-    if(prev<=today())ps.filter(p=>RT[p]&&(RT[p].d1||RT[p].vorig)&&!ptGehaald(vid,p)).forEach(p=>add(vid,p));
-    bijhouden(prev).filter(x=>x.vid===vid&&!ptGehaald(vid,x.par)).forEach(x=>add(vid,x.par))});
-  return R}
-const ptMin=s=>ptoetsDag(s).length*PT_MIN;
-function stapTekst(b,s){if(b.ok)return 'goedgekeurd';if(b.done)return 'klaar';if(b.mode==='ptoets')return 'nog niet gemaakt';
-  const r=((OEF[b.auto]||{}).route||{})[b.par]||{},nb=(VAKDATA[b.auto].BEG||[]).some(x=>x[2]===b.par);
-  return [nb?(r.beg===s?'✓ begrippen':'begrippen'):null,r.vr===s?'✓ oefenronde':'oefenronde'].filter(Boolean).join(' · ')}
 /* beheersing: hoeveel van de paragrafen heeft ze met een 7 of hoger afgesloten? Dat maakt de toetsvoorbereiding korter */
 function beheersing(vid){const ps=Oefen.pars(vid),st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
   const proef=(st.best||{}).toets,proefOk=proef!=null&&1+9*proef/100>=7,frac=ps.length?g/ps.length:0;
@@ -506,7 +475,7 @@ function beheersing(vid){const ps=Oefen.pars(vid),st=OEF[vid]||{},pt=st.ptoets||
 let SCHED=null;
 function schedule(){
   if(SCHED)return SCHED;
-  const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+ptMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0),van=startDag()||today();
+  const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0),van=startDag()||today();
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -534,15 +503,13 @@ function blokken(s){
   const BH=bijhouden(s),WV=wk?[]:warmVakken(s);
   if(!wk)B.push({key:'opwarm',vak:'opwarm',soort:'opwarm',auto:'opwarm',min:opwarmRekenMin(),titel:'Opwarmen: rekenen',
     uit:RR()?'Eerst een rekensprint van 3 minuten, dan 5 sommen rekenregels. Reken de rekenregels uit op papier, met tussenstappen. Vinkt zichzelf af.':'Een rekensprint van 3 minuten. Vinkt zichzelf af.'});
-  ptoetsDag(s).forEach(x=>{const V=VAKDATA[x.vid],nb=(V.BEG||[]).some(b=>b[2]===x.par);B.push({key:'pt-'+x.vid+'-'+x.par,vak:x.vid,soort:'oefenen',auto:x.vid,mode:'ptoets',klaar:'bij2-'+x.vid+'-'+x.par,min:PT_MIN,par:x.par,
-    titel:`${V.naam}: paragraaftoets ${V.PN[x.par]||x.par}`,uit:`Stap ${nb?3:2} van ${nb?3:2}. Gisteren deed je ${nb?'de begrippen en ':''}de oefenronde van deze paragraaf. Nu kijk je of het is blijven hangen: 10 vragen zonder hulp. Bij een 7 of hoger krijgt de paragraaf een vinkje. Vinkt zichzelf af als je de toets hebt gemaakt.`})});
   T.forEach(h=>{const v=hwVak(h.vak),w=WV.find(x=>x.h===h);
     if(w)B.push({key:'warm-'+w.vid,vak:'opwarm',cv:w.vid,soort:'opwarm',auto:'warm',warm:w,min:WARM_MIN,titel:`${v.naam}: opwarmen`,
       uit:'3 snelle vragen uit eerdere stof van dit vak, voordat je aan je huiswerk begint. Geen cijfer. Vinkt zichzelf af.'});
     B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
     const b=BH.find(x=>x.h===h);
-    if(b){const V=VAKDATA[b.vid],nb=(V.BEG||[]).some(x=>x[2]===b.par);B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',klaar:'bij1-'+b.vid+'-'+b.par,min:b.min,par:b.par,
-      titel:`${V.naam}: ${V.PN[b.par]||b.par} in de app`,uit:nb?'Stap 1 en 2 van 3, direct na je huiswerk: eerst de begrippen-kaartjes van deze paragraaf, dan een oefenronde van 10 vragen. Morgen maak je de paragraaftoets. Vinkt zichzelf af als beide stappen af zijn.':'Stap 1 van 2, direct na je huiswerk: een oefenronde van 10 vragen uit deze paragraaf. Morgen maak je de paragraaftoets. Vinkt zichzelf af als de ronde af is.'})}});
+    if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
+      titel:`${V.naam}: ${V.PN[b.par]||b.par} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
   const rest=hwCompleet(nd)&&T.length?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
@@ -566,15 +533,12 @@ const autoMin=(s,vid)=>logDag(s).filter(e=>e.soort==='oefenen'&&e.vak===vid).red
 /* status van elk blok: zelf afgevinkt, of vanzelf gehaald met oefentijd */
 function blokStatus(s){
   const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need={},sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
-  /* bijhouden en paragraaftoets vinken af op de stappen, niet op tijd; hun minuten tellen dus niet nog eens mee voor toetsvoorbereiding */
-  const stapMin={};B.forEach(b=>{if(b.klaar&&keys.has('klaar-'+b.klaar))stapMin[b.auto]=(stapMin[b.auto]||0)+b.min});
   return B.map(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
-    if(b.klaar){const d=keys.has('klaar-'+b.klaar);return Object.assign({},b,{done:d||ok,ok:ok&&!d,vraag:vraag&&!d&&!ok,prog:null})}
     if(b.auto==='opwarm'){const rs=L.some(e=>e.soort==='sprint'&&String(e.key).startsWith('sprint-reken-')),rr=!RR()||keys.has('klaar-rekenregels');
       return Object.assign({},b,{rs,rr,done:(rs&&rr)||ok,ok:ok&&!(rs&&rr),vraag:vraag&&!(rs&&rr)&&!ok})}
     if(b.auto==='warm'){const d=keys.has('klaar-warm-'+b.warm.vid)||hwDone(b.warm.h);return Object.assign({},b,{done:d||ok,ok:ok&&!d,vraag:vraag&&!d&&!ok})}
     if(b.auto==='sprint')done=sprint;
-    else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=Math.max(0,autoMin(s,b.auto)-(stapMin[b.auto]||0)),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
+    else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=autoMin(s,b.auto),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
     else if(b.hwt)done=hwDone(b.hwt);
     else done=keys.has(b.key);
     return Object.assign({},b,{done:done||ok,ok:ok&&!done,vraag:vraag&&!done&&!ok,prog})});
@@ -654,7 +618,7 @@ function rVandaag(){
       <span class="row" style="margin-top:8px"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     if(b.hwt)return hwRow(b.hwt,b,false);
     if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
-      <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}">${b.done?'Nog meer oefenen':b.klaar?'Naar de stappen':'Start'}</button><span class="sub">${b.klaar?stapTekst(b,dag):b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
+      <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     return `<button class="blk${b.done?' done':''}" data-blk="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-soort="${b.soort}" ${canWrite?'':'disabled'}>
       <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`}).join('')}</div>
   ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
@@ -672,7 +636,7 @@ function rVandaag(){
     ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee</small></span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
       :`<p class="sub" style="margin-top:6px">Nog geen toetsdata ingevuld.</p>`}
   </div>
-  <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Je begint met opwarmen: een rekensprint en 5 sommen rekenregels. Heb je huiswerk voor een vak dat in de app zit, dan doe je eerst 3 snelle vragen uit eerdere stof, en daarna doe je dezelfde paragraaf in de app: de begrippen-kaartjes en een oefenronde van 10 vragen. De dag erna maak je daarvan de paragraaftoets: zo zie je of het is blijven hangen. Die blokken vinken zichzelf af als de stappen af zijn. Andere blokken in de app vinken af op tijd: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; ${SET.maxDagWeekend>0?`op vrijdag en zaterdag is het plan ${SET.maxDagWeekend} minuten`:'op vrijdag en zaterdag is één sprint genoeg'}. In de vakantie staat je reeks op pauze.</span></div>`;
+  <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Je begint met opwarmen: een rekensprint en 5 sommen rekenregels. Heb je huiswerk voor een vak dat in de app zit, dan doe je eerst 3 snelle vragen uit eerdere stof, en daarna oefen je 20 minuten dezelfde paragraaf in de app: zo blijft het hangen. Blokken in de app vinken zichzelf af: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; ${SET.maxDagWeekend>0?`op vrijdag en zaterdag is het plan ${SET.maxDagWeekend} minuten`:'op vrijdag en zaterdag is één sprint genoeg'}. In de vakantie staat je reeks op pauze.</span></div>`;
   $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
   const keys=new Set(L.map(e=>e.key));
   document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
@@ -721,13 +685,12 @@ function oefenCtx(){return {
   state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{}};return OEF[id]},
   save:id=>{clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
   metToets:id=>heeftToets(id,today()),
-  today:()=>today(),
   klaar:k=>{const d=today();if(!logDag(d).some(e=>e.key==='klaar-'+k))addLog({d,key:'klaar-'+k,vak:'opwarm',soort:'opwarm',min:0,t:Date.now()},true)},
   sprintDone:(kind,score)=>{const sp=OEF.sprints=OEF.sprints||{},oud=sp[kind]||0;
     if(score>oud){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
     addLog({d:today(),key:'sprint-'+kind+'-'+Date.now().toString(36),vak:'sprint',soort:'sprint',min:SET.sprintMin,score,t:Date.now()},true);
     return {oud}},
-  home:o=>{Oefen.stop();if(fromSprint||(o&&o.vandaag)){fromSprint=false;tab='vandaag';try{localStorage.setItem('tab',tab)}catch(e){}}render()}}}
+  home:()=>{Oefen.stop();if(fromSprint){fromSprint=false;tab='vandaag'}render()}}}
 /* oefentijd meten: alleen als je in een vak bezig bent en de laatste 2 minuten iets hebt gedaan */
 let lastAct=Date.now(),ACT={},flushT=0;
 ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{lastAct=Date.now()},{passive:true}));
@@ -832,7 +795,7 @@ function rWeek(){
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
       <button class="btn ghost sm" id="vk-add" style="margin-top:8px" ${dis}>Vakantie of vrije dag toevoegen</button></div>
-    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en een komende toets heeft, komt bijhouden: dezelfde paragraaf in de app, verdeeld over twee dagen. Dag 1, direct na het huiswerk: de begrippen-kaartjes van die paragraaf en een oefenronde van 10 vragen. Dag 2, aan het begin van het plan: de paragraaftoets (15 minuten). Deze blokken vinken zichzelf af als de stappen gedaan zijn, niet op tijd. Haalt ze geen 7, dan staat de paragraaftoets de dag erna weer in het plan. Heeft een vak geen toets met een datum meer, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en een komende toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak geen toets met een datum meer, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
   </details>`;
   $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
