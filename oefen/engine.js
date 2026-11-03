@@ -17,7 +17,7 @@ function mth(x){
   x=x.replace(/\[\[(.+?)\|(.+?)\]\]/g,'<span class="fr"><span>$1</span><span>$2</span></span>');
   return x;
 }
-function fmt(s){return String(s).replace(/\$([^$]+)\$/g,(_,x)=>'<span class="m">'+mth(x)+'</span>')}
+function fmt(s){return String(s).replace(/\$([^$]+)\$/g,(_,x)=>'<span class="m">'+mth(x)+'</span>').replace(/(mm|cm|dm|m)\^([23])/g,'$1<sup>$2</sup>')}
 
 window.Oefen=(()=>{
   let el,vid,V,ST,QM,R,K,S,focusPar=null,focusMode=null;
@@ -206,7 +206,7 @@ window.Oefen=(()=>{
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
     /* vakken met open toetsen (levensbeschouwing): meerkeuzevraag met open versie wordt open gesteld, behalve bij opwarmen en herkansing */
-    if(QM[it.id].open&&R.mode!=='opwarm'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
+    if(QM[it.id].open&&R.mode!=='opwarm'&&R.mode!=='stap'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
     if(q.t==='open')return askOpen(q,it,s);
     if(q.in)return askTyped(q,it,s);
     if(tvorm(q,it))return askToets(q,it,s);
@@ -364,14 +364,14 @@ window.Oefen=(()=>{
   }
   function askOpen(q,it,s){
     el.innerHTML=`${kop(it,q,s,false)}
-    <div class="card stack"><label class="sub" for="ans">Schrijf je antwoord op, hier of in je schrift:</label>
+    <div class="card stack">${tvVak()?'<p class="sub" style="font-size:.9rem"><b>Leg uit = geef de reden.</b> Na “omdat” moet iets staan wat nog niet in de vraag stond.</p>':''}<label class="sub" for="ans">Schrijf je antwoord op, hier of in je schrift:</label>
       <textarea id="ans" class="ta" placeholder="Mijn antwoord…"></textarea>
       <button class="btn" id="see">Bekijk het modelantwoord</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelector('#stop').onclick=stopRonde;
     el.querySelector('#see').onclick=()=>{el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
       const box=el.querySelector('#kp');
       box.innerHTML=`<div class="tip stack"><b>Modelantwoord: vink aan wat jij ook had</b>
-        <ul class="kp">${q.k.map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
+        <ul class="kp">${(tvVak()?[...q.k,'Mijn reden zegt iets nieuws: ik herhaal niet alleen de vraag']:q.k).map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
         ${q.vb?`<div class="card stack"><b>${q.vb.length>1?'Voorbeeldantwoorden (twee kanten, allebei goed)':'Voorbeeldantwoord'}</b>${q.vb.map(x=>`<p>${fmt(x)}</p>`).join('')}</div>`:''}
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');

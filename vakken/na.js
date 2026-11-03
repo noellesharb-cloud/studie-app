@@ -40,6 +40,8 @@ function plot(o){
     for(let i=0;i<=N;i++){const x=a+(b-a)*i/N,y=fn.f(x);d+=(i?'L':'M')+X(x)+' '+Y(y)+' '}
     g+=`<path class="${fn.c||'ln'}" clip-path="url(#${id})" d="${d}"/>`;
     if(fn.lab)g+=`<text class="fl" x="${X(fn.lab[0])}" y="${Y(fn.lab[1])}">${fn.lab[2]}</text>`;});
+  if(o.poly)g+=`<path class="ln" clip-path="url(#${id})" d="${o.poly.map((p,i)=>(i?'L':'M')+X(p[0])+' '+Y(p[1])).join(' ')}"/>`;
+  (o.pts||[]).forEach(p=>{g+=`<circle class="pt" cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5"/>`;if(p[2])g+=`<text class="fl" x="${X(p[0])+6}" y="${Y(p[1])-6}">${p[2]}</text>`});
   return `<svg class="plot" viewBox="0 0 ${W} ${H}" style="max-width:${o.max||W}px" role="img" aria-label="${o.label||'grafiek'}"><defs><clipPath id="${id}"><rect x="${X(x0)}" y="${Y(y1)-2}" width="${(x1-x0)*ux+2}" height="${(y1-y0)*uy+4}"/></clipPath></defs>${g}</svg>`;
 }
 
@@ -88,6 +90,14 @@ const SECS=[
    ['Andersom: massa = dichtheid × volume','$m = ρ × V$',''],
    ['Onderdompelmethode: volume van een vreemd gevormd voorwerp','Water in maatcilinder: 50 mL → 110 mL, dus $V = 60$ cm^3','Je meet hoeveel het water stijgt.'],
    ['Kleinere dichtheid dan water (1 g/cm^3)? Dan drijft het','hout drijft, ijzer (7,9 g/cm^3) zinkt','']]},
+ {id:'vol',par:'h3',nr:'2b',name:'Volume meten en de dichtheidsgrafiek',c:'--c2',sub:'Practicumtoets dichtheid · balk, cilinder, bol, onderdompelen, grafiek, leg uit',
+  rules:[
+   ['Volume van een blokje: $V = l × b × h$','$2,0 × 2,5 × 3,0 = 15$ cm^3','Alleen bij rechte kanten.'],
+   ['Cilinder: $V = π × r^2 × h$. Bol: $V = [[4|3]] × π × r^3$','$r$ is de straal: de helft van de diameter','Meet je de diameter met de schuifmaat, deel dan eerst door 2.'],
+   ['Rare vorm: onderdompelmethode','Volume = hoeveel het water stijgt (1 mL = 1 cm^3)',''],
+   ['Grafiek: één rechte lijn door 0 en zo goed mogelijk door de punten','Niet de punten met elkaar verbinden. Een punt ver naast de lijn is een meetfout.',''],
+   ['Dichtheid uit de lijn: kies een punt óp de lijn, ver van 0','$ρ = [[m|V]]$, en schrijf het op met symbool en eenheid: $ρ = 2,7$ g/cm^3',''],
+   ['Leg uit = geef de reden','Na “omdat” moet iets staan wat nog niet in de vraag stond','Fout: “onderdompelen, omdat dat nauwkeuriger is”. Goed: “de schuifmaat, omdat je die op 0,1 mm afleest en de maatcilinder maar op 1 mL”.']]},
  {id:'mol',par:'h3',nr:'3',name:'Moleculen en fasen',c:'--c3',sub:'Schrift §3.3 · atomen, moleculen, molecuulmodel',
   rules:[
    ['Alles bestaat uit heel kleine deeltjes: moleculen','Een molecuul is opgebouwd uit atomen','water $H_{2}O$: 2 waterstofatomen + 1 zuurstofatoom · koolstofdioxide $CO_{2}$: O=C=O'],
@@ -1172,6 +1182,120 @@ tv4a:{q:'$40$ kg badwater koelt af van $35$ °C naar $30$ °C. Hoeveel warmte ge
 tv4b:{q:'$20$ kg lucht ($1000$ J/kg/°C) neemt $836$ kJ op. Hoeveel °C warmer wordt de lucht?'},
 tv4c:{q:'Waarom wordt de badkamerlucht in het echt minder warm dan je uitrekent?'}
 };
+
+/* ---------- volume meten en de dichtheidsgrafiek (na de practicumtoets dichtheid) ---------- */
+const DP=[[5,13.6],[6,16.5],[10,27.2],[14.7,39.9]],DUIT=[6.3,29.4];
+const DG=o=>plot(Object.assign({x:[0,15],y:[0,45],ux:16,uy:4,sx:5,sy:10,gx:1,gy:5,xl:'V (cm³)',yl:'m (g)',label:'grafiek van massa tegen volume'},o));
+const DK=o=>DG(Object.assign({ux:12,uy:3,max:210,pts:[...DP,DUIT]},o));
+const DLIJN=DG({fns:[{f:x=>2.7*x}],pts:DP});
+Q.push(
+{id:'vo1',o:'vol',nr:'Practicum',q:'Een metalen blokje is $2,0$ cm lang, $2,5$ cm breed en $3,0$ cm hoog. De massa is $40,5$ g. Bereken de dichtheid.',
+ denk:'Een blokje heeft rechte kanten: volume = lengte × breedte × hoogte. Daarna $ρ = [[m|V]]$.',
+ st:[C('Hoe bereken je het volume van een blokje?','',[['$V = l × b × h$',1],['$V = l + b + h$','Bij volume vermenigvuldig je de drie maten.'],['$V = π × r^2 × h$','Dat is de formule voor een cilinder. Een blokje heeft rechte kanten.']],'$V = l × b × h$'),
+  S('Volume uitrekenen','$V = 2,0 × 2,5 × 3,0 = 15$ cm^3'),S('Dichtheid','$ρ = [[40,5 g|15 cm^3]] = 2,7$ g/cm^3')],
+ a:'$2,7$ g/cm^3',f:[['$5,4$ g/cm^3','Je hebt door 7,5 gedeeld: dat is lengte + breedte + hoogte. Het volume is 2,0 × 2,5 × 3,0 = 15 cm^3.'],['$0,37$ g/cm^3','Je hebt volume gedeeld door massa. Het moet massa : volume.'],['$607,5$ g/cm^3','Je hebt massa keer volume gedaan. Dichtheid is massa gedeeld door volume.']],
+ v:{q:'Een blokje van $3,0$ cm bij $2,0$ cm bij $2,5$ cm weegt $40,5$ g. Wat is de dichtheid?'}},
+{id:'vo2',o:'vol',nr:'Practicum',q:'Een metalen cilinder heeft een diameter van $2,0$ cm en is $3,0$ cm hoog. Bereken het volume.',
+ denk:'Volume van een cilinder: $V = π × r^2 × h$. Let op: $r$ is de straal, de helft van de diameter.',
+ st:[C('Wat is de straal $r$?','',[['$1,0$ cm',1],['$2,0$ cm','Dat is de diameter: helemaal van de ene kant naar de andere. De straal is de helft.'],['$4,0$ cm','De straal is de helft van de diameter, niet het dubbele.']],'$r = 2,0 : 2 = 1,0$ cm'),
+  S('Formule','$V = π × r^2 × h$'),S('Invullen en uitrekenen','$V = π × 1,0^2 × 3,0 = 9,4$ cm^3')],
+ a:'$9,4$ cm^3',f:[['$37,7$ cm^3','Je hebt de diameter (2,0 cm) ingevuld in plaats van de straal (1,0 cm).'],['$12$ cm^3','Je hebt 2,0 × 2,0 × 3,0 gedaan, alsof het een blokje is. Een cilinder is rond: $V = π × r^2 × h$.'],['$18,8$ cm^3','Je hebt $π × 2,0 × 3,0$ gedaan. De straal moet in het kwadraat: $1,0^2 = 1,0$.']],
+ v:{q:'Een cilinder is $3,0$ cm hoog en $2,0$ cm breed (diameter). Hoe groot is het volume?'}},
+{id:'vo3',o:'vol',nr:'Practicum',q:'Een cilinder heeft een diameter van $2,0$ cm, een hoogte van $4,0$ cm en een massa van $33,9$ g. Bereken de dichtheid en zoek op welk metaal het is.<div class="tw"><table class="tb"><tr><th>stof</th><td>aluminium</td><td>ijzer</td><td>messing</td><td>koper</td></tr><tr><th>ρ (g/cm^3)</th><td>2,7</td><td>7,9</td><td>8,5</td><td>8,96</td></tr></table></div>',
+ denk:'Eerst het volume: $V = π × r^2 × h$ met $r$ de helft van de diameter. Dan $ρ = [[m|V]]$. Dan vergelijken met de tabel.',
+ st:[S('Straal','$r = 2,0 : 2 = 1,0$ cm'),S('Volume','$V = π × 1,0^2 × 4,0 = 12,6$ cm^3'),
+  C('Dichtheid','',[['$2,7$ g/cm^3',1],['$0,37$ g/cm^3','Je hebt volume gedeeld door massa. Het moet massa : volume.'],['$8,5$ g/cm^3','Dan heb je 33,9 : 4,0 gedaan: alleen de hoogte. Gebruik het hele volume.']],'$ρ = [[33,9|12,6]] = 2,7$ g/cm^3'),
+  S('Vergelijk met de tabel','$2,7$ g/cm^3 is aluminium')],
+ a:'aluminium ($2,7$ g/cm^3)',f:[['messing ($8,5$ g/cm^3)','Je hebt 33,9 : 4,0 gedaan: alleen de hoogte. Het volume is $π × 1,0^2 × 4,0 = 12,6$ cm^3.'],['ijzer ($7,9$ g/cm^3)','Reken het volume opnieuw uit met de straal: $π × 1,0^2 × 4,0 = 12,6$ cm^3.'],['koper ($8,96$ g/cm^3)','Reken eerst het volume uit met $V = π × r^2 × h$ en deel dan de massa daardoor.']],
+ v:{q:'Een cilinder van $33,9$ g is $4,0$ cm hoog en heeft een diameter van $2,0$ cm. Van welk metaal is hij gemaakt?'}},
+{id:'vo4',o:'vol',nr:'Extra',q:'Een metalen bol heeft een diameter van $3,0$ cm. Bereken het volume.',
+ denk:'Volume van een bol: $V = [[4|3]] × π × r^3$, met $r$ de helft van de diameter.',
+ st:[S('Straal','$r = 3,0 : 2 = 1,5$ cm'),S('Formule','$V = [[4|3]] × π × r^3$'),S('Uitrekenen','$1,5^3 = 3,375$, dus $V = [[4|3]] × π × 3,375 = 14,1$ cm^3')],
+ a:'$14,1$ cm^3',f:[['$113$ cm^3','Je hebt de diameter (3,0 cm) ingevuld. Gebruik de straal: 1,5 cm.'],['$10,6$ cm^3','Je bent $[[4|3]] ×$ vergeten.'],['$9,4$ cm^3','Je hebt $r^2$ gedaan. Bij een bol is het $r^3$.']],
+ v:{q:'Hoe groot is het volume van een knikker met een diameter van $3,0$ cm?'}},
+{id:'vo5',o:'vol',nr:'Practicum',q:'Je moet het volume bepalen van een stukje metaal met een rare vorm. Welke methode gebruik je?',
+ denk:'Kun je lengte, breedte en hoogte meten als de kanten niet recht zijn?',
+ st:[S('Een rare vorm heeft geen rechte kanten','Lengte × breedte × hoogte klopt dan niet'),S('Onderdompelen','Het water stijgt precies zoveel als het volume van het voorwerp')],
+ a:'de onderdompelmethode: hoeveel het water in de maatcilinder stijgt',f:[['meten met de schuifmaat en $l × b × h$ doen','Dat kan alleen bij een blokje met rechte kanten. Bij een rare vorm klopt $l × b × h$ niet.'],['wegen op de weegschaal','Met de weegschaal meet je de massa, niet het volume.'],['de formule voor een cilinder gebruiken','Dat kan alleen bij een cilinder. Een rare vorm is geen cilinder.']],
+ v:{q:'Hoe meet je het volume van een steentje dat geen rechte kanten heeft?'}},
+{id:'vo6',o:'vol',nr:'Practicum',q:'In een maatcilinder zit $35,0$ mL water. Je laat er een metalen voorwerp van $17,6$ g in zakken. Het water staat nu op $41,5$ mL. Bereken de dichtheid.',
+ denk:'Het volume van het voorwerp is hoeveel het water stijgt. $1$ mL = $1$ cm^3.',
+ st:[C('Volume van het voorwerp','',[['$6,5$ cm^3',1],['$41,5$ cm^3','Dat is water plus voorwerp. Trek het water eraf.'],['$76,5$ cm^3','Je hebt opgeteld. Je moet aftrekken: hoeveel stijgt het water?']],'$V = 41,5 - 35,0 = 6,5$ mL = $6,5$ cm^3'),
+  S('Dichtheid','$ρ = [[17,6|6,5]] = 2,7$ g/cm^3')],
+ a:'$2,7$ g/cm^3',f:[['$0,42$ g/cm^3','Je hebt 41,5 mL als volume genomen. Dat is water plus voorwerp.'],['$0,37$ g/cm^3','Je hebt volume gedeeld door massa. Het moet massa : volume.'],['$0,50$ g/cm^3','Je hebt 35,0 mL als volume genomen. Dat is alleen het water.']],
+ v:{q:'Het water in de maatcilinder stijgt van $35,0$ naar $41,5$ mL als je er een voorwerp van $17,6$ g in doet. Wat is de dichtheid?'}},
+{id:'vo7',o:'vol',nr:'Grafiek',q:'Je hebt vijf voorwerpen van hetzelfde metaal gemeten en de punten in een grafiek gezet. Welke lijn is goed getekend?',
+ denk:'Bij dichtheid hoort één rechte lijn. Waar moet die beginnen? En wat doe je met een punt dat er ver naast ligt?',
+ st:[S('Eén rechte lijn, niet de punten met elkaar verbinden','Bij één stof hoort één dichtheid, dus één rechte lijn'),S('De lijn begint in 0','$0$ cm^3 metaal weegt $0$ g'),S('Een punt dat er ver naast ligt, is een meetfout','Daar trek je de lijn niet doorheen')],
+ a:DK({fns:[{f:x=>2.7*x}],label:'rechte lijn door 0 en de vier punten die op een rij liggen'}),
+ f:[[DK({poly:[[0,0],...DP.slice(0,2),DUIT,...DP.slice(2)],label:'de punten met elkaar verbonden'}),'Je hebt de punten met elkaar verbonden. Bij dichtheid teken je één rechte lijn door 0 en zo goed mogelijk door de punten.'],
+  [DK({fns:[{f:x=>DUIT[1]/DUIT[0]*x}],label:'rechte lijn door 0 en het punt dat er ver naast ligt'}),'Deze lijn gaat door het punt dat er ver naast ligt. Dat is een meetfout. De lijn moet langs de andere vier punten.'],
+  [DK({fns:[{f:x=>5+2.4*x}],label:'rechte lijn die niet door 0 gaat'}),'Deze lijn gaat niet door 0. Een metaal van $0$ cm^3 weegt $0$ g, dus de lijn begint in de oorsprong.']],
+ v:{q:'Welke van deze vier lijnen hoort bij een goede dichtheidsgrafiek?'}},
+{id:'vo8',o:'vol',nr:'Grafiek',q:'Bepaal met de lijn de dichtheid van het metaal.'+DLIJN,
+ denk:'Kies een punt <b>op de lijn</b> dat je makkelijk kunt aflezen en ver van 0 ligt. Lees $m$ en $V$ af en deel.',
+ st:[C('Welk punt gebruik je?','',[['een punt op de lijn, ver van 0, bijvoorbeeld bij $V = 10$ cm^3',1],['één van de meetpunten, maakt niet uit welke','Een meetpunt kan net naast de lijn liggen. De lijn is het gemiddelde van al je metingen, dus lees op de lijn af.'],['het punt $(0, 0)$','Daar is $m = 0$ en $V = 0$. Dan kun je niet delen.']],'Bij $V = 10$ cm^3 is $m = 27$ g'),
+  S('Delen','$ρ = [[27 g|10 cm^3]] = 2,7$ g/cm^3'),S('Opschrijven bij de lijn','$ρ = 2,7$ g/cm^3: symbool, getal en eenheid')],
+ a:'$2,7$ g/cm^3',f:[['$0,37$ g/cm^3','Je hebt volume gedeeld door massa. Het moet massa : volume.'],['$27$ g/cm^3','Dat is de massa bij 10 cm^3. Deel nog door het volume.'],['$4,7$ g/cm^3','Dan heb je een punt naast de lijn gebruikt. Lees af op de lijn zelf.']],
+ v:{q:'Lees uit de grafiek de dichtheid af: kies een punt op de lijn.'+DLIJN}},
+{id:'vo9',o:'vol',nr:'Grafiek',q:'Welk meetpunt is waarschijnlijk een meetfout?'+DG({pts:[[...DP[0],'A'],[...DP[1],'B'],[...DUIT,'C'],[...DP[2],'D'],[...DP[3],'E']]}),
+ denk:'De punten van één stof liggen ongeveer op één rechte lijn door 0. Welk punt valt daar ver buiten?',
+ st:[S('A, B, D en E liggen op één rechte lijn door 0','$m : V$ is steeds ongeveer $2,7$'),S('C ligt er ver boven','$29,4 : 6,3 = 4,7$: veel te groot. Waarschijnlijk is het volume verkeerd gemeten.')],
+ a:'C',f:[['A','A ligt op de lijn: $13,6 : 5 = 2,7$.'],['B','B ligt op de lijn: $16,5 : 6 = 2,75$.'],['E','E ligt op de lijn: $39,9 : 14,7 = 2,7$.']],
+ v:{q:'Eén punt ligt niet op de lijn van de andere vier. Welk punt?'+DG({pts:[[...DP[0],'A'],[...DP[1],'B'],[...DUIT,'C'],[...DP[2],'D'],[...DP[3],'E']]})}},
+{id:'vo10',o:'vol',nr:'Grafiek',q:'Waarom moet de lijn in een dichtheidsgrafiek door 0 gaan?',
+ denk:'Hoeveel weegt een stukje metaal van $0$ cm^3?',
+ st:[S('Geen volume, dan ook geen massa','$V = 0$ cm^3 hoort bij $m = 0$ g'),S('Dus het punt $(0, 0)$ hoort bij elke stof','De lijn begint in de oorsprong')],
+ a:'Een stof met een volume van 0 cm³ heeft ook een massa van 0 g',f:[['Omdat de assen bij 0 beginnen','Dat is niet de reden. Het gaat erom dat 0 cm^3 van een stof ook 0 g weegt.'],['Omdat je dat zo moet tekenen van de docent','Er is een natuurkundige reden: 0 cm^3 weegt 0 g.'],['Omdat de dichtheid dan 0 is','De dichtheid is niet 0. Alleen massa en volume zijn allebei 0 in dat punt.']],
+ v:{q:'Een dichtheidslijn begint altijd in $(0, 0)$. Wat is de reden?'}},
+{id:'vo11',o:'vol',nr:'Practicum',q:'Je bepaalt het volume van een klein metalen blokje op twee manieren: met een schuifmaat (je leest af op $0,1$ mm) en met de onderdompelmethode in een maatcilinder (streepjes per $1$ mL). Het volume is ongeveer $6$ cm^3. Welke methode is nauwkeuriger?',
+ denk:'Hoe precies kun je aflezen? En hoe groot is een afleesfout van $1$ mL vergeleken met $6$ cm^3?',
+ st:[S('Schuifmaat: je leest af op 0,1 mm','Heel precies'),S('Maatcilinder: je leest af op 1 mL','Een fout van 1 mL op 6 cm^3 is al 1/6 deel van het volume'),S('Dus','Bij een blokje met rechte kanten is de schuifmaat nauwkeuriger')],
+ a:'De schuifmaat, omdat je die veel preciezer kunt aflezen dan de maatcilinder',f:[['De onderdompelmethode, omdat die nauwkeuriger is','Dat herhaalt de vraag. Je moet een reden geven: hoe precies kun je elke methode aflezen?'],['De onderdompelmethode, omdat water altijd precies is','Een maatcilinder lees je maar af op 1 mL. Bij een klein volume is dat een grote fout.'],['Ze zijn even nauwkeurig','Een schuifmaat lees je af op 0,1 mm, een maatcilinder op 1 mL. Dat scheelt veel.']],
+ v:{q:'Een klein blokje: volume meten met de schuifmaat of met de maatcilinder. Welke is nauwkeuriger, en waarom?'}},
+{id:'vo12',o:'vol',nr:'Practicum',q:'Je meet de massa en het volume van een vloeistof bij $25$, $50$, $75$ en $100$ mL. De dichtheid die je uitrekent is niet elke keer precies hetzelfde. Hoe komt dat?',
+ denk:'De stof verandert niet. Wat is er dan niet precies?',
+ st:[S('Dichtheid is een stofeigenschap','De vloeistof zelf verandert niet'),S('Meten is nooit helemaal precies','Je leest de maatcilinder en de weegschaal af met een kleine fout'),S('Bij een klein volume telt die fout zwaarder','1 mL afleesfout op 25 mL is meer dan op 100 mL')],
+ a:'Door meetonnauwkeurigheid: je kunt massa en volume niet helemaal precies aflezen',f:[['Omdat het nooit precies hetzelfde kan zijn','Dat zegt alleen dát het verschilt, niet waardoor. De reden is: je kunt massa en volume niet precies aflezen.'],['Omdat de vloeistof steeds een andere stof wordt','Het blijft dezelfde stof. De dichtheid is een stofeigenschap en verandert niet.'],['Omdat meer vloeistof een grotere dichtheid heeft','Dichtheid hangt niet af van hoeveel je hebt. Het verschil komt door meetfouten.']],
+ v:{q:'Waarom krijg je bij vier metingen van dezelfde vloeistof steeds een iets andere dichtheid?'}}
+);
+
+/* open versies: in rondes, toetsvorm en proeftoets schrijft ze het antwoord zelf op; bij opwarmen, stap voor stap en een herkansing blijft het meerkeuze */
+const OPEN={
+ dh6:{k:['Hout heeft een kleinere dichtheid dan water (kleiner dan 1,0 g/cm³)','Een stof met een kleinere dichtheid dan water drijft']},
+ wt6:{k:['Een vonk is heel klein: hij heeft heel weinig massa','Weinig massa betekent weinig warmte (energie), ook al is de temperatuur hoog']},
+ th5:{k:['Je lichaamstemperatuur ligt altijd ongeveer tussen 36 en 43 °C','Een groter bereik is dus niet nodig']},
+ th6:{k:['Door het kleine bereik kunnen de streepjes verder uit elkaar: je leest af op 0,1 °C','Bij koorts maakt een klein verschil veel uit']},
+ sw7:{k:['De pan en de melk geven zelf ook warmte af aan de lucht eromheen','Dat deel van de warmte gaat dus verloren en moet extra worden toegevoegd']},
+ sw10:{k:['Olie heeft een kleinere soortelijke warmte dan water','Per graad is minder warmte nodig, dus met dezelfde warmte stijgt de temperatuur meer']},
+ tr5:{k:['Ze bevatten (veel) lucht die stilstaat','Lucht geleidt warmte slecht','Omdat de lucht stilstaat, is er geen stroming']},
+ tr9:{k:['Zwart neemt de straling van de zon op','Wit kaatst de straling terug, dus het zwarte shirt wordt warmer']},
+ tr10:{k:['Beker 1 is de controlebeker: je hebt iets nodig om mee te vergelijken','Zo zie je hoeveel beter de geïsoleerde bekers de warmte vasthouden']},
+ br6:{k:['Water heeft een grotere dichtheid dan olie, dus zakt naar de bodem','Het water verdampt daar in één keer door de hoge temperatuur','De stoom spuit de brandende olie omhoog: een steekvlam']},
+ br9:{k:['Water geleidt stroom','Je kunt een elektrische schok krijgen']},
+ ba9:{k:['Er komt te weinig zuurstof bij het gas','Het gas verbrandt dan niet helemaal: er blijft roet (koolstof) over']},
+ kl6:{k:['Bomen nemen CO₂ op uit de lucht','Minder bomen betekent dat er meer CO₂ in de lucht blijft','CO₂ is een broeikasgas, dus het broeikaseffect wordt sterker']},
+ b19:{k:['Warme lucht stroomt naar buiten en koude lucht komt naar binnen','Dat is warmtetransport door stroming']},
+ b20a:{k:['Je hand is warmer dan 20 °C, dus warmte gaat van je hand naar het voorwerp','Steen geleidt warmte beter dan plastic','Steen voert de warmte van je hand sneller af, en dat voelt kouder']},
+ b22:{k:['Wit kaatst de straling van de zon terug','Kleine ramen: er komt minder warmte naar binnen','Dikke muren geleiden de warmte slecht naar binnen']},
+ b23a:{k:['Warme lucht stijgt op (stroming)','Bovenin is de lucht het warmst, en die warmte gaat door het dak naar buiten']},
+ b25:{k:['Hout geleidt warmte slecht (het is een isolator)','De vloerverwarming moet dan heter worden','Dan gaat er ook meer warmte naar beneden verloren']},
+ tv8:{k:['Warm water stijgt op en blijft bovenin: de stroming gaat niet naar beneden','Water geleidt warmte slecht, dus de warmte komt nauwelijks bij het ijs onderin']},
+ b36:{k:['Water geleidt elektriciteit','Er kan kortsluiting ontstaan, en dat kan juist extra brand geven (of een schok)']},
+ b43a:{k:['Water heeft een grotere dichtheid (1,0 g/cm³) dan het vet (0,9 g/cm³)','Een stof met een grotere dichtheid zakt naar beneden']},
+ tv2a:{k:['Voor verbranden is zuurstof nodig','Met zuivere zuurstof verbrandt de brandstof veel beter','De vlam wordt daardoor veel heter: heet genoeg om metaal te snijden']},
+ b57b:{k:['Zonder broeikasgassen gaat alle infrarode straling van de aarde de ruimte in','Er wordt dan geen warmte vastgehouden: gemiddeld −18 °C in plaats van 15 °C']},
+ b67f:{k:['Drijvend ijs ligt al voor een deel onder water','Het smeltwater neemt precies de ruimte in die het ijs onder water al innam']},
+ tv7:{k:['Landijs (Zuidpool, gletsjers) smelt en stroomt naar zee','Zeewater zet uit als het warmer wordt']},
+ b68a:{k:['De bomen zouden vaak toch al geplant worden','Het is moeilijk te controleren, want ze worden ver weg geplant','Er is op aarde niet genoeg ruimte om zo al het vliegverkeer te compenseren']},
+ tv4c:{q:'Waarom wordt de badkamerlucht in het echt minder warm dan je uitrekent?',k:['Een deel van de warmte gaat naar het bad, de muren en de vloer, en naar buiten','Dus de lucht zelf krijgt minder warmte dan je hebt uitgerekend']},
+ vo5:{q:'Je moet het volume bepalen van een stukje metaal met een rare vorm. Welke methode gebruik je? Leg uit waarom.',k:['De onderdompelmethode: je kijkt hoeveel het water in de maatcilinder stijgt','Een rare vorm heeft geen rechte kanten, dus lengte × breedte × hoogte klopt niet']},
+ vo10:{k:['Een stof met een volume van 0 cm³ heeft ook een massa van 0 g','Het punt (0, 0) hoort dus bij elke stof, en de lijn begint daar']},
+ vo11:{q:'Je bepaalt het volume van een klein metalen blokje (ongeveer 6 cm³) met een schuifmaat (af te lezen op 0,1 mm) en met de onderdompelmethode (maatcilinder met streepjes per 1 mL). Leg uit welke methode nauwkeuriger is.',k:['De schuifmaat is nauwkeuriger','Een schuifmaat lees je af op 0,1 mm, een maatcilinder maar op 1 mL','Bij een klein volume is een afleesfout van 1 mL groot (1 op 6 cm³)']},
+ vo12:{q:'Je meet de massa en het volume van een vloeistof bij 25, 50, 75 en 100 mL. Leg uit waarom de dichtheid die je uitrekent niet elke keer precies hetzelfde is.',k:['Dichtheid is een stofeigenschap: de vloeistof zelf verandert niet','Je kunt massa en volume niet helemaal precies aflezen (meetonnauwkeurigheid)','Bij een klein volume telt een kleine afleesfout zwaarder']}
+};
+Q.forEach(q=>{if(OPEN[q.id])q.open=OPEN[q.id]});
+
 Q.forEach(q=>{if(VAR[q.id])q.v=VAR[q.id]});
 
 
