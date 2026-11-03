@@ -210,7 +210,7 @@ window.Oefen=(()=>{
     if(q.t==='open')return askOpen(q,it,s);
     if(q.in)return askTyped(q,it,s);
     if(tvorm(q,it))return askToets(q,it,s);
-    const opts=shuf([[q.a,1],...q.f.map(x=>Array.isArray(x)?x:[x,''])]),guided=R.mode==='stap'&&hasSt(q),two=opts.some(o=>o[0].includes('<svg'));
+    const opts=shuf([[q.a,1],...q.f.map(x=>Array.isArray(x)?x:[x,''])]),guided=(R.mode==='stap'||(R.hw&&it.retry))&&hasSt(q),two=opts.some(o=>o[0].includes('<svg'));
     el.innerHTML=`${kop(it,q,s,guided)}
     <div id="steps" class="stack"></div>
     <div id="optwrap" class="stack" ${guided?'hidden':''}>
@@ -393,20 +393,20 @@ window.Oefen=(()=>{
     const ids=hwIds(H.nrs,H.par),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
     const ontbreekt=H.nrs.filter(n=>!ids.some(id=>nrNum(QM[id])[0]===+n));
     const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>/^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1);
-    const titel='Huiswerk: '+W+' '+H.nrs.join(', ');
+    const titel='Huiswerk: '+W+' '+H.nrs.join(', '),kies=tvVak()&&ids.some(id=>{const q=QM[id];return hasSt(q)&&!q.type&&!q.in&&q.t!=='open'}),vorm=kies&&ST.hwVorm==='tvorm'?'tvorm':'stap';
     el.innerHTML=`${top('Vandaag','Huiswerk')}
     <h2>${H.titel||'Je huiswerk'}</h2>
     <div class="card stack plan"><span class="tag">${Wc} ${H.nrs.join(', ')}</span>
-      <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af.':'Je doet elke opgave stap voor stap. Bij elke stap kies je zelf, en bij een fout zie je waarom. Reken mee in je schrift: dan heb je je huiswerk meteen af.'}</p>
+      <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
       <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
-    <div class="stack">${rest.length?`<button class="btn" id="hwgo">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`:'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
+    <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
       ${gedaan.length?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
       <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
-    const go=el.querySelector('#hwgo');if(go)go.onclick=()=>start('stap',rest,titel,null,null,H.key);
-    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];save();start('stap',ids,titel,null,null,H.key)};
+    el.querySelectorAll('[data-hwm]').forEach(b=>b.onclick=()=>{const m=b.dataset.hwm;if(kies){ST.hwVorm=m;save()}start(m,rest,titel+(m==='tvorm'?' · zelf op papier':''),null,null,H.key)});
+    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
     el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
     Oefen._hw=H;scrollTo(0,0);
   }
