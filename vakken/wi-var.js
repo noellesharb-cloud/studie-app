@@ -102,10 +102,14 @@ G.haak=k=>()=>{
 
 /* ---------- §3.4 hyperbolisch en omgekeerd evenredig ---------- */
 const hy=()=>{const c=pick([2,3,4,5,6,8,10,12,-4,-6]),p=nz(-6,6),q=nz(-6,6);return {c,p,q,f:`y = [[${num(c)}|x${pl(-p)}]]${pl(q)}`}};
-G.asym=m=>()=>{const H=hy(),st=[S('Verticale asymptoot: de noemer mag niet 0 zijn.',`$x${pl(-H.p)} = 0$ geeft $x = ${num(H.p)}$`),S('Horizontale asymptoot: het getal dat erbij of eraf gaat.',`$y = ${num(H.q)}$`)];
-  if(m==='v')return {q:`Geef de vergelijking van de <b>verticale</b> asymptoot van $${H.f}$. Typ het getal na $x =$.`,a:`$x = ${num(H.p)}$`,in:[{lab:'x',v:H.p}],st:[st[0]]};
-  if(m==='h')return {q:`Geef de vergelijking van de <b>horizontale</b> asymptoot van $${H.f}$. Typ het getal na $y =$.`,a:`$y = ${num(H.q)}$`,in:[{lab:'y',v:H.q}],st:[st[1]]};
-  return {q:`Wat zijn de asymptoten van de grafiek van $${H.f}$?`,a:`$x = ${num(H.p)}$ en $y = ${num(H.q)}$`,in:[{lab:'x =',v:H.p},{lab:'y =',v:H.q}],st}};
+/* uitleg bij asymptootvragen: wat is het, met een voorbeeldgrafiek (andere getallen dan de vraag), en na het antwoord de grafiek van de vraag zelf */
+const ASD=H=>{const e=H.p===2||H.q===1?[-3,2]:[2,1];return `Een <b>asymptoot</b> is een lijn waar de grafiek steeds dichter bij komt, maar die hij nooit raakt (de stippellijnen). De <b>verticale</b> staat rechtop: $x = …$, bij de x waar de noemer 0 wordt. De <b>horizontale</b> ligt plat: $y = …$, het getal dat erbij of eraf gaat.<br>Voorbeeld: $y = [[3|x${pl(-e[0])}]]${pl(e[1])}$ heeft $x = ${num(e[0])}$ en $y = ${num(e[1])}$.`+(V.GH?V.GH(x=>3/(x-e[0])+e[1],e[0],e[1],{x:[e[0]-6,e[0]+6],y:[e[1]-6,e[1]+6],u:14,label:'voorbeeld van een hyperbool met asymptoten'}):'')};
+const ASG=H=>V.GH?V.GH(x=>H.c/(x-H.p)+H.q,H.p,H.q,{x:[-10,10],y:[-10,10],u:11,label:'hyperbool met asymptoten'}):'';
+G.asym=m=>()=>{const H=hy(),st=[S('Verticale asymptoot: de noemer mag niet 0 zijn.',`$x${pl(-H.p)} = 0$ geeft $x = ${num(H.p)}$`),S('Horizontale asymptoot: het getal dat erbij of eraf gaat.',`$y = ${num(H.q)}$`)],
+  zie=S(m==='v'?`In de grafiek: de stippellijn rechtop bij $x = ${num(H.p)}$`:m==='h'?`In de grafiek: de platte stippellijn bij $y = ${num(H.q)}$`:'In de grafiek: de twee stippellijnen',ASG(H));
+  if(m==='v')return {q:`Geef de vergelijking van de <b>verticale</b> asymptoot van $${H.f}$. Typ het getal na $x =$.`,denk:ASD(H),a:`$x = ${num(H.p)}$`,in:[{lab:'x',v:H.p}],st:[st[0],zie]};
+  if(m==='h')return {q:`Geef de vergelijking van de <b>horizontale</b> asymptoot van $${H.f}$. Typ het getal na $y =$.`,denk:ASD(H),a:`$y = ${num(H.q)}$`,in:[{lab:'y',v:H.q}],st:[st[1],zie]};
+  return {q:`Wat zijn de asymptoten van de grafiek van $${H.f}$?`,denk:ASD(H),a:`$x = ${num(H.p)}$ en $y = ${num(H.q)}$`,in:[{lab:'x =',v:H.p},{lab:'y =',v:H.q}],st:[...st,zie]}};
 G.hypin=()=>{const H=hy(),d=pick([1,2,-1,-2,4].filter(v=>H.c%v===0)),x=H.p+d,y=H.c/d+H.q;
   return {q:`Gegeven is $${H.f}$. Bereken y bij $x = ${num(x)}$.`,a:`$y = ${num(y)}$`,in:[{lab:'y',v:y}],
     st:[S('Eerst de noemer.',`$${num(x)}${pl(-H.p)} = ${num(d)}$`),S('Dan delen en erbij/eraf.',`$y = ${num(H.c)} : ${par(d)}${pl(H.q)} = ${num(H.c/d)}${pl(H.q)} = ${num(y)}$`)]}};

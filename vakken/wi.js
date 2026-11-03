@@ -125,6 +125,7 @@ const SECS=[
  {id:'hyp',par:'3.4',nr:'10',name:'Hyperbolisch en omgekeerd evenredig',c:'--c5',sub:'Asymptoten en y = c : x',
   rules:[
    ['Gebroken formule: x staat in de noemer. De grafiek heet een hyperbool','$y = [[3|x - 4]] + 1$',''],
+   ['Asymptoot: een lijn waar de grafiek steeds dichter bij komt, maar die hij nooit raakt','In de grafiek tekenen ze hem als stippellijn','Verticaal = rechtop, de vergelijking is $x = …$. Horizontaal = plat, de vergelijking is $y = …$.'],
    ['Verticale asymptoot: waar de noemer 0 wordt','$x - 4 = 0$, dus $x = 4$','Delen door 0 kan niet. Bij $x = 4$ heeft de formule geen uitkomst.'],
    ['Horizontale asymptoot: het getal dat erbij staat','$+ 1$, dus $y = 1$','Bij heel grote x wordt de breuk bijna 0. Dan blijft er bijna 1 over.'],
    ['Omgekeerd evenredig: $y = [[c|x]]$. x keer y is altijd c','lengte · breedte $= 900$','x wordt k keer zo groot, dan wordt y k keer zo klein.'],
@@ -188,6 +189,7 @@ const SNAP={
   ['Waarom is de top van $y = a(x - p)^2 + q$ het punt $(p, q)$?','$(x - p)^2$ is nooit negatief. Het kleinste wat het kan zijn is 0, en dat is precies bij $x = p$.<br>Dan staat er $y = a·0 + q = q$. Wat a ook is, het wordt 0. Daarom heeft a geen invloed op de top.'],
   ['Waarom snijdt $y = a(x - m)(x - n)$ de x-as bij m en n?','Iets keer iets is alleen 0 als één van de twee 0 is. Bij $x = m$ is $(x - m) = 0$, en bij $x = n$ is $(x - n) = 0$. Dan is y dus 0: daar snijdt de grafiek de x-as.']],
  hyp:[
+  ['Wat is een asymptoot eigenlijk?','Een hyperbool heeft twee takken. Elke tak buigt steeds dichter naar twee lijnen toe, maar raakt ze nooit. Die lijnen heten asymptoten; in een grafiek staan ze als stippellijn.<br>De <b>verticale</b> asymptoot staat rechtop. Op zo’n lijn hebben alle punten dezelfde x, dus de vergelijking is $x = …$. Hij ligt bij de x die je niet mag invullen, omdat de noemer dan 0 wordt.<br>De <b>horizontale</b> asymptoot ligt plat: alle punten hebben dezelfde y, dus $y = …$.'],
   ['Waarom komt de grafiek nooit bij de asymptoot?','Bij $y = [[3|x - 4]] + 1$: neem $x = 3,9$. Dan is de noemer $-0,1$ en de breuk $3 : -0,1 = -30$. Bij $x = 3,99$ is het al $-300$.<br>Hoe dichter bij 4, hoe groter de breuk. Bij precies 4 deel je door 0, en dat kan niet. Daarom raakt de grafiek de lijn $x = 4$ nooit.'],
   ['Waarom is x keer y altijd hetzelfde bij omgekeerd evenredig?','Een rechthoek van 900 cm²: lengte keer breedte is altijd 900. Wordt de lengte 2 keer zo groot, dan moet de breedte 2 keer zo klein worden. Anders klopt de oppervlakte niet meer.']],
  wort:[
@@ -1501,7 +1503,7 @@ const SPRINT=[
  ()=>{const p=R(1,6)*(Math.random()<.5?-1:1),q=R(-9,9);return {q:`$y = 2(x${pl(-p)})^2${pl(q)}$. Wat is de y van de top?`,a:q,e:''}},
  ()=>{const v=R(1,9),d=R(1,6);return {q:`$y = [[${d*v}|x]]$. Bereken y bij $x = ${d}$`,a:v,e:''}}
 ];
-return {id:'wi',naam:'Wiskunde',afk:'WI',kop:'Hoofdstuk 3 Verbanden',log:LOG,SECS,SNAP,BEG:[],Q,snapHtml,sprint:SPRINT,
+return {GH,id:'wi',naam:'Wiskunde',afk:'WI',kop:'Hoofdstuk 3 Verbanden',log:LOG,SECS,SNAP,BEG:[],Q,snapHtml,sprint:SPRINT,
  leer:['3.1','3.2','3.3','3.4','3.5'],
  custom:{teken:drawTeken,tik:drawTik},
  PN:{vk:'Voorkennis van vorig jaar',
