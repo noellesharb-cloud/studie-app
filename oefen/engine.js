@@ -33,7 +33,7 @@ window.Oefen=(()=>{
   const uitw=q=>`<ol class="uitw">${q.st.map(x=>`<li><div><div class="why">${fmt(x.t)}</div><div class="res">${fmt(x.s)}</div></div></li>`).join('')}</ol>`;
   const form=(q,alt)=>(!alt||!q.v)?q:typeof q.v==='function'?Object.assign({},q,{denk:''},q.v()):Object.assign({},q,{q:q.v.q,a:q.v.a??q.a,f:q.v.f??q.f,st:q.v.st??q.st});
   /* getypt antwoord: komma, punt, minteken of breuk (3/4, -2/3) */
-  const lees=v=>{v=String(v).trim().replace(/\s/g,'').replace(/^[−–]/,'-').replace(/^\((.*)\)$/,'$1');const b=v.match(/^(-?\d+(?:[.,]\d+)?)\/(-?\d+)$/);if(b)return parseFloat(b[1].replace(',','.'))/+b[2];return v===''?NaN:Number(v.replace(',','.'))};
+  const lees=v=>{v=String(v).trim().replace(/\s/g,'').replace(/[−–‐]/g,'-').replace(/^[a-zA-Zρ]=/,'').replace(/^\((.*)\)$/,'$1');const b=v.match(/^(-?\d+(?:[.,]\d+)?)\/(-?\d+)$/);if(b)return parseFloat(b[1].replace(',','.'))/+b[2];return v===''?NaN:Number(v.replace(',','.'))};
   const zelfde=(x,a)=>isFinite(x)&&Math.abs(x-a)<=Math.max(0.006,Math.abs(a)*0.002);
   const retryAlt=(id,it)=>typeof QM[id].v==='function'?true:it.alt?false:!!QM[id].v;
   const wrongIn=id=>ST.wrong.filter(x=>QM[x]&&QM[x].o===id).length;
@@ -318,7 +318,7 @@ window.Oefen=(()=>{
      Ze werkt de som uit op papier, typt het eindantwoord (als dat een getal is), ziet daarna de hele uitwerking
      en vinkt aan welke stappen ze zelf goed had. Komt in toetsvorm: alles in 'Oefentoets uit het boek' en 'Toetsvorm' per paragraaf,
      en in gewone rondes elke vraag die ze eerder al in één keer goed had (niet bij huiswerk, opwarmen of een herkansing). */
-  const eindGetal=a=>{const t=String(a??'').replace(/\$/g,'').replace(/−/g,'-').replace(/^\s*[a-zA-Z]\s*=\s*/,'').trim();
+  const eindGetal=a=>{const t=String(a??'').replace(/\$/g,'').replace(/−/g,'-').replace(/^\s*[a-zA-Zρ]\s*=\s*/,'').trim();
     const m=t.match(/^(-?\d[\d.]*(?:,\d+)?)\s*[a-zA-Z°%³²µ\/^\d .]*$/);if(!m)return null;
     let x=m[1];if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^\-?\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,'');
     const n=Number(x);return isFinite(n)?n:null};
@@ -336,7 +336,7 @@ window.Oefen=(()=>{
     el.querySelector('#stop').onclick=stopRonde;
     const ti=el.querySelector('#ta');if(ti)ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};
     el.querySelector('#see').onclick=()=>{
-      const typed=ti?ti.value.trim():'',goed=g==null?null:typed!==''&&zelfde(lees(typed),g);
+      const typed=ti?ti.value.trim():'',tn=eindGetal(typed),tl=lees(typed),goed=g==null?null:typed!==''&&(isFinite(tl)?zelfde(tl,g):tn!=null&&zelfde(tn,g));
       if(ti){ti.disabled=true;ti.classList.add(goed?'ok':'bad')}
       el.querySelector('#see').remove();
       const box=el.querySelector('#kp');
