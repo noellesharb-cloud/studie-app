@@ -113,6 +113,12 @@ window.Oefen=(()=>{
     /* ongeveer 4 van de 5 uit de regels die nog niet goed gaan, 1 ter herhaling */
     const ids=[...f,...z.slice(0,Math.max(0,n-1-f.length))];ids.push(...r.slice(0,n-ids.length));if(ids.length<n)ids.push(...z.filter(id=>!ids.includes(id)).slice(0,n-ids.length));
     return shuf(ids)}
+  /* opwarmen: 3 vragen uit eerdere paragrafen van dit vak (vóór de paragraaf van het huiswerk), eerst je foute vragen; geen open vragen of eigen vraagsoorten */
+  function warmPool(vd,par){const v=VAKDATA[vd];if(!v)return [];const ps=v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))],i=ps.indexOf(par);
+    if(i<1)return [];const eerder=new Set(ps.slice(0,i)),sec=Object.fromEntries(v.SECS.map(s=>[s.id,s.par]));
+    return v.Q.filter(q=>eerder.has(sec[q.o])&&q.t!=='open'&&!q.type).map(q=>q.id)}
+  function warmIds(vd,par){const pool=warmPool(vd,par),st=Oefen.ctx.state(vd),f=shuf((st.wrong||[]).filter(id=>pool.includes(id))).slice(0,2);
+    return shuf([...f,...shuf(pool.filter(id=>!f.includes(id))).slice(0,3-f.length)])}
   function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
   function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
   function ptoets(p){const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
@@ -189,7 +195,7 @@ window.Oefen=(()=>{
     <div class="card q">${fmt(q.q)}</div>
     ${!R.exam?`${q.denk?`<details class="denk"${guided?' open':''}><summary>Hoe pak ik dit aan?</summary>${fmt(q.denk)}</details>`:''}
     ${V.SNAP[q.o]&&V.snapInVraag!==false?`<details class="denk"><summary>Snap het: waarom werkt dit?</summary>${V.snapHtml(q.o)}</details>`:''}`:''}`}
-  function stopRonde(){if(R&&R.hw&&Oefen._hw)return hwHome(Oefen._hw);R&&R.sec?section(R.sec):home()}
+  function stopRonde(){if(R&&R.van){done();return Oefen.ctx.home()}if(R&&R.hw&&Oefen._hw)return hwHome(Oefen._hw);R&&R.sec?section(R.sec):home()}
   function ask(){
     if(R.i>=R.queue.length)return end();
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
@@ -356,6 +362,12 @@ window.Oefen=(()=>{
   }
   function end(){
     if(R.mode==='diag')return diagEnd();
+    if(R.title==='Rekenregels van vandaag'&&Oefen.ctx.klaar)Oefen.ctx.klaar('rekenregels');
+    if(R.mode==='opwarm'){if(Oefen.ctx.klaar)Oefen.ctx.klaar(R.key);
+      const good=R.ids.filter(id=>R.first[id]).length;
+      el.innerHTML=`<span class="tag">${R.title}</span><div class="card stack"><div class="score">${good} / ${R.ids.length}</div><p>${good===R.ids.length?'Zit er nog in. ':'Wat fout ging, komt later nog eens terug. '}Je bent opgewarmd: begin nu aan je huiswerk.</p></div>
+      <div class="stack"><button class="btn" id="hm">Naar vandaag</button></div>`;
+      el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()};scrollTo(0,0);return}
     const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
     const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
     if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
@@ -372,7 +384,7 @@ window.Oefen=(()=>{
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
     el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
-    el.querySelector('#hm').onclick=R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;scrollTo(0,0);
+    el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
   }
 
   function diagEnd(){
@@ -465,6 +477,10 @@ window.Oefen=(()=>{
     huiswerk(target,id,H){el=target;load(id);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
+    /* vanuit het dagplan: opwarmvragen voor een vak, en de rekenregels van vandaag (tijd telt niet mee voor het vak zelf) */
+    warmPool,
+    opwarm(target,id,par,key){el=target;load(id);Oefen.cur='opwarm';start('opwarm',warmIds(id,par),'Opwarmen: '+V.naam,null,par);R.key=key;R.van=true},
+    rekenregels(target){el=target;load('wi');Oefen.cur='opwarm';start('oefen',dagIds(V.basis.par),'Rekenregels van vandaag',null,V.basis.par);R.van=true},
     load(id){load(id);return ST},
     pars(id){const v=VAKDATA[id];return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
     stop(){Oefen.cur=null}};
