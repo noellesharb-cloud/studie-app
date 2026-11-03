@@ -447,9 +447,13 @@ function huiswerkMin(s){if(vrijZa(s)||vrijDag(s))return 0;const g=pd(s).getDay()
 /* leertijd per toets terug in de tijd verdelen, eerste toets eerst, met een maximum per dag.
    Vrijdag en zaterdag: alleen een sprint. */
 const zwaarT=(v,t)=>(num(t.weging)??1)>=3||druk(v);
-/* bijhouden: direct na het huiswerk van een vak met een oefenapp, 20 minuten dezelfde paragraaf in de app */
+/* dagen tot de eerstvolgende toets (met datum, nog zonder cijfer) na dag s; 1e9 = geen komende toets.
+   Zonder komende toets geen bijhouden en geen dagelijks oefenen voor dat vak: dan alleen het huiswerk. */
+function dagenTotToets(vid,s){let best=1e9;(vakOf(vid)?.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null){const n=diffDays(s,t.datum);if(n>0&&n<best)best=n}});return best}
+const heeftToets=(vid,s)=>dagenTotToets(vid,s)<1e9;
+/* bijhouden: direct na het huiswerk van een vak met een oefenapp en een komende toets, 20 minuten dezelfde paragraaf in de app */
 function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchooldag(s),seen=new Set(),R=[];
-  hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||!APPS().includes(v.id)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
+  hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||!APPS().includes(v.id)||!heeftToets(v.id,s)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
     R.push({vid:v.id,par:h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id),h})});
   /* past het niet binnen het maximum, dan wordt elk bijhoudblok even korter (niet korter dan 10 min) */
   const room=SET.maxDagSchool-huiswerkMin(s),m=R.length?Math.max(10,Math.min(SET.bijMin,Math.floor(room/R.length/5)*5)):0;
@@ -500,11 +504,10 @@ function blokken(s){
       uit:`Toets over ${p.n} ${p.n===1?'dag':'dagen'} (${nice(p.t.datum)})${p.zwaar?' · extra tijd: '+((num(p.t.weging)??1)>=3?'telt '+p.t.weging+'× mee':'je moet hier omhoog'):''}. `+
         (bh?`Je beheerst ${bh.g} van de ${bh.n} paragrafen${bh.proefOk?' en je proeftoets is voldoende':''}. Daardoor is je toetsvoorbereiding ${Math.round(info.tot/60*10)/10} in plaats van ${info.vol/60} uur. De tijd telt vanzelf mee.`
           :app?'De tijd telt vanzelf mee.':'Overhoor jezelf en tik het blok daarna af.')}))});
-  /* elke schooldag ook leren met de app, ook als er nog geen toets dichtbij is, zolang het binnen het maximum past */
-  const room=(wk?SET.maxDagWeekend:SET.maxDagSchool)-B.reduce((a,b)=>a+b.min,0);
-  if(!B.some(b=>b.auto)&&APPS().length&&room>=10){
-    const next=id=>{let best=1e9;(vakOf(id)?.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null){const n=diffDays(s,t.datum);if(n>=0&&n<best)best=n}});return best};
-    const vid=APPS().slice().sort((a,b)=>next(a)-next(b))[0],par=volgendePar(vid);
+  /* elke schooldag ook leren met de app, zolang het binnen het maximum past; alleen voor een vak met een komende toets */
+  const room=(wk?SET.maxDagWeekend:SET.maxDagSchool)-B.reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
+  if(!B.some(b=>b.auto)&&metToets.length&&room>=10){
+    const vid=metToets.sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],par=volgendePar(vid);
     B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:wk?room:Math.min(SET.oefenMin,room),par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`});
   }
   if(!B.length)B.push({key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint.'});
@@ -766,7 +769,7 @@ function rWeek(){
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
       <button class="btn ghost sm" id="vk-add" style="margin-top:8px" ${dis}>Vakantie of vrije dag toevoegen</button></div>
-    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Na huiswerk voor een vak dat in de app zit, komt bijhouden: dezelfde paragraaf in de app. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Na huiswerk voor een vak dat in de app zit en een komende toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak geen toets met een datum meer, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
   </details>`;
   $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
