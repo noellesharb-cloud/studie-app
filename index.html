@@ -259,7 +259,7 @@ input.nm{width:100%}
 .dot.on{background:var(--flame);border-color:var(--flame);color:#1D2842;font-weight:700}
 .dot.now{outline:2px solid var(--ink);outline-offset:1px}
 .dot.vak{border-style:dashed;color:var(--soft);background:transparent}
-.vkr{display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:center;margin-top:6px}.vkr .nm{grid-column:1/3;width:100%}.vkr input[type=date]{width:100%;min-width:0}
+.vkr{display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:center;margin-top:6px}.vkr .nm{grid-column:1/3;width:100%;text-align:left}.vkr input[type=date]{width:100%;min-width:0}
 div.blk{cursor:default}
 button.ck{background:transparent;padding:0;cursor:pointer;width:32px!important;height:32px!important;font-size:1.05rem}
 button.ck:disabled{cursor:default}
@@ -766,7 +766,7 @@ function rWeek(){
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
       <button class="btn ghost sm" id="vk-add" style="margin-top:8px" ${dis}>Vakantie of vrije dag toevoegen</button></div>
-    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Na huiswerk voor een vak dat in de app zit, komt bijhouden: dezelfde paragraaf in de app. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint.</p>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Na huiswerk voor een vak dat in de app zit, komt bijhouden: dezelfde paragraaf in de app. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
   </details>`;
   $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
