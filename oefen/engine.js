@@ -48,10 +48,49 @@ window.Oefen=(()=>{
   function load(id){vid=id;V=VAKDATA[id];QM=Object.fromEntries(V.Q.map(q=>[q.id,q]));
     ST=Oefen.ctx.state(id);ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};}
   function done(){Oefen.cur=null}
+  let toonAlles=false;
+  const vandaag=()=>Oefen.ctx.today?Oefen.ctx.today():new Date().toLocaleDateString('sv-SE');
+  /* route per paragraaf: dag 1 begrippen (beg) en een oefenronde (vr), dag 2 de paragraaftoets (pt). d1 = dag waarop stap 1 en 2 af waren. */
+  function rt(p){ST.route=ST.route||{};return ST.route[p]=ST.route[p]||{}}
+  const isOpen=id=>QM[id].t==='open'||!!QM[id].open;
+  /* oefenronde: 10 vragen uit deze paragraaf, eerst je foute vragen (max 3), dan uit elk onderdeel één, hoogstens 2 open vragen */
+  function routeIds(p){const all=V.Q.filter(q=>secOf(q.o).par===p).map(q=>q.id),pick=shuf(ST.wrong.filter(id=>all.includes(id))).slice(0,3);
+    V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(all.filter(id=>QM[id].o===s.id&&!pick.includes(id)));if(l.length)pick.push(l[0])});
+    pick.push(...shuf(all.filter(id=>!pick.includes(id))));let no=0;
+    return shuf(pick.filter(id=>!isOpen(id)||++no<=2).slice(0,10))}
+  function routeCheck(p){const r=rt(p),d=vandaag();if(r.d1===d)return;
+    if((!begVan(p).length||r.beg===d)&&r.vr===d){if(r.d1)r.vorig=r.d1;r.d1=d;save();if(Oefen.ctx.klaar)Oefen.ctx.klaar('bij1-'+vid+'-'+p)}}
+  /* het stappenscherm: wat is er vandaag aan de beurt voor deze paragraaf */
+  function route(){
+    const p=focusPar,r=rt(p),d=vandaag(),nb=begVan(p).length,dag2=focusMode==='ptoets',pr=ST.ptoets[p],n=nb?3:2;
+    const begOk=!nb||r.beg===d||(dag2&&!!r.beg),vrOk=r.vr===d||(dag2&&!!r.vr),klaar1=!dag2&&begOk&&vrOk,ptNu=r.pt===d;
+    const nu=dag2?(ptNu?0:n):!begOk?1:!vrOk?(nb?2:1):0;
+    const stap=(i,ok,titel,uit,knop,id)=>`<div class="stap${ok?' ok':''}${nu===i?' nu':''}"><span class="sn">${ok?'✓':i}</span><span class="tx"><b>${titel}</b><small>${uit}</small>${nu===i&&knop?`<button class="btn" id="${id}">${knop}</button>`:''}</span></div>`;
+    const S=[];
+    if(nb)S.push(stap(1,begOk,`Begrippen-kaartjes (${nb})`,dag2&&r.beg!==d?'Gedaan.':'Bedenk eerst zelf wat het betekent, draai dan om. Wat je nog niet wist, komt terug tot je het weet.','Begin met de begrippen','rt-beg'));
+    S.push(stap(nb?2:1,vrOk,'Oefenronde: 10 vragen',dag2&&r.vr!==d?'Gedaan.':'Vragen uit deze paragraaf, met hulp als je vastloopt. Wat je fout had, komt meteen nog een keer.','Start de oefenronde','rt-vr'));
+    S.push(stap(n,ptNu||(!dag2&&pr&&pr.best>=7),'Paragraaftoets: 10 vragen zonder hulp',
+      dag2?(ptNu?`Gemaakt: ${f1(pr.laatst)}. ${pr.laatst>=7?'De paragraaf heeft een vinkje.':'Nog geen 7: oefen je fouten. Morgen staat hij weer in je plan.'}`:'Kijk of het van gisteren is blijven hangen. Bij een 7 of hoger krijgt de paragraaf een vinkje.')
+        :pr&&pr.best>=7?`Al gehaald (${f1(pr.best)}).`:'Morgen. Een dag later laat zien of het echt is blijven hangen.','Start de paragraaftoets','rt-pt'));
+    el.innerHTML=`<div class="top"><button class="link" id="back">← Vandaag</button><span class="tag">${V.kop}</span></div>
+    <h2>${V.naam} · ${V.PN[p]||p}</h2>
+    <p class="sub">${dag2?`Stap ${n} van ${n}: vandaag alleen de paragraaftoets.`:`Stap 1${nb?' en 2':''} van ${n} vandaag. De paragraaftoets doe je morgen.`}</p>
+    <div class="stappen">${S.join('')}</div>
+    ${klaar1||(dag2&&ptNu)?`<div class="card stack"><b>${dag2?'Klaar voor vandaag.':'Klaar voor vandaag! Morgen staat de paragraaftoets in je plan.'}</b><button class="btn" id="rt-hm">Naar vandaag</button></div>`:''}
+    <button class="link" id="rt-alles" style="margin-top:14px">Alles van ${V.naam} bekijken</button>`;
+    const q=s=>el.querySelector(s),on=(s,f)=>{if(q(s))q(s).onclick=f};
+    const naarVandaag=()=>{done();Oefen.ctx.home({vandaag:true})};on('#back',naarVandaag);on('#rt-hm',naarVandaag);
+    on('#rt-beg',()=>kStart(shuf(begVan(p)),false,p));
+    on('#rt-vr',()=>{start('oefen',routeIds(p),'Oefenronde '+(V.PN[p]||p),null,p);R.route=p});
+    on('#rt-pt',()=>ptoets(p));
+    on('#rt-alles',()=>{toonAlles=true;home()});
+    scrollTo(0,0);
+  }
 
   /* ---------- startscherm van een vak ---------- */
   function home(){
     Oefen.cur=vid;
+    if((focusMode==='bijhouden'||focusMode==='ptoets')&&focusPar&&!toonAlles&&pars().includes(focusPar))return route();
     const secBtn=s=>{const n=V.Q.filter(q=>q.o===s.id).length,b=ST.best[s.id],w=wrongIn(s.id);
       return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${ST.diag&&ST.diag.r[s.id]?` · instaptoets ${ST.diag.r[s.id][0]}/${ST.diag.r[s.id][1]}`:''}${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
     const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7;
@@ -61,15 +100,11 @@ window.Oefen=(()=>{
       return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
       <button class="sec" id="b-dag"><span class="sq" style="background:var(--c2)">5</span><span><b>Rekenregels van vandaag</b><small>${B.dag||5} sommen, ongeveer 5 minuten. ${d?'Vooral de regels die nog niet goed gaan.':'Maak eerst de instaptoets, dan weet de app wat je moet oefenen.'}</small></span></button>
       <button class="sec" id="b-ov"><span class="sq" style="background:var(--line)">≡</span><span><b>Alle rekenregels onder elkaar</b><small>Het overzicht. Schrijf het over in je schrift, met bij elke regel een eigen voorbeeld.</small></span></button>`};
-    const bh=focusMode==='bijhouden'&&focusPar,tv=focusMode==='toets';
+    const tv=focusMode==='toets';
     const ok=leerPars().filter(p=>ST.ptoets[p]&&ST.ptoets[p].best>=7);
     el.innerHTML=`
     ${top('Alle vakken',V.kop)}
     <h2>${V.naam}</h2>
-    ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
-      <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
-      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li></ol>
-      <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
       <p>${ok.length} van ${leerPars().length} paragrafen gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
       <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li></ol></div>`:''}
@@ -91,8 +126,6 @@ window.Oefen=(()=>{
     const ka=el.querySelector('#kaart');if(ka)ka.onclick=kaartMenu;
     el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>kStart(shuf(begVan(b.dataset.bp)),false));
     const q=x=>el.querySelector(x);
-    if(q('#bh-beg'))q('#bh-beg').onclick=()=>kStart(shuf(begVan(focusPar)),false);
-    if(q('#bh-pt'))q('#bh-pt').onclick=()=>ptoets(focusPar);
     if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
@@ -103,7 +136,7 @@ window.Oefen=(()=>{
     if(q('#b-diag'))q('#b-diag').onclick=()=>start('diag',shuf(diagIds(B.par)),'Instaptoets rekenregels',null,B.par);
     if(q('#b-dag'))q('#b-dag').onclick=()=>start('oefen',dagIds(B.par),'Rekenregels van vandaag',null,B.par);
     if(q('#b-ov'))q('#b-ov').onclick=()=>spiek(B.par);
-    const f=focusPar&&!bh&&el.querySelector('#par-'+focusPar.replace('.','-'));
+    const f=focusPar&&el.querySelector('#par-'+focusPar.replace('.','-'));
     if(f)f.scrollIntoView({block:'start'});else scrollTo(0,0);
   }
   const basisSec=id=>!!V.basis&&secOf(id).par===V.basis.par;
@@ -167,9 +200,12 @@ window.Oefen=(()=>{
     const b3=el.querySelector('#b3');if(b3)b3.onclick=()=>kStart(shuf(V.BEG.filter(b=>ST.wrongB.includes(b[0]))),false);
     scrollTo(0,0);
   }
-  function kStart(stack,rev){K={stack:stack.slice(),rev,tot:stack.length,done:0,first:{}};kaart()}
+  function kStart(stack,rev,route){K={stack:stack.slice(),rev,tot:stack.length,done:0,first:{},route};kaart()}
   function kaart(){
     if(!K.stack.length){const good=Object.values(K.first).filter(x=>x).length;
+      if(K.route){rt(K.route).beg=vandaag();save();routeCheck(K.route);
+        el.innerHTML=`<span class="tag">Begrippen-kaartjes</span><div class="card stack"><div class="score">${good} / ${K.tot}</div><p>meteen geweten. Alle kaartjes zitten erin.</p></div>
+        <div class="stack"><button class="btn" id="hm">Verder</button></div>`;el.querySelector('#hm').onclick=home;scrollTo(0,0);return}
       el.innerHTML=`<span class="tag">Begrippen-kaartjes</span><div class="card stack"><div class="score">${good} / ${K.tot}</div><p>meteen geweten.</p></div>
       <div class="stack"><button class="btn" id="again">Nog een keer</button><button class="btn ghost" id="hm">Terug naar ${V.naam}</button></div>`;
       el.querySelector('#again').onclick=kaartMenu;el.querySelector('#hm').onclick=home;return;}
@@ -180,7 +216,7 @@ window.Oefen=(()=>{
     <div class="row" id="kb" hidden><button class="btn" id="wel" style="flex:1">Wist ik</button><button class="btn ghost" id="niet" style="flex:1">Wist ik nog niet</button></div>`;
     const fl=el.querySelector('#fl');
     fl.onclick=()=>{fl.innerHTML=K.rev?`<span class="why">${front}</span><b>${back}</b>`:`<b>${front}</b><span>${back}</span>`;el.querySelector('#kb').hidden=false;fl.onclick=null};
-    el.querySelector('#stop').onclick=kaartMenu;
+    el.querySelector('#stop').onclick=K.route?home:kaartMenu;
     el.querySelector('#wel').onclick=()=>{if(!(t in K.first))K.first[t]=true;ST.wrongB=ST.wrongB.filter(x=>x!==t);save();K.stack.shift();K.done++;kaart()};
     el.querySelector('#niet').onclick=()=>{if(!(t in K.first))K.first[t]=false;if(!ST.wrongB.includes(t))ST.wrongB.push(t);save();K.stack.push(K.stack.shift());kaart()};
     scrollTo(0,0);
@@ -421,7 +457,8 @@ window.Oefen=(()=>{
     const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
     const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
     if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
-    if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0};ST.ptoets[R.par]={best:Math.max(o.best,c),laatst:c}}
+    if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0};ST.ptoets[R.par]={best:Math.max(o.best,c),laatst:c};rt(R.par).pt=vandaag();if(Oefen.ctx.klaar)Oefen.ctx.klaar('bij2-'+vid+'-'+R.par)}
+    if(R.route){rt(R.route).vr=vandaag();routeCheck(R.route)}
     save();
     const wrong=R.ids.filter(id=>!R.first[id]);
     const msg=R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
@@ -431,7 +468,7 @@ window.Oefen=(()=>{
     ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
     <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
       <button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':'Nieuwe ronde'}</button>
-      <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
+      <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':R.route||(focusMode==='ptoets'&&R.mode==='ptoets')?'Terug naar je stappen':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
     el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
@@ -523,8 +560,8 @@ window.Oefen=(()=>{
   }
 
   return {ctx:null,cur:null,
-    vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
-    huiswerk(target,id,H){el=target;load(id);focusPar=H.par||null;focusMode=null;hwHome(H)},
+    vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;toonAlles=false;home()},
+    huiswerk(target,id,H){el=target;load(id);focusPar=H.par||null;focusMode=null;toonAlles=false;hwHome(H)},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
     /* vanuit het dagplan: opwarmvragen voor een vak, en de rekenregels van vandaag (tijd telt niet mee voor het vak zelf) */
