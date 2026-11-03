@@ -398,18 +398,16 @@ window.Oefen=(()=>{
   function sprint(target,kind,sec){
     el=target;Oefen.cur='sprint';
     const gens=Object.values(VAKDATA).flatMap(v=>v.sprint||[]);
-    /* woordjes en begrippen alleen van vakken met een komende toets (de rekensprint is algemeen rekenen) */
+    /* woordjessprint: alleen echte woordjes van talen met een komende toets, geen begrippen (de rekensprint is algemeen rekenen) */
     const mee=id=>!Oefen.ctx.metToets||Oefen.ctx.metToets(id);
-    const beg=Object.values(VAKDATA).filter(v=>mee(v.id)).flatMap(v=>v.BEG||[]);
     const TL=kind==='woord'&&window.WOORD?window.WOORD.talen().filter(t=>mee(t.id)):[];
-    const mask=(t,u)=>u.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…');
     S={kind,end:0,good:0,bad:0,sec};
     const intro=()=>{el.innerHTML=`${top('Vandaag')}<h2>${kind==='reken'?'Rekensprint':'Woordjessprint'}</h2>
-      <div class="card stack"><p>${kind==='reken'?'Korte sommen, zo snel als je kunt. Typ het antwoord en druk op Enter (een komma of een breuk als 3/4 mag), of tik het goede teken. Weet je het niet? Tik op <b>Sla over</b> en ga door: op een toets doe je dat ook.':(TL.length?'Echte woordjes, zo snel als je kunt. Kies de taal. Woordjes die je fout hebt, komen vaker terug; woordjes die je goed kent, minder vaak.':'Je ziet een uitleg. Tik het goede begrip.')}</p>
+      <div class="card stack"><p>${kind==='reken'?'Korte sommen, zo snel als je kunt. Typ het antwoord en druk op Enter (een komma of een breuk als 3/4 mag), of tik het goede teken. Weet je het niet? Tik op <b>Sla over</b> en ga door: op een toets doe je dat ook.':(TL.length?'Echte woordjes, zo snel als je kunt. Kies de taal. Woordjes die je fout hebt, komen vaker terug; woordjes die je goed kent, minder vaak.':'Er komt nu geen toets in een taal met woordjes in de app. Doe een rekensprint.')}</p>
       <p class="sub">${Math.round(sec/60)} minuten. Zoveel mogelijk goed. Fout kost je niets, alleen tijd.</p></div>
       ${kind==='woord'&&TL.length?`<div class="stack">${TL.map(t=>{const st=window.WOORD.stand(t.id);return `<button class="sec" data-taal="${t.id}"><span class="sq" style="background:var(--c${TL.indexOf(t)%6+1})">${t.taal.slice(0,2).toUpperCase()}</span><span><b>${t.taal}</b><small>${t.n} woordjes · ${st.kent} ken je · ${st.lastig} nog lastig · ${st.nieuw} nieuw</small></span></button>`}).join('')}</div>`:'<button class="btn" id="go">Start</button>'}`;
       el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
-      if(kind==='woord'&&!TL.length&&beg.length<4){const g0=el.querySelector('#go');if(g0)g0.outerHTML='<div class="card">Er komt nu geen toets met woordjes of begrippen. Doe een rekensprint.</div>'}
+      if(kind==='woord'&&!TL.length){const g0=el.querySelector('#go');if(g0)g0.remove()}
       const g=el.querySelector('#go');if(g)g.onclick=run;
       el.querySelectorAll('[data-taal]').forEach(b=>b.onclick=()=>{S.vid=b.dataset.taal;run()})};
     let cur,timer;
@@ -449,10 +447,7 @@ window.Oefen=(()=>{
           el.querySelector('#sf').onsubmit=e=>{e.preventDefault();if(!i.value.trim())return;const ok=WD.kloptTyp(i.value,W.goed);i.classList.add(ok?'ok':'bad');klaar(ok)}}
         else el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===W.goed;
           el.querySelectorAll('[data-o]').forEach(y=>{if(y.dataset.o===W.goed)y.classList.add('ok');else if(y===x)y.classList.add('bad')});klaar(ok)});
-      }else{const b=shuf(beg),[t,u]=b[0],opts=shuf([t,b[1][0],b[2][0],b[3][0]]);
-        el.innerHTML=head+`<div class="card q">${mask(t,u)}</div><div class="opts">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join('')}</div>`;
-        el.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>{const ok=x.dataset.o===t;ok?S.good++:S.bad++;
-          el.querySelectorAll('[data-o]').forEach(y=>{y.disabled=true;if(y.dataset.o===t)y.classList.add('ok');else if(y===x)y.classList.add('bad')});setTimeout(next,ok?300:1100)});}
+      }
       clock();
     }
     function finish(){clearInterval(timer);if(S.done)return;S.done=1;
