@@ -1,0 +1,365 @@
+/* ============================================================
+   Wiskunde: DE BASIS: REKENREGELS
+   Voorkennis uit H1 en H8 die bij H3 steeds terugkomt: volgorde van bewerkingen,
+   negatieve getallen, machten, haakjes wegwerken, wortels en invullen.
+   - Instaptoets: per regel 2 of 3 sommen (diag:1), zonder hulp. Daarna ziet ze per regel hoe het gaat.
+   - Rekenregels van vandaag: 5 sommen, vooral uit de regels die nog niet goed gaan.
+   - Elke rekensom die fout gaat, komt terug met nieuwe getallen (typen, geen keuze).
+   Laadt na vakken/wi.js en vakken/wi-var.js. De motor (oefen/engine.js) leest V.basis.
+   ============================================================ */
+(()=>{
+const V=window.VAKDATA&&VAKDATA.wi;if(!V)return;
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.random()*a.length|0];
+const S=(t,s)=>({t,s});
+const C=(t,v,mc,s)=>({t,v,mc,s});
+const P=x=>x<0?`(${x})`:`${x}`;                 /* negatief getal tussen haakjes */
+const sg=x=>x<0?`- ${-x}`:`+ ${x}`;               /* + 3 of - 3 */
+const T=(q,v,st,lab)=>({q,a:`$${v}$`,in:[{lab:lab||'=',v}],st});
+const Y=(q,v,st)=>({q,a:`$y = ${v}$`,in:[{lab:'y',v}],st});
+
+/* ---------- onderdelen ---------- */
+const SECS=[
+ {id:'rr1',par:'rr',nr:'R1',name:'Volgorde van bewerkingen',c:'--c1',sub:'Haakjes, machten, keer en delen, plus en min',
+  rules:[
+   ['1. Eerst wat tussen haakjes staat','$2 · (3 + 4) = 2 · 7 = 14$','Zonder haakjes: $2 · 3 + 4 = 6 + 4 = 10$.'],
+   ['2. Dan machten en wortels','$3 + 2^2 = 3 + 4 = 7$',''],
+   ['3. Dan keer en delen, van links naar rechts','$12 : 3 · 2 = 4 · 2 = 8$','Keer gaat niet vóór delen. Ze zijn even sterk: gewoon van links naar rechts.'],
+   ['4. Als laatste plus en min, van links naar rechts','$10 - 4 + 3 = 6 + 3 = 9$','Niet eerst $4 + 3$ doen, want dan krijg je 3.'],
+   ['Een breukstreep werkt als haakjes','$[[6 + 4|2]] = 10 : 2 = 5$','Reken eerst boven en onder uit. Daarna pas delen.']]},
+ {id:'rr2',par:'rr',nr:'R2',name:'Rekenen met negatieve getallen',c:'--c2',sub:'De minregels',
+  rules:[
+   ['Plus en min met negatieve getallen: denk aan een thermometer','$-4 + 7 = 3$ en $-4 - 3 = -7$','Bij $-4 - 3$ ga je nog verder onder nul.'],
+   ['Plus een negatief getal is min','$5 + (-3) = 5 - 3 = 2$',''],
+   ['Min een negatief getal is plus','$5 - (-3) = 5 + 3 = 8$','Twee mintekens naast elkaar worden plus.'],
+   ['Keer en delen: tel de mintekens','$-3 · 4 = -12$ en $-3 · -4 = 12$','Eén minteken: de uitkomst is negatief. Twee mintekens: de uitkomst is positief.'],
+   ['Delen gaat net zo','$-12 : 4 = -3$ en $-12 : -4 = 3$','']]},
+ {id:'rr3',par:'rr',nr:'R3',name:'Machten en kwadraten',c:'--c3',sub:'Ook het verschil tussen −3² en (−3)²',
+  rules:[
+   ['Een macht is keer zichzelf, zo vaak als het kleine getal zegt','$4^3 = 4 · 4 · 4 = 64$','Niet $4 · 3 = 12$.'],
+   ['$-3^2$: het kwadraat hoort alleen bij de 3','$-3^2 = -(3 · 3) = -9$','Het minteken komt er pas daarna voor.'],
+   ['$(-3)^2$: het kwadraat hoort bij alles tussen de haakjes','$(-3)^2 = -3 · -3 = 9$','Een negatief getal in het kwadraat wordt altijd positief.'],
+   ['Een getal keer een macht: eerst de macht','$2 · 3^2 = 2 · 9 = 18$','Niet $(2 · 3)^2 = 36$.'],
+   ['$x · x = x^2$, maar $x + x = 2x$','$3x · 2x = 6x^2$','Getallen keer elkaar, letters keer elkaar.']]},
+ {id:'rr4',par:'rr',nr:'R4',name:'Haakjes wegwerken',c:'--c4',sub:'Min voor de haakjes en de papegaaienbek',
+  rules:[
+   ['Getal voor de haakjes: keer alles wat erin staat','$3(x + 4) = 3x + 12$','Niet alleen de x: ook de 4 gaat keer 3.'],
+   ['Min voor de haakjes: alle tekens binnen draaien om','$-(x - 5) = -x + 5$',''],
+   ['Negatief getal voor de haakjes: let op elk teken','$-2(x - 3) = -2x + 6$','$-2 · -3 = +6$: min keer min is plus.'],
+   ['Twee keer haakjes: iedereen keer iedereen (papegaaienbek)','$(x + 2)(x + 3) = x^2 + 3x + 2x + 6 = x^2 + 5x + 6$','Vier keer vermenigvuldigen. Daarna de x-en samen.'],
+   ['$(x + 3)^2$ is $(x + 3)(x + 3)$','$(x + 3)^2 = x^2 + 6x + 9$','Niet $x^2 + 9$: dan mis je de $6x$ in het midden.']]},
+ {id:'rr5',par:'rr',nr:'R5',name:'Wortels',c:'--c5',sub:'Wat mag wel en wat niet',
+  rules:[
+   ['$√{25} = 5$, want $5 · 5 = 25$','',''],
+   ['Eerst uitrekenen wat onder de wortel staat','$√{9 + 16} = √{25} = 5$','Niet $3 + 4 = 7$. Bij plus mag je de wortel niet splitsen.'],
+   ['Bij keer mag je de wortel wel splitsen','$√{4 · 9} = √{4} · √{9} = 2 · 3 = 6$',''],
+   ['Wortel keer dezelfde wortel: de wortel valt weg','$√{7} · √{7} = 7$','$√{7} + √{7} = 2√{7}$: dat is iets anders.'],
+   ['$-√{9} = -3$, maar $√{-9}$ bestaat niet','Geen getal keer zichzelf geeft iets negatiefs.','Belangrijk bij het randpunt in §3.5.']]},
+ {id:'rr6',par:'rr',nr:'R6',name:'Invullen in een formule',c:'--c6',sub:'Zoals in H3: negatieve getallen invullen',
+  rules:[
+   ['Vul je een negatief getal in? Zet het altijd tussen haakjes','$y = x^2$ met $x = -3$: $y = (-3)^2 = 9$','Zonder haakjes schrijf je $-3^2$, en dat is $-9$.'],
+   ['Reken daarna uit in de goede volgorde','Haakjes, machten, keer en delen, plus en min',''],
+   ['$-2x^2$ met $x = -3$: eerst het kwadraat, dan keer $-2$','$-2 · (-3)^2 = -2 · 9 = -18$','Niet eerst $-2 · -3$ doen.'],
+   ['$-x$ met $x = -4$ wordt $-(-4) = 4$','$y = 5 - x$ met $x = -4$: $y = 5 - (-4) = 9$','']]}
+];
+
+/* ---------- snap het: waarom klopt dit? ---------- */
+const SNAP={
+ rr1:[
+  ['Waarom gaat keer vóór plus?','$4 · 2$ betekent: vier keer een 2. Dat is samen één getal, 8.<br>Denk aan geld: je hebt € 3 en koopt 4 zakjes van € 2. Dat is $3 + 4 · 2 = 3 + 8 = 11$ euro. Niet $(3 + 4) · 2 = 14$.'],
+  ['Waarom van links naar rechts bij delen en keer?','Bij $12 : 3 · 2$ verdeel je eerst 12 snoepjes over 3 kinderen: ieder 4. Dan krijgt elk kind het dubbele: 8.<br>Wie eerst $3 · 2 = 6$ doet, deelt door 6 en krijgt 2. Dat is een andere som.'],
+  ['Waarom is $10 - 4 + 3 = 9$ en niet 3?','Het minteken hoort bij de 4. Je hebt 10, je haalt er 4 af en je krijgt er 3 bij: $10 - 4 + 3 = 9$.<br>Wie eerst $4 + 3 = 7$ doet, haalt er ook de 3 af. Maar die 3 kreeg je erbij.']],
+ rr2:[
+  ['Waarom is min keer min plus?','Kijk naar het patroon: $-3 · 2 = -6$, $-3 · 1 = -3$, $-3 · 0 = 0$.<br>Steeds komt er 3 bij. Ga door: $-3 · -1 = 3$ en $-3 · -2 = 6$. Daarom is min keer min plus.'],
+  ['Waarom is min een negatief getal plus?','Stel je hebt een schuld van € 3 (dat is $-3$). Iemand haalt die schuld weg: $- (-3)$. Dan ben je € 3 rijker. Dus $5 - (-3) = 5 + 3 = 8$.'],
+  ['Hoe reken je $-4 - 3$?','Denk aan een thermometer. Het is $-4$ graden en het wordt 3 graden kouder. Dan is het $-7$ graden.<br>Bij $-4 + 7$ wordt het 7 graden warmer: dan kom je boven nul uit, op 3.']],
+ rr3:[
+  ['Waarom is $-3^2 = -9$?','De macht is sterker dan het minteken, net zoals keer sterker is dan min. Dus eerst $3^2 = 9$, en daarna komt de min ervoor: $-9$.<br>Wil je dat het kwadraat ook bij het minteken hoort? Dan moeten er haakjes om: $(-3)^2 = -3 · -3 = 9$.'],
+  ['Waarom is $(-3)^2$ positief?','$(-3)^2 = -3 · -3$. Twee mintekens keer elkaar geeft plus. Dus 9. Elk negatief getal in het kwadraat wordt positief.'],
+  ['Waarom is $x · x = x^2$ en $x + x = 2x$?','$x + x$ is twee keer een x: $2x$. Bij $x = 5$ is dat $5 + 5 = 10$.<br>$x · x$ is x keer zichzelf: $x^2$. Bij $x = 5$ is dat $5 · 5 = 25$.']],
+ rr4:[
+  ['Waarom gaat ook de 4 keer 3 bij $3(x + 4)$?','$3(x + 4)$ betekent: drie keer $(x + 4)$. Dus $(x + 4) + (x + 4) + (x + 4)$.<br>Dat zijn drie x-en en drie keer een 4: $3x + 12$.'],
+  ['Waarom draaien de tekens om bij $-(x - 5)$?','$-(x - 5)$ is hetzelfde als $-1 · (x - 5)$.<br>$-1 · x = -x$ en $-1 · -5 = +5$. Dus $-x + 5$.'],
+  ['Waarom is $(x + 3)^2$ niet $x^2 + 9$?','Teken een vierkant met zijden $x + 3$. Het bestaat uit vier stukken: een vierkant $x · x$, een vierkant $3 · 3$, en twee rechthoeken van $3 · x$.<br>Samen: $x^2 + 3x + 3x + 9 = x^2 + 6x + 9$. Die twee rechthoeken vergeet je als je $x^2 + 9$ schrijft.<br>Controle met $x = 1$: $(1 + 3)^2 = 16$. En $1 + 6 + 9 = 16$ ✓, maar $1 + 9 = 10$ ✗.']],
+ rr5:[
+  ['Waarom mag $√{9 + 16}$ niet $3 + 4$ worden?','Reken het gewoon uit: $9 + 16 = 25$ en $√{25} = 5$. Maar $3 + 4 = 7$. Dat is niet hetzelfde, dus splitsen bij plus mag niet.'],
+  ['Waarom is $√{7} · √{7} = 7$?','$√{7}$ is precies het getal dat keer zichzelf 7 geeft. Dus $√{7} · √{7}$ is 7. Daar is de wortel voor bedacht.'],
+  ['Waarom bestaat $√{-9}$ niet?','Je zoekt een getal dat keer zichzelf $-9$ geeft. $3 · 3 = 9$ en $-3 · -3 = 9$. Het wordt altijd positief. Dus er is geen getal.']],
+ rr6:[
+  ['Waarom moet een negatief getal tussen haakjes?','In $y = x^2$ hoort het kwadraat bij de hele x. Is $x = -3$, dan moet het kwadraat bij de hele $-3$ horen: $(-3)^2 = 9$.<br>Zonder haakjes staat er $-3^2$ en dan hoort het kwadraat alleen bij de 3. Dan krijg je $-9$: fout.'],
+  ['Hoe controleer ik mijn antwoord?','Doe het met je rekenmachine, maar typ de haakjes er zelf om: $(-3)^2$. Typ je $-3^2$, dan geeft ook de rekenmachine $-9$.']]
+};
+
+/* ---------- sommen met nieuwe getallen (als ze een som fout had) ---------- */
+const G={
+ /* R1 */
+ pk:()=>{const a=R(2,9),b=R(2,9),c=R(2,9);return T(`Reken uit: $${a} + ${b} · ${c}$`,a+b*c,[S('Eerst keer.',`$${b} · ${c} = ${b*c}$`),S('Dan plus.',`$${a} + ${b*c} = ${a+b*c}$`)])},
+ md:()=>{const c=R(2,6),b=c*R(2,6),a=R(b,30);return T(`Reken uit: $${a} - ${b} : ${c}$`,a-b/c,[S('Eerst delen.',`$${b} : ${c} = ${b/c}$`),S('Dan min.',`$${a} - ${b/c} = ${a-b/c}$`)])},
+ dk:()=>{const b=R(2,5),k=R(2,6),a=b*k,c=R(2,5);return T(`Reken uit: $${a} : ${b} · ${c}$`,k*c,[S('Keer en delen zijn even sterk: van links naar rechts. Eerst delen.',`$${a} : ${b} = ${k}$`),S('Dan keer.',`$${k} · ${c} = ${k*c}$`)])},
+ mp:()=>{const a=R(10,20),b=R(2,9),c=R(2,9);return T(`Reken uit: $${a} - ${b} + ${c}$`,a-b+c,[S('Plus en min: van links naar rechts.',`$${a} - ${b} = ${a-b}$`),S('Dan plus.',`$${a-b} + ${c} = ${a-b+c}$`)])},
+ hm:()=>{const k=R(2,4),q=R(1,6),p=q+R(2,4),d=p-q;return T(`Reken uit: $${k} · (${p} - ${q})^2$`,k*d*d,[S('Eerst de haakjes.',`$${p} - ${q} = ${d}$`),S('Dan de macht.',`$${d}^2 = ${d*d}$`),S('Dan keer.',`$${k} · ${d*d} = ${k*d*d}$`)])},
+ br:()=>{const r=R(2,6),c=R(2,6),d=R(1,4),n=r*(c+d),b=R(2,9),a=n+b;return T(`Reken uit: $[[${a} - ${b}|${c} + ${d}]]$`,r,[S('Boven de streep.',`$${a} - ${b} = ${n}$`),S('Onder de streep.',`$${c} + ${d} = ${c+d}$`),S('Dan delen.',`$${n} : ${c+d} = ${r}$`)])},
+ pkm:()=>{const a=R(2,9),b=R(2,5),c=R(2,4);return T(`Reken uit: $${a} + ${b} · ${c}^2$`,a+b*c*c,[S('Eerst de macht.',`$${c}^2 = ${c*c}$`),S('Dan keer.',`$${b} · ${c*c} = ${b*c*c}$`),S('Dan plus.',`$${a} + ${b*c*c} = ${a+b*c*c}$`)])},
+ hk:()=>{const a=R(2,6),b=R(1,4),c=R(2,4),e=R(2,4),d=e*R(1,4),u=(a+b)*c-d/e;return T(`Reken uit: $(${a} + ${b}) · ${c} - ${d} : ${e}$`,u,[S('Eerst de haakjes.',`$${a} + ${b} = ${a+b}$`),S('Dan keer en delen.',`$${a+b} · ${c} = ${(a+b)*c}$ en $${d} : ${e} = ${d/e}$`),S('Dan min.',`$${(a+b)*c} - ${d/e} = ${u}$`)])},
+ /* R2 */
+ np:()=>{const a=R(3,12),b=R(1,12);return T(`Reken uit: $-${a} + ${b}$`,b-a,[S('Thermometer: begin bij $-'+a+'$ en ga '+b+' omhoog.',`$-${a} + ${b} = ${b-a}$`)])},
+ mn:()=>{const a=R(-9,9)||3,b=R(2,9);return T(`Reken uit: $${a} - (-${b})$`,a+b,[S('Min een negatief getal is plus.',`$${a} + ${b}$`),S('Uitrekenen.',`$${a+b}$`)])},
+ kk:()=>{const a=R(2,9),b=R(2,9),s1=pick([1,-1]),s2=pick([1,-1]),x=s1*a,y=s2*b;return T(`Reken uit: $${x} · ${P(y)}$`,x*y,[S(`Tel de mintekens: ${(s1<0)+(s2<0)}. ${(s1<0)+(s2<0)===1?'Eén minteken: negatief.':'Geen of twee mintekens: positief.'}`,`$${a} · ${b} = ${a*b}$, dus $${x*y}$`)])},
+ mm:()=>{const a=R(2,9),b=R(2,9);return T(`Reken uit: $-${a} - ${b}$`,-a-b,[S(`Thermometer: begin bij $-${a}$ en ga nog ${b} omlaag.`,`$-${a} - ${b} = ${-a-b}$`)])},
+ dd:()=>{const b=R(2,6),k=R(2,8),s1=pick([1,-1]),s2=pick([1,-1]),a=s1*b*k,c=s2*b;return T(`Reken uit: $${a} : ${P(c)}$`,a/c,[S(`Tel de mintekens: ${(s1<0)+(s2<0)}. ${(s1<0)+(s2<0)===1?'Eén minteken: negatief.':'Geen of twee mintekens: positief.'}`,`$${b*k} : ${b} = ${k}$, dus $${a/c}$`)])},
+ k3:()=>{const a=R(2,5),b=R(2,4),c=R(1,3);return T(`Reken uit: $-${a} · ${b} · -${c}$`,a*b*c,[S('Tel de mintekens: twee. Dus positief.',`$${a} · ${b} · ${c} = ${a*b*c}$`)])},
+ mnn:()=>{const a=R(3,9),b=R(1,9);return T(`Reken uit: $-${a} - (-${b})$`,b-a,[S('Min een negatief getal is plus.',`$-${a} + ${b}$`),S('Thermometer.',`$${b-a}$`)])},
+ fr:()=>{const b=R(2,6),k=R(2,6),s=pick([1,-1]),t=-b*k*s,n=-b;return T(`Reken uit: $[[${t}|${n}]]$`,t/n,[S('Een breukstreep is delen. Tel de mintekens.',`$${t} : ${P(n)} = ${t/n}$`)])},
+ /* R3 */
+ nsq:()=>{const a=R(2,9),h=Math.random()<.5;return T(`Reken uit: $${h?`(-${a})`:`-${a}`}^2$`,h?a*a:-a*a,h?[S('Het kwadraat hoort bij alles tussen de haakjes.',`$-${a} · -${a} = ${a*a}$`)]:[S('Het kwadraat hoort alleen bij de '+a+'.',`$${a}^2 = ${a*a}$`),S('Dan komt het minteken ervoor.',`$${-a*a}$`)])},
+ km:()=>{const b=R(2,5),c=R(2,6);return T(`Reken uit: $${b} · ${c}^2$`,b*c*c,[S('Eerst de macht.',`$${c}^2 = ${c*c}$`),S('Dan keer.',`$${b} · ${c*c} = ${b*c*c}$`)])},
+ pw:()=>{const [a,n]=pick([[2,3],[3,3],[2,4],[5,3],[2,5],[10,3],[3,4]]);return T(`Reken uit: $${a}^${n}$`,a**n,[S(`${n} keer de ${a} met zichzelf vermenigvuldigen.`,`$${Array(n).fill(a).join(' · ')} = ${a**n}$`)])},
+ nkm:()=>{const b=R(2,4),c=R(2,5);return T(`Reken uit: $-${b} · (-${c})^2$`,-b*c*c,[S('Eerst de macht.',`$(-${c})^2 = ${c*c}$`),S('Dan keer.',`$-${b} · ${c*c} = ${-b*c*c}$`)])},
+ n1:()=>{const n=R(2,7);return T(`Reken uit: $(-1)^${n}$`,n%2?-1:1,[S(`${n} mintekens keer elkaar.`,n%2?'Oneven aantal: negatief, $-1$':'Even aantal: positief, $1$')])},
+ /* R5 */
+ wp:()=>{const [a,b,c]=pick([[3,4,5],[6,8,10],[5,12,13],[8,6,10],[12,5,13]]);return T(`Reken uit: $√{${a*a} + ${b*b}}$`,c,[S('Eerst wat onder de wortel staat.',`$${a*a} + ${b*b} = ${c*c}$`),S('Dan de wortel.',`$√{${c*c}} = ${c}$`)])},
+ wk:()=>{const n=pick([2,3,5,6,10,11]);return T(`Reken uit: $√{${n}} · √{${n}}$`,n,[S('Wortel keer dezelfde wortel: de wortel valt weg.',`$${n}$`)])},
+ wpk:()=>{const a=R(1,9),b=R(2,5),c=R(2,7);return T(`Reken uit: $${a} + ${b}√{${c*c}}$`,a+b*c,[S('Eerst de wortel.',`$√{${c*c}} = ${c}$`),S('Dan keer.',`$${b} · ${c} = ${b*c}$`),S('Dan plus.',`$${a} + ${b*c} = ${a+b*c}$`)])},
+ ws:()=>{const a=R(2,5),b=R(2,5);return T(`Reken uit: $√{${a*a} · ${b*b}}$`,a*b,[S('Bij keer mag je splitsen.',`$√{${a*a}} · √{${b*b}} = ${a} · ${b}$`),S('Uitrekenen.',`$${a*b}$`)])},
+ wn:()=>{const a=R(2,10);return T(`Reken uit: $-√{${a*a}}$`,-a,[S('Eerst de wortel.',`$√{${a*a}} = ${a}$`),S('Het minteken staat buiten de wortel.',`$${-a}$`)])},
+ /* R6 */
+ iq:()=>{const a=pick([1,1,-1,2,-2,3]),b=pick([-4,-3,-2,2,3,4,5]),c=pick([0,0,1,-1,3,-5]),x=-R(1,4),x2=x*x,y=a*x2+b*x+c;
+  const f=`y = ${a===1?'':a===-1?'-':a}x^2 ${sg(b)}x${c?' '+sg(c):''}`;
+  return Y(`$${f}$. Bereken y bij $x = ${x}$.`,y,[S('Vul in, met haakjes om het negatieve getal.',`$y = ${a===1?'':a===-1?'-':a+' · '}(${x})^2 ${sg(b)} · (${x})${c?' '+sg(c):''}$`),S('Eerst het kwadraat.',`$(${x})^2 = ${x2}$`),S('Dan keer.',`$${a===1?'':a===-1?'-':a+' · '}${x2} = ${a*x2}$ en $${b} · ${P(x)} = ${b*x}$`),S('Dan optellen.',`$y = ${y}$`)])},
+ ih:()=>{const a=pick([1,2,-1,3]),p=R(1,4),q=pick([-8,-5,-2,0,3,6]),x=-R(1,5),u=x+p,y=a*u*u+q;
+  const f=`y = ${a===1?'':a===-1?'-':a}(x + ${p})^2${q?' '+sg(q):''}`;
+  return Y(`$${f}$. Bereken y bij $x = ${x}$.`,y,[S('Eerst wat tussen de haakjes staat.',`$${x} + ${p} = ${u}$`),S('Dan het kwadraat.',`$${P(u)}^2 = ${u*u}$`),S('Dan keer en erbij of eraf.',`$y = ${a*u*u}${q?' '+sg(q):''} = ${y}$`)])},
+ il:()=>{const c=R(1,9),x=-R(1,9);return Y(`$y = ${c} - x$. Bereken y bij $x = ${x}$.`,c-x,[S('Invullen met haakjes.',`$y = ${c} - (${x})$`),S('Min een negatief getal is plus.',`$y = ${c} + ${-x} = ${c-x}$`)])},
+ ineg:()=>{const x=-R(2,9),h=Math.random()<.5;return Y(`$y = ${h?'':'-'}x^2$. Bereken y bij $x = ${x}$.`,h?x*x:-x*x,[S('Invullen met haakjes.',`$y = ${h?'':'-'}(${x})^2$`),S('Het kwadraat van een negatief getal is positief.',`$(${x})^2 = ${x*x}$`),S(h?'Klaar.':'Dan het minteken ervoor.',`$y = ${h?x*x:-x*x}$`)])},
+ ihyp:()=>{const k=pick([2,3,4,6]),m=R(2,5),c=R(-3,4),x=-k,y=(k*m)/x+c;return Y(`$y = [[${k*m}|x]]${c?' '+sg(c):''}$. Bereken y bij $x = ${x}$.`,y,[S('Invullen.',`$y = ${k*m} : ${P(x)}${c?' '+sg(c):''}$`),S('Eén minteken: negatief.',`$${k*m} : ${P(x)} = ${-m}$`),S('Dan erbij of eraf.',`$y = ${y}$`)])},
+ iw:()=>{const a=R(1,6),r=R(1,5),p=R(1,6),x=r*r-p;return Y(`$y = ${a} - √{x + ${p}}$. Bereken y bij $x = ${x}$.`,a-r,[S('Eerst wat onder de wortel staat.',`$${x} + ${p} = ${r*r}$`),S('Dan de wortel.',`$√{${r*r}} = ${r}$`),S('Dan min.',`$y = ${a} - ${r} = ${a-r}$`)])}
+};
+
+/* ---------- de sommen ---------- */
+const N='Basis';
+const Q=[
+/* ===== R1 Volgorde ===== */
+{id:'rr1a',o:'rr1',nr:N,diag:1,g:'pk',q:'Reken uit: $3 + 4 · 5$',
+ denk:'Is er iets met haakjes of een macht? Nee. Dan eerst keer, daarna plus.',
+ st:[C('Wat doe je eerst?','',[['$4 · 5$',1],['$3 + 4$','Keer gaat vóór plus. De 4 hoort bij de keer-som.']],'$4 · 5 = 20$'),S('Dan plus.','$3 + 20 = 23$')],
+ a:'$23$',f:[['$35$','Je deed eerst $3 + 4 = 7$ en toen $7 · 5$. Maar keer gaat vóór plus: eerst $4 · 5$.'],['$17$','Je deed $3 · 4 + 5$. Kijk goed waar de keer staat: tussen de 4 en de 5.']]},
+{id:'rr1b',o:'rr1',nr:N,diag:1,g:'md',q:'Reken uit: $20 - 8 : 4$',
+ denk:'Delen gaat vóór min. Dus eerst $8 : 4$.',
+ st:[S('Eerst delen.','$8 : 4 = 2$'),S('Dan min.','$20 - 2 = 18$')],
+ a:'$18$',f:[['$3$','Je deed eerst $20 - 8 = 12$ en toen $12 : 4$. Maar delen gaat vóór min.'],['$-2$','Je deed $8 : 4 = 2$ goed, maar daarna $2 - 4$. Het is $20 - 2$.']]},
+{id:'rr1c',o:'rr1',nr:N,diag:1,g:'dk',q:'Reken uit: $12 : 3 · 2$',
+ denk:'Keer en delen zijn even sterk. Dan reken je van links naar rechts.',
+ st:[C('Wat doe je eerst?','',[['$12 : 3$',1],['$3 · 2$','Keer gaat níet vóór delen. Ze zijn even sterk: van links naar rechts.']],'$12 : 3 = 4$'),S('Dan keer.','$4 · 2 = 8$')],
+ a:'$8$',f:[['$2$','Je deed eerst $3 · 2 = 6$ en toen $12 : 6$. Keer gaat niet vóór delen: van links naar rechts.'],['$18$','Je deed $12 · 3 : 2$. Het is $12 : 3$, en daarna keer 2.']]},
+{id:'rr1d',o:'rr1',nr:N,g:'mp',q:'Reken uit: $10 - 4 + 3$',
+ denk:'Plus en min zijn even sterk. Van links naar rechts.',
+ st:[S('Eerst $10 - 4$.','$6$'),S('Dan $+ 3$.','$6 + 3 = 9$')],
+ a:'$9$',f:[['$3$','Je deed eerst $4 + 3 = 7$ en toen $10 - 7$. Plus gaat niet vóór min: van links naar rechts.'],['$17$','Je deed $10 + 4 + 3$. Voor de 4 staat een min.']]},
+{id:'rr1e',o:'rr1',nr:N,g:'hm',q:'Reken uit: $2 · (5 - 3)^2$',
+ denk:'Eerst haakjes, dan de macht, dan keer.',
+ st:[S('Haakjes.','$5 - 3 = 2$'),S('Macht.','$2^2 = 4$'),S('Keer.','$2 · 4 = 8$')],
+ a:'$8$',f:[['$16$','Je deed $2 · 2 = 4$ en toen $4^2$. Het kwadraat hoort alleen bij de haakjes, niet bij de 2 ervoor.'],['$4$','Je bent de 2 vóór de haakjes vergeten: $2 · 4 = 8$.']]},
+{id:'rr1f',o:'rr1',nr:N,g:'br',q:'Reken uit: $[[18 - 6|3 + 1]]$',
+ denk:'Een breukstreep werkt als haakjes: reken eerst boven en onder uit.',
+ st:[S('Boven.','$18 - 6 = 12$'),S('Onder.','$3 + 1 = 4$'),S('Delen.','$12 : 4 = 3$')],
+ a:'$3$',f:[['$17$','Je deed $18 - 6 : 3 + 1$. Maar de breukstreep werkt als haakjes: eerst $18 - 6$ en $3 + 1$.'],['$5$','Je deed $12 : 3 + 1$. Ook onder de streep moet je eerst optellen: $3 + 1 = 4$.']]},
+{id:'rr1g',o:'rr1',nr:N,g:'pkm',q:'Reken uit: $5 + 3 · 2^2$',
+ denk:'Eerst de macht, dan keer, dan plus.',
+ st:[S('Macht.','$2^2 = 4$'),S('Keer.','$3 · 4 = 12$'),S('Plus.','$5 + 12 = 17$')],
+ a:'$17$',f:[['$41$','Je deed $3 · 2 = 6$ en toen $6^2 = 36$. Maar de macht hoort alleen bij de 2: eerst $2^2$.'],['$32$','Je deed eerst $5 + 3 = 8$. Plus komt als laatste.'],['$11$','Je deed $3 · 2$ in plaats van $3 · 2^2$. De macht ben je vergeten.']]},
+{id:'rr1h',o:'rr1',nr:N,g:'hk',q:'Reken uit: $(4 + 2) · 3 - 6 : 2$',
+ denk:'Eerst de haakjes. Dan keer en delen. Als laatste de min.',
+ st:[S('Haakjes.','$4 + 2 = 6$'),S('Keer en delen.','$6 · 3 = 18$ en $6 : 2 = 3$'),S('Min.','$18 - 3 = 15$')],
+ a:'$15$',f:[['$6$','Je deed $18 - 6 = 12$ en toen $12 : 2$. Delen gaat vóór min: eerst $6 : 2 = 3$.'],['$11$','Je deed $4 + 2 · 3 - 3$. De haakjes zeggen: eerst $4 + 2$.']]},
+
+/* ===== R2 Minnen ===== */
+{id:'rr2a',o:'rr2',nr:N,diag:1,g:'np',q:'Reken uit: $-7 + 3$',
+ denk:'Thermometer: het is $-7$ graden en het wordt 3 graden warmer.',
+ st:[S('Van $-7$ drie stappen omhoog.','$-6$, $-5$, $-4$')],
+ a:'$-4$',f:[['$4$','Je bent het minteken vergeten. Van $-7$ ga je 3 omhoog: dan ben je nog onder nul.'],['$-10$','Je ging 3 omlaag. Er staat $+ 3$: omhoog.'],['$10$','Je deed $7 + 3$. Maar je begint bij $-7$.']]},
+{id:'rr2b',o:'rr2',nr:N,diag:1,g:'mn',q:'Reken uit: $4 - (-6)$',
+ denk:'Twee mintekens naast elkaar worden plus.',
+ st:[S('Min een negatief getal is plus.','$4 + 6$'),S('Uitrekenen.','$10$')],
+ a:'$10$',f:[['$-2$','Je deed $4 - 6$. Maar er staat min een negatief getal: dat is plus.'],['$-10$','Twee mintekens worden plus, en $4 + 6$ is positief: 10.']]},
+{id:'rr2c',o:'rr2',nr:N,diag:1,g:'kk',q:'Reken uit: $-5 · -4$',
+ denk:'Tel de mintekens. Twee mintekens bij keer: positief.',
+ st:[C('Hoeveel mintekens?','',[['Twee: positief',1],['Twee: negatief','Min keer min is plus.']],'positief'),S('Uitrekenen.','$5 · 4 = 20$')],
+ a:'$20$',f:[['$-20$','Min keer min is plus. Twee mintekens: positief.'],['$-9$','Je deed $-5 - 4$. Het is keer, niet min.']]},
+{id:'rr2d',o:'rr2',nr:N,g:'mm',q:'Reken uit: $-3 - 5$',
+ denk:'Thermometer: het is $-3$ graden en het wordt 5 graden kouder.',
+ st:[S('Van $-3$ vijf stappen omlaag.','$-8$')],
+ a:'$-8$',f:[['$-2$','Je ging 5 omhoog. Er staat $- 5$: nog verder omlaag.'],['$8$','Je komt verder onder nul uit, dus negatief: $-8$.'],['$2$','Je deed $5 - 3$. Je begint bij $-3$ en gaat 5 omlaag.']]},
+{id:'rr2e',o:'rr2',nr:N,g:'dd',q:'Reken uit: $-18 : 3$',
+ denk:'Eén minteken bij delen: de uitkomst is negatief.',
+ st:[S('Zonder mintekens.','$18 : 3 = 6$'),S('Eén minteken: negatief.','$-6$')],
+ a:'$-6$',f:[['$6$','Eén minteken bij delen geeft een negatief antwoord.'],['$-15$','Je deed $-18 + 3$. Het is delen.']]},
+{id:'rr2f',o:'rr2',nr:N,g:'k3',q:'Reken uit: $-2 · 3 · -1$',
+ denk:'Tel alle mintekens. Twee mintekens: positief.',
+ st:[S('Mintekens tellen.','twee: positief'),S('Uitrekenen.','$2 · 3 · 1 = 6$')],
+ a:'$6$',f:[['$-6$','Er staan twee mintekens. Twee is even: positief.'],['$0$','Je deed $-2 · 3 = -6$ en toen $-6 + 6$? Het is allemaal keer: $-6 · -1 = 6$.']]},
+{id:'rr2g',o:'rr2',nr:N,g:'mnn',q:'Reken uit: $-6 - (-2)$',
+ denk:'Min een negatief getal is plus. Dus $-6 + 2$.',
+ st:[S('Min een negatief getal is plus.','$-6 + 2$'),S('Thermometer: van $-6$ twee omhoog.','$-4$')],
+ a:'$-4$',f:[['$-8$','Je deed $-6 - 2$. Maar min een negatief getal is plus: $-6 + 2$.'],['$4$','$-6 + 2$: je blijft onder nul. Het antwoord is negatief.']]},
+{id:'rr2h',o:'rr2',nr:N,g:'fr',q:'Reken uit: $[[-12|-4]]$',
+ denk:'Een breukstreep is delen. Twee mintekens: positief.',
+ st:[S('Delen.','$12 : 4 = 3$'),S('Twee mintekens: positief.','$3$')],
+ a:'$3$',f:[['$-3$','Twee mintekens bij delen geeft een positief antwoord.'],['$-8$','Je deed $-12 - (-4)$. De breukstreep betekent delen.']]},
+
+/* ===== R3 Machten ===== */
+{id:'rr3a',o:'rr3',nr:N,diag:1,g:'nsq',q:'Reken uit: $-4^2$',
+ denk:'Staan er haakjes om de $-4$? Nee. Dan hoort het kwadraat alleen bij de 4.',
+ st:[C('Waar hoort het kwadraat bij?','',[['Alleen bij de 4',1],['Bij $-4$','Er staan geen haakjes. Dan hoort het kwadraat alleen bij de 4.']],'bij de 4'),S('Eerst het kwadraat.','$4^2 = 16$'),S('Dan komt het minteken ervoor.','$-16$')],
+ a:'$-16$',f:[['$16$','Je deed $-4 · -4$. Maar zonder haakjes hoort het kwadraat alleen bij de 4: $-(4 · 4) = -16$.'],['$-8$','Je deed $-4 · 2$. Kwadraat is keer zichzelf: $4 · 4$.']]},
+{id:'rr3b',o:'rr3',nr:N,diag:1,g:'nsq',q:'Reken uit: $(-4)^2$',
+ denk:'Nu staan er haakjes om. Het kwadraat hoort bij de hele $-4$.',
+ st:[S('Keer zichzelf.','$-4 · -4$'),S('Min keer min is plus.','$16$')],
+ a:'$16$',f:[['$-16$','Er staan haakjes om de $-4$. Dan is het $-4 · -4$, en min keer min is plus.'],['$-8$','Kwadraat is keer zichzelf, niet keer 2: $-4 · -4 = 16$.'],['$8$','Kwadraat is keer zichzelf: $-4 · -4 = 16$.']]},
+{id:'rr3c',o:'rr3',nr:N,g:'km',q:'Reken uit: $2 · 5^2$',
+ denk:'Eerst de macht, dan keer.',
+ st:[S('Macht.','$5^2 = 25$'),S('Keer.','$2 · 25 = 50$')],
+ a:'$50$',f:[['$100$','Je deed $(2 · 5)^2 = 10^2$. Maar het kwadraat hoort alleen bij de 5.'],['$20$','Je deed $2 · 5 · 2$. Het kwadraat is $5 · 5$.']]},
+{id:'rr3d',o:'rr3',nr:N,g:'pw',q:'Reken uit: $2^3$',
+ denk:'Het kleine getal zegt hoe vaak de 2 keer zichzelf gaat.',
+ st:[S('Drie keer de 2.','$2 · 2 · 2 = 8$')],
+ a:'$8$',f:[['$6$','Je deed $2 · 3$. Een macht is $2 · 2 · 2$.'],['$9$','Je deed $3^2 = 3 · 3$. Het grote getal is 2, het kleine 3.']]},
+{id:'rr3e',o:'rr3',nr:N,g:'nkm',q:'Reken uit: $-2 · (-3)^2$',
+ denk:'Eerst de macht. Daarna keer.',
+ st:[S('Macht.','$(-3)^2 = 9$'),S('Keer.','$-2 · 9 = -18$')],
+ a:'$-18$',f:[['$18$','$(-3)^2 = 9$ is positief. Dan $-2 · 9$: één minteken, dus $-18$.'],['$36$','Je deed eerst $-2 · -3 = 6$ en toen $6^2$. Eerst de macht.']]},
+{id:'rr3f',o:'rr3',nr:N,q:'Schrijf korter: $x · x$',
+ denk:'x keer zichzelf. Hoe schrijf je dat met een macht?',
+ st:[S('Keer zichzelf is een kwadraat.','$x^2$')],
+ a:'$x^2$',f:[['$2x$','$2x$ is $x + x$. Bij keer is het $x^2$.'],['$x$','x keer x is niet gewoon x. Bij $x = 5$: $5 · 5 = 25$.']],
+ v:{q:'Schrijf korter: $a · a$',a:'$a^2$',f:[['$2a$','$2a$ is $a + a$. Bij keer is het $a^2$.'],['$a$','a keer a is niet gewoon a. Bij $a = 3$: $3 · 3 = 9$.']],st:[S('Keer zichzelf is een kwadraat.','$a^2$')]}},
+{id:'rr3g',o:'rr3',nr:N,q:'Schrijf korter: $3x · 4x$',
+ denk:'Getallen keer elkaar. Letters keer elkaar.',
+ st:[S('Getallen.','$3 · 4 = 12$'),S('Letters.','$x · x = x^2$'),S('Samen.','$12x^2$')],
+ a:'$12x^2$',f:[['$7x$','Je deed $3x + 4x$. Het is keer: $3 · 4 = 12$ en $x · x = x^2$.'],['$12x$','$x · x = x^2$, niet x.'],['$7x^2$','De getallen moet je ook keer elkaar doen: $3 · 4 = 12$.']],
+ v:{q:'Schrijf korter: $2x · 5x$',a:'$10x^2$',f:[['$7x$','Je deed $2x + 5x$. Het is keer: $2 · 5 = 10$ en $x · x = x^2$.'],['$10x$','$x · x = x^2$, niet x.'],['$7x^2$','De getallen moet je ook keer elkaar doen: $2 · 5 = 10$.']],st:[S('Getallen.','$2 · 5 = 10$'),S('Letters.','$x · x = x^2$'),S('Samen.','$10x^2$')]}},
+{id:'rr3h',o:'rr3',nr:N,g:'n1',q:'Reken uit: $(-1)^3$',
+ denk:'$-1 · -1 · -1$. Tel de mintekens.',
+ st:[S('Eerst twee.','$-1 · -1 = 1$'),S('Dan de derde.','$1 · -1 = -1$')],
+ a:'$-1$',f:[['$1$','Drie mintekens: een oneven aantal. Dan is het negatief.'],['$-3$','Je deed $-1 · 3$. Het is $-1 · -1 · -1$.']]},
+
+/* ===== R4 Haakjes ===== */
+{id:'rr4a',o:'rr4',nr:N,diag:1,q:'Werk de haakjes weg: $4(x - 3)$',
+ denk:'De 4 gaat keer alles wat tussen de haakjes staat: keer x én keer $-3$.',
+ st:[S('Keer x.','$4 · x = 4x$'),S('Keer $-3$.','$4 · -3 = -12$'),S('Samen.','$4x - 12$')],
+ a:'$4x - 12$',f:[['$4x - 3$','Ook de 3 gaat keer 4: $4 · -3 = -12$.'],['$4x + 12$','$4 · -3$: één minteken, dus $-12$.'],['$x - 12$','Ook de x gaat keer 4: $4x$.']],
+ v:{q:'Werk de haakjes weg: $5(x - 2)$',a:'$5x - 10$',f:[['$5x - 2$','Ook de 2 gaat keer 5: $5 · -2 = -10$.'],['$5x + 10$','$5 · -2$: één minteken, dus $-10$.'],['$x - 10$','Ook de x gaat keer 5: $5x$.']],st:[S('Keer x.','$5x$'),S('Keer $-2$.','$-10$'),S('Samen.','$5x - 10$')]}},
+{id:'rr4b',o:'rr4',nr:N,q:'Werk de haakjes weg: $-(x - 6)$',
+ denk:'Een min voor de haakjes: alle tekens binnen de haakjes draaien om.',
+ st:[S('x wordt $-x$.','$-x$'),S('$-6$ wordt $+6$.','$-x + 6$')],
+ a:'$-x + 6$',f:[['$-x - 6$','Ook het teken van de 6 draait om: $-6$ wordt $+6$.'],['$x - 6$','Je hebt de min voor de haakjes weggelaten. Alle tekens draaien om.'],['$x + 6$','Ook de x draait om: $-x$.']],
+ v:{q:'Werk de haakjes weg: $-(x - 8)$',a:'$-x + 8$',f:[['$-x - 8$','Ook het teken van de 8 draait om: $-8$ wordt $+8$.'],['$x - 8$','Je hebt de min voor de haakjes weggelaten. Alle tekens draaien om.']],st:[S('x wordt $-x$.','$-x$'),S('$-8$ wordt $+8$.','$-x + 8$')]}},
+{id:'rr4c',o:'rr4',nr:N,diag:1,q:'Werk de haakjes weg: $-3(2x - 5)$',
+ denk:'$-3$ keer $2x$, en $-3$ keer $-5$. Let op de mintekens.',
+ st:[C('$-3 · 2x = $','',[['$-6x$',1],['$6x$','Eén minteken: negatief.']],'$-6x$'),C('$-3 · -5 = $','',[['$+15$',1],['$-15$','Twee mintekens: positief.']],'$+15$'),S('Samen.','$-6x + 15$')],
+ a:'$-6x + 15$',f:[['$-6x - 15$','$-3 · -5$: min keer min is plus. Dus $+15$.'],['$-6x - 5$','Ook de 5 gaat keer $-3$.'],['$6x - 15$','Je bent het minteken van de $-3$ vergeten. Alle tekens draaien om.']],
+ v:{q:'Werk de haakjes weg: $-2(3x - 4)$',a:'$-6x + 8$',f:[['$-6x - 8$','$-2 · -4$: min keer min is plus. Dus $+8$.'],['$-6x - 4$','Ook de 4 gaat keer $-2$.'],['$6x - 8$','Je bent het minteken van de $-2$ vergeten.']],st:[S('$-2 · 3x$.','$-6x$'),S('$-2 · -4$: min keer min is plus.','$+8$'),S('Samen.','$-6x + 8$')]}},
+{id:'rr4d',o:'rr4',nr:N,q:'Werk de haakjes weg: $(x + 4)(x + 2)$',
+ denk:'Papegaaienbek: iedereen uit de eerste haakjes keer iedereen uit de tweede. Vier keer vermenigvuldigen.',
+ st:[S('$x · x$ en $x · 2$.','$x^2 + 2x$'),S('$4 · x$ en $4 · 2$.','$4x + 8$'),S('De x-en samen.','$x^2 + 6x + 8$')],
+ a:'$x^2 + 6x + 8$',f:[['$x^2 + 8$','Je mist de twee middelste stukken: $2x$ en $4x$.'],['$x^2 + 6x + 6$','Het losse getal is $4 · 2 = 8$, niet $4 + 2$.'],['$2x + 6$','Je hebt opgeteld in plaats van vermenigvuldigd. $x · x = x^2$.']],
+ v:{q:'Werk de haakjes weg: $(x + 3)(x + 5)$',a:'$x^2 + 8x + 15$',f:[['$x^2 + 15$','Je mist de twee middelste stukken: $5x$ en $3x$.'],['$x^2 + 8x + 8$','Het losse getal is $3 · 5 = 15$, niet $3 + 5$.']],st:[S('$x · x$ en $x · 5$.','$x^2 + 5x$'),S('$3 · x$ en $3 · 5$.','$3x + 15$'),S('Samen.','$x^2 + 8x + 15$')]}},
+{id:'rr4e',o:'rr4',nr:N,diag:1,q:'Werk de haakjes weg: $(x + 5)^2$',
+ denk:'$(x + 5)^2$ is $(x + 5)(x + 5)$. Gebruik de papegaaienbek.',
+ st:[S('Schrijf uit.','$(x + 5)(x + 5)$'),S('Papegaaienbek.','$x^2 + 5x + 5x + 25$'),S('Samen.','$x^2 + 10x + 25$')],
+ a:'$x^2 + 10x + 25$',f:[['$x^2 + 25$','Je mist het middelste stuk: $5x + 5x = 10x$. Schrijf het eerst uit als $(x + 5)(x + 5)$.'],['$x^2 + 5x + 25$','Er komt twee keer $5x$: $x · 5$ en $5 · x$. Samen $10x$.'],['$x^2 + 10x + 10$','$5 · 5 = 25$, niet $5 + 5$.']],
+ v:{q:'Werk de haakjes weg: $(x + 4)^2$',a:'$x^2 + 8x + 16$',f:[['$x^2 + 16$','Je mist het middelste stuk: $4x + 4x = 8x$.'],['$x^2 + 4x + 16$','Er komt twee keer $4x$. Samen $8x$.'],['$x^2 + 8x + 8$','$4 · 4 = 16$.']],st:[S('Schrijf uit.','$(x + 4)(x + 4)$'),S('Papegaaienbek.','$x^2 + 4x + 4x + 16$'),S('Samen.','$x^2 + 8x + 16$')]}},
+{id:'rr4f',o:'rr4',nr:N,q:'Werk de haakjes weg: $(x - 3)^2$',
+ denk:'$(x - 3)(x - 3)$. Let op: $-3 · -3$ is positief.',
+ st:[S('Papegaaienbek.','$x^2 - 3x - 3x + 9$'),S('Samen.','$x^2 - 6x + 9$')],
+ a:'$x^2 - 6x + 9$',f:[['$x^2 - 9$','Je mist het middelste stuk: $-3x - 3x = -6x$. En $-3 · -3 = +9$.'],['$x^2 - 6x - 9$','$-3 · -3$: min keer min is plus. Dus $+9$.'],['$x^2 + 9$','Je mist het middelste stuk $-6x$.']],
+ v:{q:'Werk de haakjes weg: $(x - 2)^2$',a:'$x^2 - 4x + 4$',f:[['$x^2 - 4$','Je mist het middelste stuk $-4x$, en $-2 · -2 = +4$.'],['$x^2 - 4x - 4$','$-2 · -2 = +4$.']],st:[S('Papegaaienbek.','$x^2 - 2x - 2x + 4$'),S('Samen.','$x^2 - 4x + 4$')]}},
+{id:'rr4g',o:'rr4',nr:N,q:'Werk de haakjes weg en schrijf zo kort mogelijk: $5 - 2(x + 1)$',
+ denk:'Eerst de haakjes wegwerken met $-2$. Pas daarna de losse getallen samen. Doe niet eerst $5 - 2$.',
+ st:[S('$-2$ keer alles tussen de haakjes.','$5 - 2x - 2$'),S('Losse getallen samen.','$-2x + 3$')],
+ a:'$-2x + 3$',f:[['$3x + 3$','Je deed eerst $5 - 2 = 3$. Maar keer gaat vóór min: de 2 hoort bij de haakjes.'],['$-2x + 7$','$-2 · 1 = -2$, dus $5 - 2 = 3$. Je deed $5 + 2$.'],['$-2x + 4$','Ook de 1 gaat keer $-2$: dat is $-2$. Dan $5 - 2 = 3$.']],
+ v:{q:'Werk de haakjes weg en schrijf zo kort mogelijk: $7 - 3(x + 2)$',a:'$-3x + 1$',f:[['$4x + 8$','Je deed eerst $7 - 3 = 4$. Maar keer gaat vóór min.'],['$-3x + 13$','$-3 · 2 = -6$, dus $7 - 6 = 1$.']],st:[S('$-3$ keer alles tussen de haakjes.','$7 - 3x - 6$'),S('Losse getallen samen.','$-3x + 1$')]}},
+{id:'rr4h',o:'rr4',nr:N,q:'Werk de haakjes weg: $(x - 2)(x + 6)$',
+ denk:'Papegaaienbek. Let op het minteken bij de 2.',
+ st:[S('$x · x$ en $x · 6$.','$x^2 + 6x$'),S('$-2 · x$ en $-2 · 6$.','$-2x - 12$'),S('Samen.','$x^2 + 4x - 12$')],
+ a:'$x^2 + 4x - 12$',f:[['$x^2 - 4x - 12$','$6x - 2x = +4x$, niet $-4x$.'],['$x^2 + 4x + 12$','$-2 · 6$: één minteken, dus $-12$.'],['$x^2 + 8x - 12$','$6x - 2x = 4x$. De $-2x$ is min.']],
+ v:{q:'Werk de haakjes weg: $(x - 3)(x + 5)$',a:'$x^2 + 2x - 15$',f:[['$x^2 - 2x - 15$','$5x - 3x = +2x$.'],['$x^2 + 2x + 15$','$-3 · 5 = -15$.']],st:[S('$x · x$ en $x · 5$.','$x^2 + 5x$'),S('$-3 · x$ en $-3 · 5$.','$-3x - 15$'),S('Samen.','$x^2 + 2x - 15$')]}},
+
+/* ===== R5 Wortels ===== */
+{id:'rr5a',o:'rr5',nr:N,diag:1,g:'wp',q:'Reken uit: $√{9 + 16}$',
+ denk:'Eerst uitrekenen wat onder de wortel staat. Bij plus mag je de wortel niet splitsen.',
+ st:[S('Onder de wortel.','$9 + 16 = 25$'),S('Wortel.','$√{25} = 5$')],
+ a:'$5$',f:[['$7$','Je deed $√{9} + √{16} = 3 + 4$. Bij plus mag je niet splitsen: eerst $9 + 16 = 25$.'],['$12,5$','Je deed $25 : 2$. Een wortel is niet de helft: $5 · 5 = 25$.']]},
+{id:'rr5b',o:'rr5',nr:N,diag:1,g:'wk',q:'Reken uit: $√{6} · √{6}$',
+ denk:'Wortel keer dezelfde wortel: de wortel valt weg.',
+ st:[S('$√{6}$ is het getal dat keer zichzelf 6 geeft.','$6$')],
+ a:'$6$',f:[['$36$','Je deed $6 · 6$. Maar $√{6}$ keer zichzelf is precies 6.'],['$2√{6}$','Dat is $√{6} + √{6}$. Bij keer valt de wortel weg.'],['$√{12}$','Je hebt de getallen onder de wortel opgeteld. Het is $√{6 · 6} = √{36} = 6$.']]},
+{id:'rr5c',o:'rr5',nr:N,g:'wpk',q:'Reken uit: $3 + 2√{16}$',
+ denk:'Eerst de wortel, dan keer, dan plus.',
+ st:[S('Wortel.','$√{16} = 4$'),S('Keer.','$2 · 4 = 8$'),S('Plus.','$3 + 8 = 11$')],
+ a:'$11$',f:[['$20$','Je deed eerst $3 + 2 = 5$ en toen $5 · 4$. Plus komt als laatste.'],['$35$','Je vergat de wortel: $2 · 16 = 32$. Eerst $√{16} = 4$.']]},
+{id:'rr5d',o:'rr5',nr:N,g:'ws',q:'Reken uit: $√{4 · 25}$',
+ denk:'Bij keer mag je de wortel splitsen. Of reken eerst $4 · 25$ uit.',
+ st:[S('Splitsen.','$√{4} · √{25} = 2 · 5$'),S('Uitrekenen.','$10$')],
+ a:'$10$',f:[['$50$','Je deed $2 · 25$. Ook van de 25 moet je de wortel nemen: 5.'],['$7$','Je deed $2 + 5$. Het is keer: $2 · 5 = 10$.']]},
+{id:'rr5e',o:'rr5',nr:N,g:'wn',q:'Reken uit: $-√{36}$',
+ denk:'Het minteken staat buiten de wortel. Eerst de wortel, dan het minteken.',
+ st:[S('Wortel.','$√{36} = 6$'),S('Minteken ervoor.','$-6$')],
+ a:'$-6$',f:[['$6$','Het minteken staat buiten de wortel. Dat blijft gewoon staan.'],['Bestaat niet','Het minteken staat buiten de wortel. Onder de wortel staat 36, en dat mag.']]},
+{id:'rr5f',o:'rr5',nr:N,q:'Reken uit: $√{-36}$',
+ denk:'Welk getal keer zichzelf geeft $-36$?',
+ st:[S('$6 · 6 = 36$ en $-6 · -6 = 36$.','altijd positief'),S('Er is geen getal dat keer zichzelf negatief wordt.','bestaat niet')],
+ a:'Bestaat niet',f:[['$-6$','$-6 · -6 = 36$, niet $-36$. Er is geen getal dat keer zichzelf negatief wordt.'],['$6$','$6 · 6 = 36$, niet $-36$.']],
+ v:{q:'Welke van deze bestaat niet?<br>A $-√{25}$ &nbsp; B $√{-25}$',a:'B',f:[['A','Bij A staat het minteken buiten de wortel: $-√{25} = -5$. Dat bestaat wel.'],['Allebei','A bestaat wel: $-√{25} = -5$.']],st:[S('A: minteken buiten de wortel.','$-5$'),S('B: negatief getal onder de wortel.','bestaat niet')]}},
+{id:'rr5g',o:'rr5',nr:N,q:'Schrijf korter: $√{5} + √{5}$',
+ denk:'Twee keer hetzelfde ding. Zoals $x + x = 2x$.',
+ st:[S('Twee keer $√{5}$.','$2√{5}$')],
+ a:'$2√{5}$',f:[['$5$','Dat is $√{5} · √{5}$. Hier staat plus.'],['$√{10}$','Bij plus mag je niet onder de wortel optellen. Controle: $√{5} ≈ 2,24$, dus samen $≈ 4,47$. Maar $√{10} ≈ 3,16$.']],
+ v:{q:'Schrijf korter: $√{3} + √{3}$',a:'$2√{3}$',f:[['$3$','Dat is $√{3} · √{3}$. Hier staat plus.'],['$√{6}$','Bij plus mag je niet onder de wortel optellen.']],st:[S('Twee keer $√{3}$.','$2√{3}$')]}},
+
+/* ===== R6 Invullen ===== */
+{id:'rr6a',o:'rr6',nr:N,diag:1,g:'iq',q:'$y = x^2 + 2x$. Bereken y bij $x = -3$.',
+ denk:'Vul $-3$ in, met haakjes eromheen. Dan eerst het kwadraat.',
+ st:[S('Invullen met haakjes.','$y = (-3)^2 + 2 · (-3)$'),C('$(-3)^2 = $','',[['$9$',1],['$-9$','Er staan haakjes om de $-3$: $-3 · -3 = 9$.']],'$9$'),S('Keer.','$2 · -3 = -6$'),S('Optellen.','$y = 9 - 6 = 3$')],
+ a:'$y = 3$',f:[['$y = -15$','Je deed $-3^2 = -9$. Maar je vult $-3$ in voor x: $(-3)^2 = 9$.'],['$y = 15$','$2 · -3 = -6$, niet $+6$. Dus $9 - 6 = 3$.']]},
+{id:'rr6b',o:'rr6',nr:N,diag:1,g:'iq',q:'$y = -2x^2 + 4x$. Bereken y bij $x = -1$.',
+ denk:'Vul $-1$ in met haakjes. Eerst het kwadraat, dan keer, dan optellen.',
+ st:[S('Invullen met haakjes.','$y = -2 · (-1)^2 + 4 · (-1)$'),S('Kwadraat.','$(-1)^2 = 1$'),S('Keer.','$-2 · 1 = -2$ en $4 · -1 = -4$'),S('Optellen.','$y = -2 - 4 = -6$')],
+ a:'$y = -6$',f:[['$y = -2$','Je deed $(-1)^2 = -1$. Maar min keer min is plus: $(-1)^2 = 1$.'],['$y = 2$','$4 · -1 = -4$, niet $+4$.'],['$y = 0$','Je deed eerst $-2 · -1 = 2$ en toen het kwadraat. Eerst de macht, dan keer.']]},
+{id:'rr6c',o:'rr6',nr:N,g:'ih',q:'$y = (x - 1)^2$. Bereken y bij $x = -2$.',
+ denk:'Eerst wat tussen de haakjes staat. Dan het kwadraat.',
+ st:[S('Tussen de haakjes.','$-2 - 1 = -3$'),S('Kwadraat.','$(-3)^2 = 9$')],
+ a:'$y = 9$',f:[['$y = -9$','$(-3)^2 = -3 · -3 = 9$. Een kwadraat is nooit negatief.'],['$y = 1$','$-2 - 1 = -3$, niet $-1$. Van $-2$ ga je nog 1 omlaag.']],
+ v:()=>Object.assign({gen:1,f:[]},G.ih())},
+{id:'rr6d',o:'rr6',nr:N,g:'il',q:'$y = 5 - x$. Bereken y bij $x = -3$.',
+ denk:'Vul in met haakjes: $5 - (-3)$. Min een negatief getal is plus.',
+ st:[S('Invullen.','$y = 5 - (-3)$'),S('Min min is plus.','$y = 5 + 3 = 8$')],
+ a:'$y = 8$',f:[['$y = 2$','Je deed $5 - 3$. Maar je vult $-3$ in: $5 - (-3) = 8$.'],['$y = -8$','$5 - (-3) = 5 + 3 = 8$: positief.']]},
+{id:'rr6e',o:'rr6',nr:N,g:'ihyp',q:'$y = [[12|x]] + 1$. Bereken y bij $x = -4$.',
+ denk:'Eerst de breuk: $12 : -4$. Dan plus 1.',
+ st:[S('Delen.','$12 : -4 = -3$'),S('Plus 1.','$y = -3 + 1 = -2$')],
+ a:'$y = -2$',f:[['$y = 4$','$12 : -4 = -3$: één minteken, dus negatief.'],['$y = -4$','$-3 + 1 = -2$. Van $-3$ ga je 1 omhoog.']]},
+{id:'rr6f',o:'rr6',nr:N,g:'iw',q:'$y = 3 - √{x + 5}$. Bereken y bij $x = 4$.',
+ denk:'Eerst wat onder de wortel staat, dan de wortel, dan min.',
+ st:[S('Onder de wortel.','$4 + 5 = 9$'),S('Wortel.','$√{9} = 3$'),S('Min.','$y = 3 - 3 = 0$')],
+ a:'$y = 0$',f:[['$y = 6$','Er staat $3 - √{…}$. Dus $3 - 3$, niet $3 + 3$.'],['$y = 3 - √{2} - √{5}$','Bij plus onder de wortel mag je niet splitsen. Eerst $4 + 5 = 9$.']]},
+{id:'rr6g',o:'rr6',nr:N,g:'ineg',q:'$y = -x^2$. Bereken y bij $x = -5$.',
+ denk:'Vul in met haakjes: $-(-5)^2$. Eerst het kwadraat, dan het minteken ervoor.',
+ st:[S('Invullen.','$y = -(-5)^2$'),S('Kwadraat.','$(-5)^2 = 25$'),S('Minteken ervoor.','$y = -25$')],
+ a:'$y = -25$',f:[['$y = 25$','$(-5)^2 = 25$ klopt. Maar er staat nog een minteken vóór de $x^2$: $-25$.'],['$y = 10$','Kwadraat is keer zichzelf: $5 · 5 = 25$, niet $5 · 2$.']]},
+{id:'rr6h',o:'rr6',nr:N,g:'ih',q:'$y = 2(x + 3)^2 - 8$. Bereken y bij $x = -1$.',
+ denk:'Eerst de haakjes, dan het kwadraat, dan keer 2, dan min 8.',
+ st:[S('Haakjes.','$-1 + 3 = 2$'),S('Kwadraat.','$2^2 = 4$'),S('Keer 2.','$2 · 4 = 8$'),S('Min 8.','$y = 8 - 8 = 0$')],
+ a:'$y = 0$',f:[['$y = 8$','Je deed $(2 · 2)^2 = 16$. Eerst het kwadraat, dan keer 2: $2 · 4 = 8$.'],['$y = -16$','$-1 + 3 = 2$, niet $-4$. Van $-1$ ga je 3 omhoog.']]}
+];
+
+/* een som met g krijgt als variant dezelfde soort som met nieuwe getallen (zelf intypen) */
+Q.forEach(q=>{if(q.g&&!q.v&&G[q.g])q.v=()=>Object.assign({gen:1,f:[]},G[q.g]())});
+
+/* ---------- toevoegen aan wiskunde ---------- */
+V.SECS.unshift(...SECS);
+V.Q.push(...Q);
+Object.assign(V.SNAP,SNAP);
+V.PN.rr='De basis: rekenregels';
+V.basis={par:'rr',dag:5};
+V.GENB=G;
+})();

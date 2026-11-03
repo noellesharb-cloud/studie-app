@@ -53,9 +53,14 @@ window.Oefen=(()=>{
   function home(){
     Oefen.cur=vid;
     const secBtn=s=>{const n=V.Q.filter(q=>q.o===s.id).length,b=ST.best[s.id],w=wrongIn(s.id);
-      return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
+      return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${ST.diag&&ST.diag.r[s.id]?` · instaptoets ${ST.diag.r[s.id][0]}/${ST.diag.r[s.id][1]}`:''}${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
     const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7;
       return `<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>10 vragen zonder hulp, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best):''}</span></button>`};
+    const B=V.basis,isB=p=>!!B&&p===B.par;
+    const basisCards=p=>{const d=ST.diag,n=diagIds(p).length,dg=d&&Object.values(d.r).reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]);
+      return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
+      <button class="sec" id="b-dag"><span class="sq" style="background:var(--c2)">5</span><span><b>Rekenregels van vandaag</b><small>${B.dag||5} sommen, ongeveer 5 minuten. ${d?'Vooral de regels die nog niet goed gaan.':'Maak eerst de instaptoets, dan weet de app wat je moet oefenen.'}</small></span></button>
+      <button class="sec" id="b-ov"><span class="sq" style="background:var(--line)">≡</span><span><b>Alle rekenregels onder elkaar</b><small>Het overzicht. Schrijf het over in je schrift, met bij elke regel een eigen voorbeeld.</small></span></button>`};
     const bh=focusMode==='bijhouden'&&focusPar,tv=focusMode==='toets';
     const ok=leerPars().filter(p=>ST.ptoets[p]&&ST.ptoets[p].best>=7);
     el.innerHTML=`
@@ -70,7 +75,7 @@ window.Oefen=(()=>{
       <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li></ol></div>`:''}
     <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
       ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
-    ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${ptCard(p)}</div>`).join('')}
+    ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)}</div>`).join('')}
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
@@ -91,12 +96,25 @@ window.Oefen=(()=>{
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#fouten').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
-    el.querySelector('#spiek').onclick=spiek;
+    el.querySelector('#spiek').onclick=()=>spiek();
+    if(q('#b-diag'))q('#b-diag').onclick=()=>start('diag',shuf(diagIds(B.par)),'Instaptoets rekenregels',null,B.par);
+    if(q('#b-dag'))q('#b-dag').onclick=()=>start('oefen',dagIds(B.par),'Rekenregels van vandaag',null,B.par);
+    if(q('#b-ov'))q('#b-ov').onclick=()=>spiek(B.par);
     const f=focusPar&&!bh&&el.querySelector('#par-'+focusPar.replace('.','-'));
     if(f)f.scrollIntoView({block:'start'});else scrollTo(0,0);
   }
+  const basisSec=id=>!!V.basis&&secOf(id).par===V.basis.par;
+  function diagIds(p){const ids=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=V.Q.filter(q=>q.o===s.id),d=l.filter(q=>q.diag);(d.length?d:shuf(l).slice(0,2)).forEach(q=>ids.push(q.id))});return ids}
+  function dagIds(p){const n=(V.basis&&V.basis.dag)||5,all=V.Q.filter(q=>secOf(q.o).par===p),d=ST.diag;
+    const zwak=new Set(V.SECS.filter(s=>s.par===p&&(!d||!d.r[s.id]||d.r[s.id][0]<d.r[s.id][1]||wrongIn(s.id))).map(s=>s.id));
+    const f=shuf(ST.wrong.filter(id=>QM[id]&&secOf(QM[id].o).par===p)).slice(0,2);
+    const z=shuf(all.filter(q=>zwak.has(q.o)&&!f.includes(q.id)).map(q=>q.id));
+    const r=shuf(all.map(q=>q.id).filter(id=>!f.includes(id)&&!z.includes(id)));
+    /* ongeveer 4 van de 5 uit de regels die nog niet goed gaan, 1 ter herhaling */
+    const ids=[...f,...z.slice(0,Math.max(0,n-1-f.length))];ids.push(...r.slice(0,n-ids.length));if(ids.length<n)ids.push(...z.filter(id=>!ids.includes(id)).slice(0,n-ids.length));
+    return shuf(ids)}
   function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
-  function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix').forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
+  function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
   function ptoets(p){const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
     const rest=shuf(parIds(p).filter(id=>!pick.includes(id)));let no=0;
     const ids=[...pick,...rest].filter(id=>{if(QM[id].t!=='open')return true;return ++no<=3});
@@ -118,10 +136,11 @@ window.Oefen=(()=>{
     const sf=el.querySelector('#sfout');if(sf)sf.onclick=()=>start('fout',shuf(ST.wrong.filter(x=>QM[x].o===id)),s.name+' · foute vragen',id);
     scrollTo(0,0);
   }
-  function spiek(){
-    el.innerHTML=`${top(V.naam)}<h2>Spiekbrief</h2>
-    ${V.SECS.map(s=>`<div class="card spiek"><h3>${chip(s)} ${s.name}</h3>${rulesHtml(s)}</div>`).join('')}
-    ${V.BEG.length?`<div class="card spiek"><h3><span class="sq" style="background:var(--c6)">B</span> Begrippen</h3>${V.BEG.map(b=>`<div class="rule"><b>${b[0]}</b><div class="why">${b[1]}</div></div>`).join('')}</div>`:''}`;
+  function spiek(p){
+    el.innerHTML=`${top(V.naam)}<h2>${p?V.PN[p]||p:'Spiekbrief'}</h2>
+    ${p?'<p class="sub">Leer ze niet alleen uit je hoofd. Schrijf ze over in je schrift en zet bij elke regel een eigen voorbeeld. Bij een fout: zoek op welke regel misging.</p>':''}
+    ${V.SECS.filter(s=>!p||s.par===p).map(s=>`<div class="card spiek"><h3>${chip(s)} ${s.name}</h3>${rulesHtml(s)}</div>`).join('')}
+    ${V.BEG.length&&!p?`<div class="card spiek"><h3><span class="sq" style="background:var(--c6)">B</span> Begrippen</h3>${V.BEG.map(b=>`<div class="rule"><b>${b[0]}</b><div class="why">${b[1]}</div></div>`).join('')}</div>`:''}`;
     el.querySelector('#back').onclick=home;scrollTo(0,0);
   }
 
@@ -158,7 +177,7 @@ window.Oefen=(()=>{
 
   /* ---------- oefenen ---------- */
   function start(mode,ids,title,sec,par,hw){
-    const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets';
+    const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='diag';
     R={mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
     ask();
   }
@@ -336,6 +355,7 @@ window.Oefen=(()=>{
     Oefen._hw=H;scrollTo(0,0);
   }
   function end(){
+    if(R.mode==='diag')return diagEnd();
     const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
     const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
     if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
@@ -351,8 +371,27 @@ window.Oefen=(()=>{
       <button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':'Nieuwe ronde'}</button>
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
-    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;scrollTo(0,0);
+  }
+
+  function diagEnd(){
+    const r={};R.ids.forEach(id=>{const o=QM[id].o,x=r[o]=r[o]||[0,0];x[1]++;if(R.first[id])x[0]++});
+    const nu=new Date(),d=`${nu.getFullYear()}-${String(nu.getMonth()+1).padStart(2,'0')}-${String(nu.getDate()).padStart(2,'0')}`;
+    ST.diag={d,r};save();
+    const good=R.ids.filter(id=>R.first[id]).length,tot=R.ids.length,wrong=R.ids.filter(id=>!R.first[id]);
+    const secs=V.SECS.filter(s=>r[s.id]),zw=secs.filter(s=>r[s.id][0]<r[s.id][1]);
+    el.innerHTML=`<span class="tag">${R.title}</span>
+    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${zw.length?`Nu weet je welke regels je moet oefenen: ${zw.length===1?'die ene staat':'ze staan'} hieronder in het rood.`:'Alle regels gaan goed. Knap!'}</p></div>
+    <div class="card stack"><span class="tag">Per regel</span>${secs.map(s=>{const [g,t]=r[s.id],ok=g===t;return `<div style="display:flex;align-items:center;gap:10px">${chip(s)}<b style="flex:1;min-width:0">${s.name}</b><span style="white-space:nowrap;text-align:right;color:var(${ok?'--ok':'--bad'})"><b>${g}/${t}</b><br><small>${ok?'zit goed':'nog oefenen'}</small></span></div>`}).join('')}</div>
+    ${zw.length?`<p class="sub">De sommen die fout gingen, staan nu bij <b>Mijn foute vragen</b>. <b>Rekenregels van vandaag</b> kiest vanaf nu vooral uit ${zw.map(s=>s.name.toLowerCase()).join(', ')}. Doe die elke dag: 5 sommen, 5 minuten.</p>`:''}
+    ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${secOf(q.o).name}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a)}</div></div>`}).join('')}</div>`:''}
+    <div class="stack"><button class="btn" id="dg">Rekenregels van vandaag</button>
+      ${zw.length?`<button class="btn ghost" id="zw1">Bekijk de regels van ${zw[0].name.toLowerCase()}</button>`:''}
+      <button class="btn ghost" id="hm">Terug naar ${V.naam}</button></div>`;
+    el.querySelector('#dg').onclick=()=>start('oefen',dagIds(R.par),'Rekenregels van vandaag',null,R.par);
+    const z1=el.querySelector('#zw1');if(z1)z1.onclick=()=>section(zw[0].id);
+    el.querySelector('#hm').onclick=home;scrollTo(0,0);
   }
 
   /* ---------- sprint: zoveel mogelijk in een paar minuten ---------- */
