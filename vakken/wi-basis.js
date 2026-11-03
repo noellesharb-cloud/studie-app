@@ -1,7 +1,7 @@
 /* ============================================================
    Wiskunde: DE BASIS: REKENREGELS
-   Voorkennis uit H1 en H8 die bij H3 steeds terugkomt: volgorde van bewerkingen,
-   negatieve getallen, machten, haakjes wegwerken, wortels en invullen.
+   Voorkennis uit H1 en H8 (de app 'Wiskunde H1 en H8') die bij H3 steeds terugkomt: volgorde van bewerkingen,
+   negatieve getallen, machten, rekenregels voor machten, haakjes wegwerken, wortels en invullen.
    - Instaptoets: per regel 2 of 3 sommen (diag:1), zonder hulp. Daarna ziet ze per regel hoe het gaat.
    - Rekenregels van vandaag: 5 sommen, vooral uit de regels die nog niet goed gaan.
    - Elke rekensom die fout gaat, komt terug met nieuwe getallen (typen, geen keuze).
@@ -41,21 +41,34 @@ const SECS=[
    ['$(-3)^2$: het kwadraat hoort bij alles tussen de haakjes','$(-3)^2 = -3 · -3 = 9$','Een negatief getal in het kwadraat wordt altijd positief.'],
    ['Een getal keer een macht: eerst de macht','$2 · 3^2 = 2 · 9 = 18$','Niet $(2 · 3)^2 = 36$.'],
    ['$x · x = x^2$, maar $x + x = 2x$','$3x · 2x = 6x^2$','Getallen keer elkaar, letters keer elkaar.']]},
- {id:'rr4',par:'rr',nr:'R4',name:'Haakjes wegwerken',c:'--c4',sub:'Min voor de haakjes en de papegaaienbek',
+ {id:'rr7',par:'rr',nr:'R4',name:'Rekenregels voor machten',c:'--c6',sub:'Zoals in H8.1: keer, delen en macht van een macht',
+  rules:[
+   ['Keer: exponenten optellen','$a^3 · a^4 = a^7$','Tel de a\'s: 3 + 4 = 7.'],
+   ['Delen: exponenten aftrekken','$[[a^7|a^3]] = a^4$',''],
+   ['Macht van een macht: exponenten keer','$(a^3)^4 = a^{12}$',''],
+   ['Macht van een product: alles krijgt de macht, ook het getal','$(2a)^3 = 2^3 · a^3 = 8a^3$','$2^3 = 2 · 2 · 2 = 8$, niet $2 · 3$.'],
+   ['Macht 0 is 1. Een negatieve exponent is 1 gedeeld door','$a^0 = 1$ en $2^{-3} = [[1|2^3]] = [[1|8]]$','Een negatieve exponent maakt het getal niet negatief.'],
+   ['Optellen mag alleen bij dezelfde letter met dezelfde exponent','$5a^3 + 10a^3 = 15a^3$','$a^3 + a^4$ kun je niet samennemen. Bij optellen blijft de exponent gelijk.']]},
+ {id:'rr4',par:'rr',nr:'R5',name:'Haakjes wegwerken',c:'--c4',sub:'Min voor de haakjes en de papegaaienbek',
   rules:[
    ['Getal voor de haakjes: keer alles wat erin staat','$3(x + 4) = 3x + 12$','Niet alleen de x: ook de 4 gaat keer 3.'],
    ['Min voor de haakjes: alle tekens binnen draaien om','$-(x - 5) = -x + 5$',''],
    ['Negatief getal voor de haakjes: let op elk teken','$-2(x - 3) = -2x + 6$','$-2 · -3 = +6$: min keer min is plus.'],
    ['Twee keer haakjes: iedereen keer iedereen (papegaaienbek)','$(x + 2)(x + 3) = x^2 + 3x + 2x + 6 = x^2 + 5x + 6$','Vier keer vermenigvuldigen. Daarna de x-en samen.'],
-   ['$(x + 3)^2$ is $(x + 3)(x + 3)$','$(x + 3)^2 = x^2 + 6x + 9$','Niet $x^2 + 9$: dan mis je de $6x$ in het midden.']]},
- {id:'rr5',par:'rr',nr:'R5',name:'Wortels',c:'--c5',sub:'Wat mag wel en wat niet',
+   ['$(x + 3)^2$ is $(x + 3)(x + 3)$','$(x + 3)^2 = x^2 + 6x + 9$','Niet $x^2 + 9$: dan mis je de $6x$ in het midden.'],
+   ['Plus keer min: $(a + b)(a - b) = a^2 - b^2$','$(x + 4)(x - 4) = x^2 - 16$','De twee middelste stukken ($-4x$ en $+4x$) vallen tegen elkaar weg.'],
+   ['Kwadraat gaat vóór keer','$5(x - 1)^2 = 5(x^2 - 2x + 1) = 5x^2 - 10x + 5$','Eerst het kwadraat uitwerken, dan pas de 5 erin.']]},
+ {id:'rr5',par:'rr',nr:'R6',name:'Wortels',c:'--c5',sub:'Wat mag wel en wat niet',
   rules:[
    ['$√{25} = 5$, want $5 · 5 = 25$','',''],
    ['Eerst uitrekenen wat onder de wortel staat','$√{9 + 16} = √{25} = 5$','Niet $3 + 4 = 7$. Bij plus mag je de wortel niet splitsen.'],
    ['Bij keer mag je de wortel wel splitsen','$√{4 · 9} = √{4} · √{9} = 2 · 3 = 6$',''],
    ['Wortel keer dezelfde wortel: de wortel valt weg','$√{7} · √{7} = 7$','$√{7} + √{7} = 2√{7}$: dat is iets anders.'],
-   ['$-√{9} = -3$, maar $√{-9}$ bestaat niet','Geen getal keer zichzelf geeft iets negatiefs.','Belangrijk bij het randpunt in §3.5.']]},
- {id:'rr6',par:'rr',nr:'R6',name:'Invullen in een formule',c:'--c6',sub:'Zoals in H3: negatieve getallen invullen',
+   ['$-√{9} = -3$, maar $√{-9}$ bestaat niet','Geen getal keer zichzelf geeft iets negatiefs.','Belangrijk bij het randpunt in §3.5.'],
+   ['Alleen gelijksoortige wortels optellen','$3√{2} + 5√{2} = 8√{2}$','$√{2} + √{3}$ kun je niet samennemen.'],
+   ['Keer: getallen buiten keer elkaar, onder de wortel keer elkaar','$3√{5} · 2√{7} = 6√{35}$',''],
+   ['Vereenvoudigen: zoek het grootste kwadraat dat erin past','$√{8} = √{4 · 2} = 2√{2}$','Kwadraten: 4, 9, 16, 25, 36, 49, 64, 81, 100.']]},
+ {id:'rr6',par:'rr',nr:'R7',name:'Invullen in een formule',c:'--c1',sub:'Zoals in H3: negatieve getallen invullen',
   rules:[
    ['Vul je een negatief getal in? Zet het altijd tussen haakjes','$y = x^2$ met $x = -3$: $y = (-3)^2 = 9$','Zonder haakjes schrijf je $-3^2$, en dat is $-9$.'],
    ['Reken daarna uit in de goede volgorde','Haakjes, machten, keer en delen, plus en min',''],
@@ -77,6 +90,10 @@ const SNAP={
   ['Waarom is $-3^2 = -9$?','De macht is sterker dan het minteken, net zoals keer sterker is dan min. Dus eerst $3^2 = 9$, en daarna komt de min ervoor: $-9$.<br>Wil je dat het kwadraat ook bij het minteken hoort? Dan moeten er haakjes om: $(-3)^2 = -3 · -3 = 9$.'],
   ['Waarom is $(-3)^2$ positief?','$(-3)^2 = -3 · -3$. Twee mintekens keer elkaar geeft plus. Dus 9. Elk negatief getal in het kwadraat wordt positief.'],
   ['Waarom is $x · x = x^2$ en $x + x = 2x$?','$x + x$ is twee keer een x: $2x$. Bij $x = 5$ is dat $5 + 5 = 10$.<br>$x · x$ is x keer zichzelf: $x^2$. Bij $x = 5$ is dat $5 · 5 = 25$.']],
+ rr7:[
+  ['Waarom tel je bij keer de exponenten op?','$a^3 · a^4 = (a · a · a) · (a · a · a · a)$. Tel de a\'s: dat zijn er 7. Dus $a^7$.<br>Met getallen: $2^2 · 2^3 = 4 · 8 = 32 = 2^5$ ✓'],
+  ['Waarom is $(a^3)^4 = a^{12}$?','$(a^3)^4 = a^3 · a^3 · a^3 · a^3$. Vier groepjes van drie a\'s: $4 · 3 = 12$.'],
+  ['Waarom is $2^0 = 1$ en $2^{-1} = [[1|2]]$?','Kijk naar het rijtje: $2^3 = 8$, $2^2 = 4$, $2^1 = 2$. Elke stap omlaag deel je door 2.<br>Ga door: $2^0 = 1$, $2^{-1} = [[1|2]]$, $2^{-2} = [[1|4]]$. Het wordt kleiner, maar nooit negatief.']],
  rr4:[
   ['Waarom gaat ook de 4 keer 3 bij $3(x + 4)$?','$3(x + 4)$ betekent: drie keer $(x + 4)$. Dus $(x + 4) + (x + 4) + (x + 4)$.<br>Dat zijn drie x-en en drie keer een 4: $3x + 12$.'],
   ['Waarom draaien de tekens om bij $-(x - 5)$?','$-(x - 5)$ is hetzelfde als $-1 · (x - 5)$.<br>$-1 · x = -x$ en $-1 · -5 = +5$. Dus $-x + 5$.'],
@@ -84,6 +101,7 @@ const SNAP={
  rr5:[
   ['Waarom mag $√{9 + 16}$ niet $3 + 4$ worden?','Reken het gewoon uit: $9 + 16 = 25$ en $√{25} = 5$. Maar $3 + 4 = 7$. Dat is niet hetzelfde, dus splitsen bij plus mag niet.'],
   ['Waarom is $√{7} · √{7} = 7$?','$√{7}$ is precies het getal dat keer zichzelf 7 geeft. Dus $√{7} · √{7}$ is 7. Daar is de wortel voor bedacht.'],
+  ['Waarom is $√{8} = 2√{2}$?','$8 = 4 · 2$. Bij keer mag je de wortel splitsen: $√{4} · √{2} = 2√{2}$.<br>Controle: $(2√{2})^2 = 4 · 2 = 8$ ✓'],
   ['Waarom bestaat $√{-9}$ niet?','Je zoekt een getal dat keer zichzelf $-9$ geeft. $3 · 3 = 9$ en $-3 · -3 = 9$. Het wordt altijd positief. Dus er is geen getal.']],
  rr6:[
   ['Waarom moet een negatief getal tussen haakjes?','In $y = x^2$ hoort het kwadraat bij de hele x. Is $x = -3$, dan moet het kwadraat bij de hele $-3$ horen: $(-3)^2 = 9$.<br>Zonder haakjes staat er $-3^2$ en dan hoort het kwadraat alleen bij de 3. Dan krijg je $-9$: fout.'],
@@ -242,6 +260,43 @@ const Q=[
  st:[S('Eerst twee.','$-1 · -1 = 1$'),S('Dan de derde.','$1 · -1 = -1$')],
  a:'$-1$',f:[['$1$','Drie mintekens: een oneven aantal. Dan is het negatief.'],['$-3$','Je deed $-1 · 3$. Het is $-1 · -1 · -1$.']]},
 
+
+/* ===== R4 Rekenregels voor machten (H8.1) ===== */
+{id:'rr7a',o:'rr7',nr:'Basis · zoals H8.1',diag:1,q:'Schrijf als één macht: $a^3 · a^5$',
+ denk:'Keer: tel de exponenten op.',
+ st:[S('Exponenten optellen.','$3 + 5 = 8$'),S('Samen.','$a^8$')],
+ a:'$a^8$',f:[['$a^{15}$','Je deed $3 · 5$. Bij keer tel je de exponenten op: $3 + 5$.'],['$2a^8$','Er komt geen 2 voor. Het blijft één a, met exponent 8.'],['$a^2$','Je trok af. Aftrekken doe je bij delen. Hier staat keer.']],
+ v:{q:'Schrijf als één macht: $x^2 · x^6$',a:'$x^8$',f:[['$x^{12}$','Je deed $2 · 6$. Bij keer tel je op: $2 + 6$.'],['$2x^8$','Er komt geen 2 voor.']],st:[S('Exponenten optellen.','$2 + 6 = 8$'),S('Samen.','$x^8$')]}},
+{id:'rr7b',o:'rr7',nr:'Basis · zoals H8.1',diag:1,q:'Schrijf als één macht: $(a^2)^5$',
+ denk:'Macht van een macht: exponenten keer elkaar.',
+ st:[S('Exponenten keer.','$2 · 5 = 10$'),S('Samen.','$a^{10}$')],
+ a:'$a^{10}$',f:[['$a^7$','Je telde op. Bij een macht van een macht doe je keer: vijf groepjes van twee a\'s.'],['$a^{25}$','Je deed $5^2$. Het is $2 · 5$.']],
+ v:{q:'Schrijf als één macht: $(x^3)^3$',a:'$x^9$',f:[['$x^6$','Je telde op. Macht van een macht: keer, $3 · 3$.'],['$x^{27}$','Je deed $3^3$. Het is $3 · 3$.']],st:[S('Exponenten keer.','$3 · 3 = 9$'),S('Samen.','$x^9$')]}},
+{id:'rr7c',o:'rr7',nr:'Basis · zoals H8.1',q:'Schrijf als één macht: $[[x^9|x^3]]$',
+ denk:'Delen: trek de exponenten af.',
+ st:[S('Exponenten aftrekken.','$9 - 3 = 6$'),S('Samen.','$x^6$')],
+ a:'$x^6$',f:[['$x^3$','Je deed $9 : 3$. Bij delen trek je de exponenten af: $9 - 3$.'],['$x^{12}$','Je telde op. Bij delen trek je af.']],
+ v:{q:'Schrijf als één macht: $[[a^8|a^2]]$',a:'$a^6$',f:[['$a^4$','Je deed $8 : 2$. Trek af: $8 - 2$.'],['$a^{10}$','Je telde op. Bij delen trek je af.']],st:[S('Exponenten aftrekken.','$8 - 2 = 6$'),S('Samen.','$a^6$')]}},
+{id:'rr7d',o:'rr7',nr:'Basis · zoals H8.1',diag:1,q:'Werk de haakjes weg: $(3a)^2$',
+ denk:'Alles tussen de haakjes krijgt de macht: de 3 én de a.',
+ st:[C('$3^2 = $','',[['$9$',1],['$6$','$3^2 = 3 · 3 = 9$, niet $3 · 2$.']],'$9$'),S('$a^2$.','$a^2$'),S('Samen.','$9a^2$')],
+ a:'$9a^2$',f:[['$3a^2$','Ook de 3 krijgt het kwadraat: $3^2 = 9$.'],['$6a^2$','$3^2 = 3 · 3 = 9$, niet $3 · 2$.']],
+ v:{q:'Werk de haakjes weg: $(2x)^3$',a:'$8x^3$',f:[['$2x^3$','Ook de 2 krijgt de macht: $2^3 = 8$.'],['$6x^3$','$2^3 = 2 · 2 · 2 = 8$, niet $2 · 3$.']],st:[S('$2^3$.','$8$'),S('$x^3$.','$x^3$'),S('Samen.','$8x^3$')]}},
+{id:'rr7e',o:'rr7',nr:'Basis · zoals H1.2',q:'Reken uit: $2^{-3}$',
+ denk:'Een negatieve exponent betekent: 1 gedeeld door de macht.',
+ st:[S('1 gedeeld door.','$[[1|2^3]]$'),S('Uitrekenen.','$[[1|8]]$')],
+ a:'$[[1|8]]$',f:[['$-8$','Een negatieve exponent maakt het getal niet negatief. Het betekent: 1 gedeeld door $2^3$.'],['$-6$','Je deed $2 · -3$. Een macht is geen keer, en de min betekent: 1 gedeeld door.']],
+ v:{q:'Reken uit: $3^{-2}$',a:'$[[1|9]]$',f:[['$-9$','Een negatieve exponent maakt het getal niet negatief: $[[1|3^2]]$.'],['$-6$','Een macht is geen keer.']],st:[S('1 gedeeld door.','$[[1|3^2]]$'),S('Uitrekenen.','$[[1|9]]$')]}},
+{id:'rr7f',o:'rr7',nr:'Basis · zoals H8.1',q:'Schrijf korter: $4a^3 + 2a^3$',
+ denk:'Optellen: dezelfde letter met dezelfde exponent. De getallen ervoor tel je op, de exponent blijft.',
+ st:[S('Getallen optellen.','$4 + 2 = 6$'),S('De exponent blijft 3.','$6a^3$')],
+ a:'$6a^3$',f:[['$6a^6$','Bij optellen blijft de exponent gelijk. Alleen bij keer tel je exponenten op.'],['$8a^6$','Dat is $4a^3 · 2a^3$. Hier staat plus.']],
+ v:{q:'Schrijf korter: $3x^2 + 5x^2$',a:'$8x^2$',f:[['$8x^4$','Bij optellen blijft de exponent gelijk.'],['$15x^4$','Dat is $3x^2 · 5x^2$. Hier staat plus.']],st:[S('Getallen optellen.','$3 + 5 = 8$'),S('De exponent blijft 2.','$8x^2$')]}},
+{id:'rr7g',o:'rr7',nr:'Basis · zoals H8.1',q:'Schrijf korter: $3a^2 · 4a^3$',
+ denk:'Getallen keer elkaar. Bij de a: exponenten optellen.',
+ st:[S('Getallen.','$3 · 4 = 12$'),S('Letters.','$a^2 · a^3 = a^5$'),S('Samen.','$12a^5$')],
+ a:'$12a^5$',f:[['$7a^5$','De getallen moet je keer elkaar doen: $3 · 4 = 12$.'],['$12a^6$','Bij keer tel je de exponenten op: $2 + 3 = 5$.']],
+ v:{q:'Schrijf korter: $2x^3 · 5x^2$',a:'$10x^5$',f:[['$7x^5$','De getallen keer elkaar: $2 · 5 = 10$.'],['$10x^6$','Exponenten optellen: $3 + 2 = 5$.']],st:[S('Getallen.','$2 · 5 = 10$'),S('Letters.','$x^3 · x^2 = x^5$'),S('Samen.','$10x^5$')]}},
 /* ===== R4 Haakjes ===== */
 {id:'rr4a',o:'rr4',nr:N,diag:1,q:'Werk de haakjes weg: $4(x - 3)$',
  denk:'De 4 gaat keer alles wat tussen de haakjes staat: keer x én keer $-3$.',
@@ -284,12 +339,28 @@ const Q=[
  a:'$x^2 + 4x - 12$',f:[['$x^2 - 4x - 12$','$6x - 2x = +4x$, niet $-4x$.'],['$x^2 + 4x + 12$','$-2 · 6$: één minteken, dus $-12$.'],['$x^2 + 8x - 12$','$6x - 2x = 4x$. De $-2x$ is min.']],
  v:{q:'Werk de haakjes weg: $(x - 3)(x + 5)$',a:'$x^2 + 2x - 15$',f:[['$x^2 - 2x - 15$','$5x - 3x = +2x$.'],['$x^2 + 2x + 15$','$-3 · 5 = -15$.']],st:[S('$x · x$ en $x · 5$.','$x^2 + 5x$'),S('$-3 · x$ en $-3 · 5$.','$-3x - 15$'),S('Samen.','$x^2 + 2x - 15$')]}},
 
+{id:'rr4i',o:'rr4',nr:'Basis · zoals H8.3',q:'Werk de haakjes weg: $(x + 4)(x - 4)$',
+ denk:'Plus keer min, met dezelfde getallen: $(a + b)(a - b) = a^2 - b^2$. Of gewoon de papegaaienbek.',
+ st:[S('Papegaaienbek.','$x^2 - 4x + 4x - 16$'),S('$-4x + 4x = 0$.','$x^2 - 16$')],
+ a:'$x^2 - 16$',f:[['$x^2 - 8x - 16$','$-4x$ en $+4x$ vallen tegen elkaar weg.'],['$x^2 + 16$','$4 · -4 = -16$: één minteken.']],
+ v:{q:'Werk de haakjes weg: $(x - 6)(x + 6)$',a:'$x^2 - 36$',f:[['$x^2 - 12x - 36$','$+6x$ en $-6x$ vallen tegen elkaar weg.'],['$x^2 + 36$','$-6 · 6 = -36$.']],st:[S('Papegaaienbek.','$x^2 + 6x - 6x - 36$'),S('Samen.','$x^2 - 36$')]}},
+{id:'rr4j',o:'rr4',nr:'Basis · zoals H8.3',q:'Werk de haakjes weg: $3(x - 2)^2$',
+ denk:'Kwadraat gaat vóór keer. Eerst $(x - 2)^2$ uitwerken, dan pas alles keer 3.',
+ st:[S('Eerst het kwadraat.','$(x - 2)^2 = x^2 - 4x + 4$'),S('Dan keer 3.','$3x^2 - 12x + 12$')],
+ a:'$3x^2 - 12x + 12$',f:[['$9x^2 - 36x + 36$','Je deed eerst de 3 erin: $(3x - 6)^2$. Maar het kwadraat gaat vóór keer.'],['$3x^2 + 12$','Je vergat het middelste stuk $-4x$ van $(x - 2)^2$.'],['$3x^2 - 4x + 4$','Alles gaat keer 3, niet alleen de $x^2$.']],
+ v:{q:'Werk de haakjes weg: $2(x + 3)^2$',a:'$2x^2 + 12x + 18$',f:[['$4x^2 + 24x + 36$','Je deed eerst de 2 erin. Het kwadraat gaat vóór keer.'],['$2x^2 + 18$','Je vergat het middelste stuk $6x$.']],st:[S('Eerst het kwadraat.','$x^2 + 6x + 9$'),S('Dan keer 2.','$2x^2 + 12x + 18$')]}},
+{id:'rr4k',o:'rr4',nr:'Basis · zoals H8.3',q:'Werk de haakjes weg: $5 - (x^2 + 4x - 3)$',
+ denk:'Min voor de haakjes: álle tekens binnen draaien om. Daarna de losse getallen samen.',
+ st:[S('Alle tekens om.','$5 - x^2 - 4x + 3$'),S('Losse getallen samen.','$-x^2 - 4x + 8$')],
+ a:'$-x^2 - 4x + 8$',f:[['$-x^2 + 4x + 2$','Alleen het eerste teken draaide om. Ook $+4x$ wordt $-4x$ en $-3$ wordt $+3$.'],['$-x^2 - 4x + 2$','Ook $-3$ draait om: $+3$. Dan $5 + 3 = 8$.']],
+ v:{q:'Werk de haakjes weg: $7 - (x^2 - 2x + 1)$',a:'$-x^2 + 2x + 6$',f:[['$-x^2 - 2x + 8$','Alleen het eerste teken draaide om. Ook $-2x$ wordt $+2x$ en $+1$ wordt $-1$.'],['$-x^2 + 2x + 8$','Ook $+1$ draait om: $-1$. Dan $7 - 1 = 6$.']],st:[S('Alle tekens om.','$7 - x^2 + 2x - 1$'),S('Samen.','$-x^2 + 2x + 6$')]}},
+
 /* ===== R5 Wortels ===== */
 {id:'rr5a',o:'rr5',nr:N,diag:1,g:'wp',q:'Reken uit: $√{9 + 16}$',
  denk:'Eerst uitrekenen wat onder de wortel staat. Bij plus mag je de wortel niet splitsen.',
  st:[S('Onder de wortel.','$9 + 16 = 25$'),S('Wortel.','$√{25} = 5$')],
  a:'$5$',f:[['$7$','Je deed $√{9} + √{16} = 3 + 4$. Bij plus mag je niet splitsen: eerst $9 + 16 = 25$.'],['$12,5$','Je deed $25 : 2$. Een wortel is niet de helft: $5 · 5 = 25$.']]},
-{id:'rr5b',o:'rr5',nr:N,diag:1,g:'wk',q:'Reken uit: $√{6} · √{6}$',
+{id:'rr5b',o:'rr5',nr:N,g:'wk',q:'Reken uit: $√{6} · √{6}$',
  denk:'Wortel keer dezelfde wortel: de wortel valt weg.',
  st:[S('$√{6}$ is het getal dat keer zichzelf 6 geeft.','$6$')],
  a:'$6$',f:[['$36$','Je deed $6 · 6$. Maar $√{6}$ keer zichzelf is precies 6.'],['$2√{6}$','Dat is $√{6} + √{6}$. Bij keer valt de wortel weg.'],['$√{12}$','Je hebt de getallen onder de wortel opgeteld. Het is $√{6 · 6} = √{36} = 6$.']]},
@@ -315,6 +386,27 @@ const Q=[
  st:[S('Twee keer $√{5}$.','$2√{5}$')],
  a:'$2√{5}$',f:[['$5$','Dat is $√{5} · √{5}$. Hier staat plus.'],['$√{10}$','Bij plus mag je niet onder de wortel optellen. Controle: $√{5} ≈ 2,24$, dus samen $≈ 4,47$. Maar $√{10} ≈ 3,16$.']],
  v:{q:'Schrijf korter: $√{3} + √{3}$',a:'$2√{3}$',f:[['$3$','Dat is $√{3} · √{3}$. Hier staat plus.'],['$√{6}$','Bij plus mag je niet onder de wortel optellen.']],st:[S('Twee keer $√{3}$.','$2√{3}$')]}},
+
+{id:'rr5h',o:'rr5',nr:'Basis · zoals H1.4',diag:1,q:'Vereenvoudig: $√{12}$',
+ denk:'Zoek het grootste kwadraat dat in 12 past: 4, 9, 16, …',
+ st:[C('Welk kwadraat past in 12?','',[['$4$, want $12 = 4 · 3$',1],['$9$','12 is niet te delen door 9.']],'$12 = 4 · 3$'),S('Splitsen.','$√{4} · √{3} = 2√{3}$')],
+ a:'$2√{3}$',f:[['$4√{3}$','Van de 4 neem je ook de wortel: $√{4} = 2$.'],['$3√{2}$','$12 = 4 · 3$. Het kwadraat is 4, dus er komt $√{4} = 2$ voor: $2√{3}$.'],['$6$','$√{12}$ is geen heel getal: $3 · 3 = 9$ en $4 · 4 = 16$.']],
+ v:{q:'Vereenvoudig: $√{18}$',a:'$3√{2}$',f:[['$9√{2}$','Van de 9 neem je ook de wortel: $√{9} = 3$.'],['$2√{3}$','$18 = 9 · 2$. Het kwadraat is 9.']],st:[S('Kwadraat dat erin past.','$18 = 9 · 2$'),S('Splitsen.','$√{9} · √{2} = 3√{2}$')]}},
+{id:'rr5i',o:'rr5',nr:'Basis · zoals H1.4',q:'Schrijf korter: $4√{3} + 2√{3}$',
+ denk:'Zelfde wortel: tel de getallen ervoor op, net als $4x + 2x$.',
+ st:[S('Getallen ervoor optellen.','$4 + 2 = 6$'),S('De wortel blijft.','$6√{3}$')],
+ a:'$6√{3}$',f:[['$6√{6}$','Onder de wortel tel je niet op. De $√{3}$ blijft staan, zoals de x bij $4x + 2x$.'],['$8√{3}$','Je deed $4 · 2$. Er staat plus.']],
+ v:{q:'Schrijf korter: $5√{2} - 2√{2}$',a:'$3√{2}$',f:[['$3$','De $√{2}$ blijft staan, zoals de x bij $5x - 2x = 3x$.'],['$7√{2}$','Er staat min: $5 - 2 = 3$.']],st:[S('Getallen ervoor.','$5 - 2 = 3$'),S('De wortel blijft.','$3√{2}$')]}},
+{id:'rr5j',o:'rr5',nr:'Basis · zoals H1.4',q:'Schrijf korter: $2√{3} · 5√{2}$',
+ denk:'Getallen buiten keer elkaar. Onder de wortel keer elkaar.',
+ st:[S('Buiten.','$2 · 5 = 10$'),S('Onder de wortel.','$3 · 2 = 6$'),S('Samen.','$10√{6}$')],
+ a:'$10√{6}$',f:[['$7√{5}$','Je telde op. Er staat keer: buiten $2 · 5$ en onder de wortel $3 · 2$.'],['$10√{5}$','Onder de wortel ook keer: $3 · 2 = 6$.']],
+ v:{q:'Schrijf korter: $3√{2} · 4√{5}$',a:'$12√{10}$',f:[['$7√{7}$','Je telde op. Er staat keer.'],['$12√{7}$','Onder de wortel ook keer: $2 · 5 = 10$.']],st:[S('Buiten.','$3 · 4 = 12$'),S('Onder de wortel.','$2 · 5 = 10$'),S('Samen.','$12√{10}$')]}},
+{id:'rr5k',o:'rr5',nr:'Basis · zoals H8.2',q:'Reken uit: $(3√{2})^2$',
+ denk:'Alles tussen de haakjes krijgt het kwadraat: de 3 én de $√{2}$.',
+ st:[S('$3^2$.','$9$'),S('$(√{2})^2$: de wortel valt weg.','$2$'),S('Samen.','$9 · 2 = 18$')],
+ a:'$18$',f:[['$6$','Ook de 3 krijgt het kwadraat: $3^2 = 9$. Dan $9 · 2 = 18$.'],['$9√{2}$','Ook de $√{2}$ krijgt het kwadraat: $(√{2})^2 = 2$.'],['$36$','$(√{2})^2 = 2$, niet 4.']],
+ v:{q:'Reken uit: $(2√{5})^2$',a:'$20$',f:[['$10$','Ook de 2 krijgt het kwadraat: $2^2 = 4$. Dan $4 · 5 = 20$.'],['$4√{5}$','Ook de $√{5}$ krijgt het kwadraat: $(√{5})^2 = 5$.']],st:[S('$2^2$.','$4$'),S('$(√{5})^2$.','$5$'),S('Samen.','$4 · 5 = 20$')]}},
 
 /* ===== R6 Invullen ===== */
 {id:'rr6a',o:'rr6',nr:N,diag:1,g:'iq',q:'$y = x^2 + 2x$. Bereken y bij $x = -3$.',
@@ -356,6 +448,7 @@ const Q=[
 Q.forEach(q=>{if(q.g&&!q.v&&G[q.g])q.v=()=>Object.assign({gen:1,f:[]},G[q.g]())});
 
 /* ---------- toevoegen aan wiskunde ---------- */
+const ORDE=['rr1','rr2','rr3','rr7','rr4','rr5','rr6'];SECS.sort((a,b)=>ORDE.indexOf(a.id)-ORDE.indexOf(b.id));
 V.SECS.unshift(...SECS);
 V.Q.push(...Q);
 Object.assign(V.SNAP,SNAP);
