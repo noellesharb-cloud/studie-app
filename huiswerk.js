@@ -24,7 +24,6 @@ window.HUISWERK=[
 
   /* woensdag 4 november */
   {id:'2026-11-04-ak',d:'2026-11-04',vak:'aardrijkskunde',t:'Taak 3: §3.3 Water',wat:['Bestudeer LB H3.3','Maak WB H3.3 opdracht 1, 2, 3, 5, 6','# Begrippen in je schrift (met betekenis) en leren','Bevolkingsconcentraties, oases, rivieroase, stuwdam, stuwmeer, grondwater, bronoase, aquifers, fossiel water, leefbaarheid, verdamping, druppelirrigatie, ontzilting'],min:45,app:'ak',par:'3.3',opg:[1,2,3,5,6]},
-  {id:'2026-11-04-gr',d:'2026-11-04',vak:'grieks',t:'Les 9 en tekst 9 t/m regel 19',wat:['# Leerwerk','Woorden van les 9','Herhalen: alle rijtjes van het persoonlijk voornaamwoord (HB p. 106)','# Maakwerk','Benoemen en vertalen (B&V): tekst 9 t/m regel 19','# Meenemen','Argo Tekstboek en Argo Hulpboek','Benoemblad tekst 9 en kleurtjes','Schrift en schrijfmateriaal'],min:35,app:'gr',par:'9t'},
   {id:'2026-11-04-wi',d:'2026-11-04',vak:'wiskunde',t:'H3.4',wat:['Lezen H3.4 blz 80','Bekijken uitlegfilmpjes H3.4','Maken: 50, 51, 52, 53, 54, 55, 56, 57'],min:45,app:'wi',par:'3.4',opg:[50,51,52,53,54,55,56,57]},
 
   /* donderdag 5 november */
@@ -33,6 +32,8 @@ window.HUISWERK=[
 
   /* vrijdag 6 november */
   {id:'2026-11-06-ak',d:'2026-11-06',vak:'aardrijkskunde',t:'Inhalen: rest van §3.3',wat:['Afspraak met de docent: je maakt voortaan ALLE opdrachten in het werkboek, niet de helft.','Maak de opdrachten van WB H3.3 die nog niet in je huiswerk zaten: opdracht 4, 7, 8, 9, 10','Bij de controle op woensdag 11 november moeten alle opdrachten van H3 af zijn.','# Nakijken','Na de controle krijg je ALLE antwoorden. Kijk alles na met een andere kleur pen en schrijf bij elke fout kort waarom het goede antwoord klopt.'],min:40,app:'ak',par:'3.3',opg:[4,7,8,9,10]},
+  /* id blijft 2026-11-04-gr zodat afvinken bewaard blijft; volgens SOMtoday moet het af op vrijdag 6 nov */
+  {id:'2026-11-04-gr',d:'2026-11-06',vak:'grieks',t:'Les 9 en tekst 9 t/m regel 19',wat:['# Leerwerk','Woorden van les 9','Herhalen: alle rijtjes van het persoonlijk voornaamwoord (HB p. 106)','# Maakwerk','Benoemen en vertalen (B&V): tekst 9 t/m regel 19','# Meenemen','Argo Tekstboek en Argo Hulpboek','Benoemblad tekst 9 en kleurtjes','Schrift en schrijfmateriaal'],min:35,app:'gr',par:'9t',leer:[{titel:'Woorden les 9',o:'w9l'},{titel:'Persoonlijk voornaamwoord 1e en 2e persoon',o:'pv12'},{titel:'Persoonlijk voornaamwoord 3e persoon',o:'pv3'}]},
   {id:'2026-11-06-fa',d:'2026-11-06',vak:'frans',t:'Exercices digitaal via Noordhoff',wat:['Maak digitaal via Noordhoff:','Exercice 5e','Exercice 7b','Exercice 8a'],min:20},
 
   /* volgende week (nog niet compleet) */
