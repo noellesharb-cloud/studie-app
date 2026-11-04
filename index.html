@@ -565,7 +565,8 @@ function write(fn){if(!db||!canWrite)return;chain=chain.then(fn).catch(e=>{
   stateEl.textContent=e&&e.code==='invalid_argument'?'Je kunt dit bekijken, maar niet aanpassen.':'Opslaan lukte niet. Probeer het zo nog eens.';
   if(e&&e.code==='invalid_argument'){canWrite=false;render()}})}
 function saveVak(v){const body=JSON.parse(JSON.stringify(v));delete body.id;write(()=>db.collection('vakken').doc(v.id).set(body))}
-function saveSet(){write(()=>db.collection('instellingen').doc('plan').set(Object.assign({},SET)))}
+/* nooit opslaan voordat de instellingen uit Supabase binnen zijn: anders overschrijven de standaardwaarden (vrijdag/zaterdag 0 min) wat de ouder had ingesteld */
+function saveSet(){if(!GELADEN.set)return;write(()=>db.collection('instellingen').doc('plan').set(Object.assign({},SET)))}
 function saveLog(wid){const body={entries:(LOG[wid]||{entries:[]}).entries};write(()=>db.collection('log').doc(wid).set(body))}
 function addLog(e,stil){const wid=weekId(e.d);LOG[wid]=LOG[wid]||{entries:[]};LOG[wid].entries=[...LOG[wid].entries.filter(x=>!(x.d===e.d&&x.key==='nee-'+e.key)),e];saveLog(wid);if(!stil)render()}
 function delLog(d,key,stil){const wid=weekId(d);if(!LOG[wid])return;LOG[wid].entries=LOG[wid].entries.filter(e=>!(e.d===d&&e.key===key));saveLog(wid);if(!stil)render()}
@@ -905,7 +906,7 @@ async function startDb(){
     if(busy()&&snap.metadata.hasPendingWrites)return;
     render();
   },()=>{clearTimeout(timer);stateEl.textContent='De cijfers konden niet geladen worden.'});
-  db.collection('instellingen').doc('plan').onSnapshot(s=>{const x=s.exists?s.data():{};SET=Object.assign({},DEF,x);if((x.v||1)<2){SET.maxDagWeekend=0;SET.v=2}if((SET.v||1)<3){SET.maxDagSchool=150;SET.bijMin=20;SET.v=3}if(!busy())render()},()=>{});
+  db.collection('instellingen').doc('plan').onSnapshot(s=>{const x=s.exists?s.data():{};SET=Object.assign({},DEF,x);GELADEN.set=1;SCHED=null;if((x.v||1)<2){SET.maxDagWeekend=0;SET.v=2}if((SET.v||1)<3){SET.maxDagSchool=150;SET.bijMin=20;SET.v=3}if(!busy())render()},()=>{});
   db.collection('oefen').onSnapshot(snap=>{GELADEN.oefen=1;snap.docs.forEach(d=>{if(Oefen.cur!==d.id)OEF[d.id]=JSON.parse(JSON.stringify(d.data()))});if(!busy())render()},()=>{});
   db.collection('log').onSnapshot(snap=>{const L={};snap.docs.forEach(d=>L[d.id]=JSON.parse(JSON.stringify(d.data())));LOG=L;GELADEN.log=1;if(!busy())render()},()=>{});
 })();
