@@ -318,6 +318,7 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 .build.ok{border:1.5px solid var(--ok);background:var(--okbg)} .build.bad{border:1.5px solid var(--bad);background:var(--badbg)}
 .build .leeg{color:var(--soft);padding:0 6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
 </style>
 
 </head>
@@ -476,7 +477,7 @@ let SCHED=null;
 function schedule(){
   if(SCHED)return SCHED;
   const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0),van=startDag()||today();
-  const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null)L.push({v,t})}));
+  const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
   L.forEach(({v,t})=>{const z=zwaarT(v,t),vol=z?SET.totZwaar:SET.totNormaal;
@@ -637,7 +638,7 @@ function rVandaag(){
     if(!L2.length)return '';let last='';
     return `<div class="card stack"><span class="tag">Huiswerk dat eraan komt</span><span class="sub" style="font-size:.9rem">Vooruitwerken mag: vink af wat al af is, dan staat het later niet meer open.</span>${L2.map(h=>{const kop=h.d!==last?`<div class="hwdag">${nice(h.d).replace(/^./,c=>c.toUpperCase())}</div>`:'';last=h.d;return kop+hwRow(h,null,true)}).join('')}</div>`})()}
   <div class="card"><span class="tag">Toetsen die eraan komen</span>
-    ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee</small></span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
+    ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee${k.t.stofOnbekend?' · stof nog niet bekend, nog niet ingepland':''}</small></span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
       :`<p class="sub" style="margin-top:6px">Nog geen toetsdata ingevuld.</p>`}
   </div>
   <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Je begint met opwarmen: een rekensprint en 5 sommen rekenregels. Heb je huiswerk voor een vak dat in de app zit, dan doe je eerst 3 snelle vragen uit eerdere stof, en daarna oefen je 20 minuten dezelfde paragraaf in de app: zo blijft het hangen. Blokken in de app vinken zichzelf af: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; ${SET.maxDagWeekend>0?`op vrijdag en zaterdag is het plan ${SET.maxDagWeekend} minuten`:'op vrijdag en zaterdag is één sprint genoeg'}. In de vakantie staat je reeks op pauze.</span></div>`;
@@ -731,6 +732,7 @@ function rCijfers(){
   <div class="note">
     <b>Zo rekent deze pagina</b>
     <span>Gemiddelde = (cijfer × weging + …) gedeeld door de totale weging. "Nodig" = wat je gemiddeld moet halen op alle toetsen die nog geen cijfer hebben.</span>
+    <span>Weet ze nog niet wat ze moet leren, vink dan bij die toets 'stof nog niet bekend' aan: dan plant de pagina er nog geen leertijd voor. Haal het vinkje weg zodra de stof bekend is.</span>
     <span>Een weging met een stippelrand komt niet uit het PTO en staat voorlopig op 1. Vraag de docent hoe vaak de toets meetelt. Vul ook de datum van elke toets in: dan plant de pagina het leren.</span>
   </div>`;
   document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet(['doel']);render()});
@@ -742,7 +744,7 @@ function vakHtml(v,c,i){
   const dis=canWrite?'':'disabled';
   const rows=(v.toetsen||[]).map(t=>{const cf=num(t.cijfer);return `<tr>
     <td class="p">P${esc(t.periode)}</td>
-    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}</td>
+    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}</td>
     <td><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" value="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}></td>
     <td><input class="in w${t.wegingOnzeker?' q':''}" id="w-${v.id}-${t.id}" inputmode="decimal" data-v="${v.id}" data-t="${t.id}" data-f="weging" value="${esc(t.weging)}" aria-label="Weging ${esc(t.naam)}" ${dis}></td>
     <td><input class="in${cf!=null&&cf<5.5?' low':''}" id="c-${v.id}-${t.id}" inputmode="decimal" placeholder="–" data-v="${v.id}" data-t="${t.id}" data-f="cijfer" value="${esc(t.cijfer??'')}" aria-label="Cijfer ${esc(t.naam)}" ${dis}></td>
@@ -819,7 +821,8 @@ $('#v-cijfers').addEventListener('change',e=>{
   const v=vakOf(el.dataset.v);if(!v)return;
   if(el.dataset.f==='lesuren'){const n=num(el.value);v.lesuren=n==null?null:Math.max(0,Math.round(n));saveVak(v);render();return}
   const t=v.toetsen.find(x=>x.id===el.dataset.t);if(!t)return;
-  const f=el.dataset.f;let val=el.value.trim();
+  const f=el.dataset.f;let val=f==='stofOnbekend'?!!el.checked:el.value.trim();
+  if(f==='stofOnbekend'){SCHED=null;if(!val)delete t.stofOnbekend;else t.stofOnbekend=true;saveVak(v);render();return}
   if(f==='weging'||f==='cijfer'){const n=num(val);
     if(val!==''&&(n==null||n<0||(f==='cijfer'&&(n<1||n>10)))){el.value=t[f]??'';stateEl.textContent='Vul een cijfer tussen 1 en 10 in.';return}
     val=val===''?(f==='weging'?1:null):Math.round(n*10)/10;
