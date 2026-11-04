@@ -480,10 +480,29 @@ function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchool
 function beheersing(vid){const ps=Oefen.pars(vid),st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
   const proef=(st.best||{}).toets,proefOk=proef!=null&&1+9*proef/100>=7,frac=ps.length?g/ps.length:0;
   return {g,n:ps.length,proefOk,f:Math.max(0.3,1-0.5*frac-(frac===1&&proefOk?0.2:0))}}
-let SCHED=null;
+let SCHED=null,SCHED_OUD=null;
+/* eerste dag waarop nog leertijd ingepland mag worden: vandaag, of morgen als vandaag al af is.
+   Leertijd komt nooit op een dag die voorbij is of al af is; past het niet meer, dan volgt de melding 'Niet alles past'. */
+const eersteOpen=()=>stempel(today())?addDays(today(),1):today();
+/* toetsvoorbereiding die op een afgesloten dag (stempel) echt is gedaan, per vak|toets.
+   Oude stempels zonder deze gegevens: dan geldt wat het oude plan die dag gaf. */
+function prepGedaan(d){const st=logDag(d).find(e=>e.key==='dag-gehaald');if(!st)return null;
+  if(Array.isArray(st.prep))return st.prep;
+  return (scheduleOud()[d]||[]).map(p=>({vid:p.v.id,tid:p.t.id,min:p.min,zwaar:p.zwaar}))}
+/* toetsvoorbereiding voor dag s: vanaf de eerste open dag uit het plan, daarvoor zoals hij die dag was */
+function prepVoor(s){const F=eersteOpen();if(s>=F)return schedule()[s]||[];
+  const st=logDag(s).find(e=>e.key==='dag-gehaald');
+  if(st&&Array.isArray(st.prep))return st.prep.map(x=>{const v=vakOf(x.vid),t=v&&(v.toetsen||[]).find(t=>t.id===x.tid);return t&&x.min>0?{v,t,min:x.min,zwaar:!!x.zwaar,n:diffDays(s,t.datum)}:null}).filter(Boolean);
+  return scheduleOud()[s]||[]}
+const scheduleOud=()=>SCHED_OUD||(SCHED_OUD=maakSchedule(startDag()||today(),{}));
 function schedule(){
   if(SCHED)return SCHED;
-  const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0),van=startDag()||today();
+  const F=eersteOpen(),credit={};
+  for(let d=startDag()||F,k=0;d<F&&k<400;d=addDays(d,1),k++)(prepGedaan(d)||[]).forEach(x=>{const id=x.vid+'|'+x.tid;credit[id]=(credit[id]||0)+(x.min||0)});
+  return SCHED=maakSchedule(F,credit);
+}
+function maakSchedule(van,credit){
+  const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -491,13 +510,13 @@ function schedule(){
     /* de oefenapp hoort bij de eerstvolgende toets van dat vak; alleen daar telt beheersing mee */
     const app=APPS().includes(v.id)&&!eerste.has(v.id)&&t.datum>=today();if(app)eerste.add(v.id);
     const bh=app&&VAKDATA[v.id].volledig!==false?beheersing(v.id):null;let tot=bh?Math.round(vol*bh.f/5)*5:vol,d=addDays(t.datum,-1),k=0;
-    (A._tot=A._tot||{})[v.id+'|'+t.id]={vol,tot,bh};
+    (A._tot=A._tot||{})[v.id+'|'+t.id]={vol,tot,bh};tot=Math.max(0,tot-(credit[v.id+'|'+t.id]||0));
     while(tot>0&&k<70&&d>=van){const cap=(vrijDag(d)?0:vrijZa(d)?SET.maxDagWeekend:SET.maxDagSchool)-used(d);
       const room=Math.min(z?60:45,cap,tot);
       if(room>=15){(A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});tot-=room}
       d=addDays(d,-1);k++}
     if(tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot});});
-  return SCHED=A;
+  return A;
 }
 /* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
 function volgendePar(vid){const st=OEF[vid]||{},p=Oefen.pars(vid);return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
@@ -521,8 +540,8 @@ function blokken(s){
   const rest=hwCompleet(nd)&&T.length?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
-  (SC[s]||[]).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
-    ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
+  prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
+    ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,prep:{vid:p.v.id,tid:p.t.id,zwaar:p.zwaar},vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
       titel:`${p.v.naam}: ${app?'toetsvoorbereiding in de app':'leren'} voor ${p.t.naam}${ps.length>1?` · blok ${i+1} van ${ps.length}`:''}`,
       uit:`Toets over ${p.n} ${p.n===1?'dag':'dagen'} (${nice(p.t.datum)})${p.zwaar?' · extra tijd: '+((num(p.t.weging)??1)>=3?'telt '+p.t.weging+'× mee':'je moet hier omhoog'):''}. `+
         (bh?`Je beheerst ${bh.g} van de ${bh.n} paragrafen${bh.proefOk?' en je proeftoets is voldoende':''}. Daardoor is je toetsvoorbereiding ${Math.round(info.tot/60*10)/10} in plaats van ${info.vol/60} uur. De tijd telt vanzelf mee.`
@@ -552,7 +571,7 @@ function blokStatus(s){
     else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=autoMin(s,b.auto),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
     else if(b.hwt)done=hwDone(b.hwt);
     else done=keys.has(b.key);
-    return Object.assign({},b,{done:done||ok,ok:ok&&!done,vraag:vraag&&!done&&!ok,prog,later:!!vast&&!vast.has(b.key)&&!done&&!ok})});
+    return Object.assign({},b,{done:done||ok,ok:ok&&!done,echt:done||keys.has('ok-'+b.key),vraag:vraag&&!done&&!ok,prog,later:!!vast&&!vast.has(b.key)&&!done&&!ok})});
   return R.filter(b=>!b.later).concat(R.filter(b=>b.later));
 }
 const gehaaldNu=s=>blokStatus(s).filter(b=>!b.later).every(b=>b.done);
@@ -561,8 +580,11 @@ const gehaaldNu=s=>blokStatus(s).filter(b=>!b.later).every(b=>b.done);
 const stempel=s=>logDag(s).some(e=>e.key==='dag-gehaald');
 const gehaald=s=>(s<today()&&stempel(s))||gehaaldNu(s);
 function stempelBij(){if(!canWrite||!db||vrijDag(today()))return;const d=today(),nu=gehaaldNu(d),st=stempel(d);
-  if(nu&&!st)addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now(),keys:blokStatus(d).map(b=>b.key)},true);
-  else if(!nu&&st)delLog(d,'dag-gehaald',true)}
+  if(nu&&!st){const BS=blokStatus(d),prep={};
+    BS.filter(b=>b.prep).forEach(b=>{const id=b.prep.vid+'|'+b.prep.tid,m=b.echt?b.min:(b.prog||0);
+      prep[id]=prep[id]||{vid:b.prep.vid,tid:b.prep.tid,zwaar:b.prep.zwaar,min:0};prep[id].min+=m});
+    addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now(),keys:BS.map(b=>b.key),prep:Object.values(prep)},true);SCHED=null}
+  else if(!nu&&st){delLog(d,'dag-gehaald',true);SCHED=null}}
 const NIETMEE=['vraag','stempel','afgewezen','opwarm'];
 const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).reduce((a,e)=>a+(e.sec?e.sec/60:(e.min||0)),0));
 const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&CONFIG.ouder.toLowerCase()===String(WIE).toLowerCase());
@@ -812,7 +834,7 @@ function rWeek(){
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
       <button class="btn ghost sm" id="vk-add" style="margin-top:8px" ${dis}>Vakantie of vrije dag toevoegen</button></div>
-    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en in deze periode een toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak in deze periode (tot en met de eerstvolgende toetsweek) geen toets met een datum, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en in deze periode een toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak in deze periode (tot en met de eerstvolgende toetsweek) geen toets met een datum, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder, maar nooit naar een dag die voorbij is of al af is. Wat niet meer past, staat als melding bovenaan Vandaag. Is een dag af, dan blijft hij af: wat er daarna bijkomt, telt die dag niet meer mee. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
   </details>`;
   $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
@@ -852,7 +874,7 @@ $('#v-cijfers').addEventListener('click',e=>{
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{flushAct();if(b.dataset.tab==='oefenen'&&tab==='oefenen'&&Oefen.cur){Oefen.stop()}tab=b.dataset.tab;try{localStorage.setItem('tab',tab)}catch(e){};render()});
 const GELADEN={};
 function render(){
-  SCHED=null;
+  SCHED=null;SCHED_OUD=null;
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen)stempelBij();
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
   ['vandaag','oefenen','cijfers','week'].forEach(t=>$('#v-'+t).hidden=t!==tab);
