@@ -80,7 +80,7 @@ window.Oefen=(()=>{
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
       <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
-      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?'Ze komen terug in andere woorden.':'Nog niets fout gedaan'}</small></span></button>
+      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,ST.wrong.length)}.`:'Nog niets fout gedaan'}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
     </div>
     ${V.log&&V.log.length?`<div class="card"><span class="tag">Huiswerk in deze app</span><ul class="log">${V.log.map(l=>`<li><b>${l[0]}</b> ${l[1]}: ${l[2]}</li>`).join('')}</ul></div>`:''}`;
@@ -187,7 +187,17 @@ window.Oefen=(()=>{
   }
 
   /* ---------- oefenen ---------- */
+  /* foute vragen: hooguit FOUT_MAX per keer, de rest blijft op de stapel voor een volgende keer */
+  const FOUT_MAX=6;
+  /* een foute vraag komt in dezelfde ronde nog één keer terug; gaat hij dan weer fout, dan telt hij als klaar
+     voor deze ronde en blijft hij bij 'Mijn foute vragen' voor een andere dag (anders kan een ronde eindeloos duren) */
+  function nogEens(q,it){R.tries=R.tries||{};const n=R.tries[q.id]=(R.tries[q.id]||0)+1;
+    if(n<2){const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)});return true}
+    R.cleared.add(q.id);return false}
+  const laterTxt='<p class="why" style="margin-top:10px">Deze bewaren we voor een andere dag. Hij blijft bij Mijn foute vragen; jij gaat nu door.</p>';
+  function foutIds(sec){return shuf(ST.wrong.filter(x=>QM[x]&&(!sec||QM[x].o===sec)))}
   function start(mode,ids,title,sec,par,hw){
+    if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
     const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='diag';
     R={mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
     ask();
@@ -253,11 +263,11 @@ window.Oefen=(()=>{
       const ok=goed.every(Boolean),hb2=el.querySelector('#help');if(hb2)hb2.remove();
       if(!(q.id in R.first)){R.first[q.id]=ok;if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);save()}
       if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
-      else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
+      else R.terug=nogEens(q,it)
       const ul=uitl(q),fb=el.querySelector('#fb');
       fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
         :`<div class="fb bad"><div class="head">Niet goed</div><div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
-          ${!R.exam?'<p class="why" style="margin-top:10px">Deze soort som komt zo nog een keer terug, met andere getallen.</p>':''}</div>`;
+          ${R.exam?'':R.terug?'<p class="why" style="margin-top:10px">Deze soort som komt zo nog een keer terug, met andere getallen.</p>':laterTxt}</div>`;
       fb.insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>');
       fb.querySelector('#next').onclick=()=>{R.i++;ask()};fb.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
@@ -291,13 +301,13 @@ window.Oefen=(()=>{
       if(ok&&!R.exam&&!R.stepErr[q.id]&&hasSt(q)){ST.ok=ST.ok||[];if(!ST.ok.includes(q.id))ST.ok.push(q.id)}
       save();}
     if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
-    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
+    else R.terug=nogEens(q,it)
     const fb=el.querySelector('#fb');
     const ul=uitl(q);
     fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
       :`<div class="fb bad"><div class="head">Niet goed</div>${opts[k][1]?`<div><b>Dit ging er mis:</b></div><div class="mistake">${fmt(opts[k][1])}</div>`:''}
         <div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
-        ${!R.exam?'<p class="why" style="margin-top:10px">Deze vraag komt zo nog een keer terug, in andere woorden.</p>':''}</div>`;
+        ${R.exam?'':R.terug?'<p class="why" style="margin-top:10px">Deze vraag komt zo nog een keer terug, in andere woorden.</p>':laterTxt}</div>`;
     fb.insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>');
     fb.querySelector('#next').onclick=()=>{R.i++;ask()};
     fb.scrollIntoView({behavior:smooth,block:'start'});
@@ -309,9 +319,9 @@ window.Oefen=(()=>{
       if(ok&&R.was.has(q.id))ST.wrong=ST.wrong.filter(x=>x!==q.id);
       save();}
     if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
-    else{const at=Math.min(R.i+4,R.queue.length);R.queue.splice(at,0,{id:q.id,retry:true,alt:retryAlt(q.id,it)})}
+    else R.terug=nogEens(q,it)
     const fb=el.querySelector('#fb');
-    fb.innerHTML=(html||'')+(!ok&&!R.exam?'<p class="why" style="margin-top:10px">Deze komt zo nog een keer terug.</p>':'')+'<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>';
+    fb.innerHTML=(html||'')+(!ok&&!R.exam?(R.terug?'<p class="why" style="margin-top:10px">Deze komt zo nog een keer terug.</p>':laterTxt):'')+'<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>';
     fb.querySelector('#next').onclick=()=>{R.i++;ask()};
   }
   /* ---------- toetsvorm (wiskunde, natuurkunde): de vraag zonder opties en zonder hulp, zoals op de toets.
@@ -424,16 +434,17 @@ window.Oefen=(()=>{
     if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0};ST.ptoets[R.par]={best:Math.max(o.best,c),laatst:c}}
     save();
     const wrong=R.ids.filter(id=>!R.first[id]);
+    const rest=R.mode==='fout'?foutIds(R.sec).length:0;
     const msg=R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
       :pct===100?'Alles in één keer goed!':pct>=80?'Heel goed gedaan!':pct>=55?'Goed bezig. Oefen je fouten nog even.':'Niet erg, zo leer je het. Oefen je fouten nog een keer.';
     el.innerHTML=`<span class="tag">${R.title}</span>
-    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}</div>
+    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}${R.mode==='fout'?`<p class="sub">${rest?`Er staan nog ${rest} foute vragen op je stapel. Die komen een volgende keer; je hoeft ze niet allemaal vandaag te doen.`:'Je stapel foute vragen is leeg!'}</p>`:''}</div>
     ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
     <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
-      <button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':'Nieuwe ronde'}</button>
+      ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
-    el.querySelector('#nw').onclick=()=>R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    const nwb=el.querySelector('#nw');if(nwb)nwb.onclick=()=>R.mode==='fout'?start('fout',foutIds(R.sec),R.title,R.sec):R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
   }
 
