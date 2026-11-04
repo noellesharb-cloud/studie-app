@@ -5,6 +5,7 @@
    t     = titel, wat = regels uit de omschrijving ('# ' = kopje)
    min   = geschatte tijd, klaar = al afgevinkt in SOMtoday, app = oefenapp die erbij hoort
    opg   = opgavenummers uit het boek die in de app staan: dan komt er een knop 'Maak je huiswerk stap voor stap'
+   leer  = leerwerk dat ook bij het huiswerk hoort, na de opgaven: [{titel, o:sectie-id} of {titel, ids:[vraag-id's]}]
    par   = paragraaf in de oefenapp (voor het bijhoudblok na het huiswerk). Leeg: de eerste paragraaf zonder vinkje
    COMPLEET_TOT: tot en met deze datum staat al het huiswerk erin. Daarna is het nog onvolledig
    en blijft er ook een algemeen huiswerkblok ("kijk in SOMtoday") staan. */
@@ -27,7 +28,7 @@ window.HUISWERK=[
   {id:'2026-11-04-wi',d:'2026-11-04',vak:'wiskunde',t:'H3.4',wat:['Lezen H3.4 blz 80','Bekijken uitlegfilmpjes H3.4','Maken: 50, 51, 52, 53, 54, 55, 56, 57'],min:45,app:'wi',par:'3.4',opg:[50,51,52,53,54,55,56,57]},
 
   /* donderdag 5 november */
-  {id:'2026-11-05-la',d:'2026-11-05',vak:'latijn',t:'Woorden 1 en rijtjes',wat:['Maken: Woorden 1, blz. 81-82 in je oefenboek','Schrijf op: rijtjes mons, sanguis, en extra moeilijk: frater (fratris)','Leren: woordjes 7A en rijtjes groep 3'],min:35,app:'la',par:'wo',opg:[1,2,3,4,5]},
+  {id:'2026-11-05-la',d:'2026-11-05',vak:'latijn',t:'Woorden 1 en rijtjes',wat:['Maken: Woorden 1, blz. 81-82 in je oefenboek','Schrijf op: rijtjes mons, sanguis, en extra moeilijk: frater (fratris)','Leren: woordjes 7A en rijtjes groep 3'],min:35,app:'la',par:'wo',opg:[1,2,3,4,5],leer:[{titel:'Woordjes 7A',o:'w7'},{titel:'Rijtjes groep 3',ids:['r-rex','r-nomen','r-mons','r-sanguis','r-frater']}]},
   {id:'2026-11-05-wi',d:'2026-11-05',vak:'wiskunde',t:'Afmaken H3.4, begin H3.5',wat:['Leren blz 80','Maken: 58, 59, 60','Lezen blz 84','Bekijken uitlegfilmpje H3.5','Maken: 62, 63, 64, 65, 66'],min:45,app:'wi',opg:[58,59,60,62,63,64,65,66]},
 
   /* vrijdag 6 november */

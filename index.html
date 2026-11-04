@@ -320,6 +320,7 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 .so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
 .lrij{border-collapse:collapse;font-size:1rem;margin:4px 0}.lrij th,.lrij td{padding:3px 12px 3px 0;text-align:left}.lrij th{color:var(--soft);font-weight:600}
+.hwdelen{margin:0;padding-left:20px;display:grid;gap:4px}.hwdelen .sub{font-size:.85rem;margin-left:6px}
 </style>
 
 </head>
@@ -340,20 +341,20 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
-<script src="config.js?v=202611041950"></script>
-<script src="oefen/engine.js?v=202611041950"></script>
-<script src="oefen/reken.js?v=202611041950"></script>
-<script src="oefen/woord.js?v=202611041950"></script>
-<script src="vakken/na.js?v=202611041950"></script>
-<script src="vakken/wi.js?v=202611041950"></script>
-<script src="vakken/wi-var.js?v=202611041950"></script>
-<script src="vakken/wi-basis.js?v=202611041950"></script>
-<script src="vakken/ak.js?v=202611041950"></script>
-<script src="vakken/gr.js?v=202611041950"></script>
-<script src="vakken/lv.js?v=202611041950"></script>
-<script src="vakken/du.js?v=202611041950"></script>
-<script src="vakken/la.js?v=202611041950"></script>
-<script src="huiswerk.js?v=202611041950"></script>
+<script src="config.js?v=202611041955"></script>
+<script src="oefen/engine.js?v=202611041955"></script>
+<script src="oefen/reken.js?v=202611041955"></script>
+<script src="oefen/woord.js?v=202611041955"></script>
+<script src="vakken/na.js?v=202611041955"></script>
+<script src="vakken/wi.js?v=202611041955"></script>
+<script src="vakken/wi-var.js?v=202611041955"></script>
+<script src="vakken/wi-basis.js?v=202611041955"></script>
+<script src="vakken/ak.js?v=202611041955"></script>
+<script src="vakken/gr.js?v=202611041955"></script>
+<script src="vakken/lv.js?v=202611041955"></script>
+<script src="vakken/du.js?v=202611041955"></script>
+<script src="vakken/la.js?v=202611041955"></script>
+<script src="huiswerk.js?v=202611041955"></script>
 <script>
 /* ---------- basis ---------- */
 const $=s=>document.querySelector(s);
@@ -434,10 +435,10 @@ function hwRow(h,b,kort){const v=hwVak(h.vak),done=hwDone(h),naam=v?v.naam:h.vak
   return `<div class="blk${done?' done':''}"><button class="ck" data-hwt="${esc(h.id)}" data-min="${h.min}" data-vak="${v?v.id:'hw'}" aria-pressed="${done}" aria-label="${done?'Afgevinkt':'Afvinken'}: ${esc(naam)}, ${esc(h.t)}" ${canWrite&&!h.klaar?'':'disabled'}>${done?'✓':''}</button>${chip}
     <span class="tx"><b class="hn">${esc(naam)}</b>${esc(h.t)}<small>${kort?nice(h.d)+' · ':'Voor '+nice(h.d)+' · '}${h.klaar?'al afgevinkt in SOMtoday':done?'gedaan':'tik het vakje af als het af is'}</small>${!done&&hwAfgewezen(h.id)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}${wat}${app}${afwKnop(hwLog(h.id),h.klaar)}</span><span class="mn">${h.min} min</span></div>`}
 /* huiswerk dat in de app staat: knop die precies die opgaven opent, stap voor stap */
-function hwKnop(h){if(!h.opg||!h.opg.length)return '';const n=Oefen.hwStand(h.app,h.id);
-  return `<span class="row" style="margin:8px 0 4px"><button class="btn sm" data-hwapp="${esc(h.id)}" data-stop>${n?'Verder met je huiswerk in de app':'Maak je huiswerk stap voor stap'}</button><span class="sub" style="font-size:.85rem">${VAKDATA[h.app]&&VAKDATA[h.app].reken===false?'opdracht':'opgave'} ${h.opg.join(', ')}${n?` · ${n} vragen klaar`:''}</span></span>`}
+function hwKnop(h){if(!(h.opg&&h.opg.length)&&!(h.leer&&h.leer.length))return '';const n=Oefen.hwStand(h.app,h.id);
+  return `<span class="row" style="margin:8px 0 4px"><button class="btn sm" data-hwapp="${esc(h.id)}" data-stop>${n?'Verder met je huiswerk in de app':'Maak je huiswerk stap voor stap'}</button><span class="sub" style="font-size:.85rem">${[(h.opg||[]).length?(VAKDATA[h.app]&&VAKDATA[h.app].reken===false?'opdracht':'opgave')+' '+h.opg.join(', '):'',...(h.leer||[]).map(l=>l.titel.charAt(0).toLowerCase()+l.titel.slice(1))].filter(Boolean).join(' + ')}${n?` · ${n} vragen klaar`:''}</span></span>`}
 function openHw(id){const h=HW().find(x=>x.id===id);if(!h)return;const v=hwVak(h.vak);fromSprint=false;show('oefenen');
-  Oefen.huiswerk($('#v-oefenen'),h.app,{key:h.id,nrs:h.opg,par:h.par||null,titel:`${v?v.naam:h.vak}: huiswerk voor ${nice(h.d)}`})}
+  Oefen.huiswerk($('#v-oefenen'),h.app,{key:h.id,nrs:h.opg||[],leer:h.leer||null,par:h.par||null,titel:`${v?v.naam:h.vak}: huiswerk voor ${nice(h.d)}`})}
 function hwAfgewezen(id){for(const w of Object.values(LOG))for(const e of (w.entries||[]))if(e.key==='nee-hwt-'+id)return true;return false}
 /* knop voor de ouder bij iets wat ze zelf heeft afgevinkt */
 function afwKnop(e,klaar){if(!isOuder()||!e||klaar||!canWrite)return '';

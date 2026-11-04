@@ -400,14 +400,21 @@ window.Oefen=(()=>{
       .map((q,i)=>({q,i,n:nrNum(q)})).sort((a,b)=>a.n[0]-b.n[0]||(a.n[1]<b.n[1]?-1:a.n[1]>b.n[1]?1:a.i-b.i)).map(x=>x.q.id)}
   function hwHome(H){
     Oefen.cur=vid;
-    const ids=hwIds(H.nrs,H.par),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
+    /* leerwerk hoort bij het huiswerk: H.leer = [{titel, o:sectie-id} of {titel, ids:[...]}], na de opdrachten, in dezelfde voortgang */
+    const opgIds=hwIds(H.nrs,H.par),delen=[{titel:null,ids:opgIds}];
+    (H.leer||[]).forEach(L=>{const li=(L.ids||V.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).filter(id=>QM[id]&&!delen.some(d=>d.ids.includes(id)));if(li.length)delen.push({titel:L.titel,ids:li})});
+    const ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
+    const deelVan=id=>delen.find(d=>d.ids.includes(id));
     const ontbreekt=H.nrs.filter(n=>!ids.some(id=>nrNum(QM[id])[0]===+n));
-    const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>/^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1);
-    const titel='Huiswerk: '+W+' '+H.nrs.join(', '),kies=tvVak()&&ids.some(id=>{const q=QM[id];return hasSt(q)&&!q.type&&!q.in&&q.t!=='open'}),vorm=kies&&ST.hwVorm==='tvorm'?'tvorm':'stap';
+    const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>{const d=deelVan(q.id);if(d&&d.titel)return d.titel.charAt(0).toLowerCase()+d.titel.slice(1);return /^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1)};
+    const nrsTxt=H.nrs.length?Wc+' '+H.nrs.join(', '):'',tagTxt=[nrsTxt,...delen.slice(1).map(d=>d.titel)].filter(Boolean).join(' · ');
+    const titel='Huiswerk'+(H.nrs.length?': '+W+' '+H.nrs.join(', '):'')+(delen.length>1?(H.nrs.length?' + leren':': leren'):''),kies=tvVak()&&ids.some(id=>{const q=QM[id];return hasSt(q)&&!q.type&&!q.in&&q.t!=='open'}),vorm=kies&&ST.hwVorm==='tvorm'?'tvorm':'stap';
     el.innerHTML=`${top('Vandaag','Huiswerk')}
     <h2>${H.titel||'Je huiswerk'}</h2>
-    <div class="card stack plan"><span class="tag">${Wc} ${H.nrs.join(', ')}</span>
+    <div class="card stack plan"><span class="tag">${tagTxt}</span>
       <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
+      ${delen.length>1?`<p>Daarna leer je in de app${delen.slice(1).map(d=>' <b>'+d.titel.charAt(0).toLowerCase()+d.titel.slice(1)+'</b>').join(' en')}. Dat hoort ook bij je huiswerk. Pas als alles hieronder af is, is je huiswerk klaar.</p>
+      <ol class="hwdelen">${delen.filter(d=>d.ids.length).map((d,i)=>{const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span></li>`}).join('')}</ol>`:''}
       <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
