@@ -279,7 +279,7 @@ a.sec{color:inherit;text-decoration:none}
 @media (max-width:440px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
 small.afw{display:block;color:var(--bad);font-weight:700}
 .gr{font-family:"Gentium Book Plus","Gentium Plus","Noto Serif",Georgia,serif;font-size:1.12em}
-.c-nom{--mk:#FF8F8A}.c-gen{--mk:#8FE0A3}.c-dat{--mk:#FFE14D}.c-acc{--mk:#93CBFF}
+.c-nom{--mk:#FF8F8A}.c-gen{--mk:#8FE0A3}.c-dat{--mk:#FFE14D}.c-acc{--mk:#93CBFF}.c-abl{--mk:#D9C2FF}
 .mk{background:var(--mk);color:#1D2842;border-radius:5px;padding:0 3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .proef{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--tip);border-radius:14px;padding:10px 14px;font-size:.95rem}
 .proef .seg{margin-left:auto}
@@ -319,6 +319,7 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 .build .leeg{color:var(--soft);padding:0 6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 .so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
+.lrij{border-collapse:collapse;font-size:1rem;margin:4px 0}.lrij th,.lrij td{padding:3px 12px 3px 0;text-align:left}.lrij th{color:var(--soft);font-weight:600}
 </style>
 
 </head>
@@ -339,19 +340,20 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
-<script src="config.js?v=202611041900"></script>
-<script src="oefen/engine.js?v=202611041900"></script>
-<script src="oefen/reken.js?v=202611041900"></script>
-<script src="oefen/woord.js?v=202611041900"></script>
-<script src="vakken/na.js?v=202611041900"></script>
-<script src="vakken/wi.js?v=202611041900"></script>
-<script src="vakken/wi-var.js?v=202611041900"></script>
-<script src="vakken/wi-basis.js?v=202611041900"></script>
-<script src="vakken/ak.js?v=202611041900"></script>
-<script src="vakken/gr.js?v=202611041900"></script>
-<script src="vakken/lv.js?v=202611041900"></script>
-<script src="vakken/du.js?v=202611041900"></script>
-<script src="huiswerk.js?v=202611041900"></script>
+<script src="config.js?v=202611041930"></script>
+<script src="oefen/engine.js?v=202611041930"></script>
+<script src="oefen/reken.js?v=202611041930"></script>
+<script src="oefen/woord.js?v=202611041930"></script>
+<script src="vakken/na.js?v=202611041930"></script>
+<script src="vakken/wi.js?v=202611041930"></script>
+<script src="vakken/wi-var.js?v=202611041930"></script>
+<script src="vakken/wi-basis.js?v=202611041930"></script>
+<script src="vakken/ak.js?v=202611041930"></script>
+<script src="vakken/gr.js?v=202611041930"></script>
+<script src="vakken/lv.js?v=202611041930"></script>
+<script src="vakken/du.js?v=202611041930"></script>
+<script src="vakken/la.js?v=202611041930"></script>
+<script src="huiswerk.js?v=202611041930"></script>
 <script>
 /* ---------- basis ---------- */
 const $=s=>document.querySelector(s);
