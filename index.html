@@ -541,7 +541,10 @@ const autoMin=(s,vid)=>logDag(s).filter(e=>e.soort==='oefenen'&&e.vak===vid).red
 /* status van elk blok: zelf afgevinkt, of vanzelf gehaald met oefentijd */
 function blokStatus(s){
   const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need={},sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
-  return B.map(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
+  /* was de dag al af, dan staat in de stempel welke blokken toen op het plan stonden. Wat daarna bijkomt (nieuwe toetsdatum,
+     nieuw huiswerk, een ander vak dat schuift) telt die dag niet meer mee: het staat apart als 'bijgekomen' */
+  const stE=L.find(e=>e.key==='dag-gehaald'),vast=stE&&Array.isArray(stE.keys)?new Set(stE.keys):null;
+  const R=B.map(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
     if(b.auto==='opwarm'){const rs=L.some(e=>e.soort==='sprint'&&String(e.key).startsWith('sprint-reken-')),rr=!RR()||keys.has('klaar-rekenregels');
       return Object.assign({},b,{rs,rr,done:(rs&&rr)||ok,ok:ok&&!(rs&&rr),vraag:vraag&&!(rs&&rr)&&!ok})}
     if(b.auto==='warm'){const d=keys.has('klaar-warm-'+b.warm.vid)||hwDone(b.warm.h);return Object.assign({},b,{done:d||ok,ok:ok&&!d,vraag:vraag&&!d&&!ok})}
@@ -549,20 +552,21 @@ function blokStatus(s){
     else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=autoMin(s,b.auto),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
     else if(b.hwt)done=hwDone(b.hwt);
     else done=keys.has(b.key);
-    return Object.assign({},b,{done:done||ok,ok:ok&&!done,vraag:vraag&&!done&&!ok,prog})});
+    return Object.assign({},b,{done:done||ok,ok:ok&&!done,vraag:vraag&&!done&&!ok,prog,later:!!vast&&!vast.has(b.key)&&!done&&!ok})});
+  return R.filter(b=>!b.later).concat(R.filter(b=>b.later));
 }
-const gehaaldNu=s=>blokStatus(s).every(b=>b.done);
+const gehaaldNu=s=>blokStatus(s).filter(b=>!b.later).every(b=>b.done);
 /* een dag die gehaald was, blijft gehaald: ook als het plan later verandert (nieuwe toets, minder leertijd).
    Alleen als jij als ouder iets afwijst, vervalt die stempel. */
 const stempel=s=>logDag(s).some(e=>e.key==='dag-gehaald');
 const gehaald=s=>(s<today()&&stempel(s))||gehaaldNu(s);
 function stempelBij(){if(!canWrite||!db||vrijDag(today()))return;const d=today(),nu=gehaaldNu(d),st=stempel(d);
-  if(nu&&!st)addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now()},true);
+  if(nu&&!st)addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now(),keys:blokStatus(d).map(b=>b.key)},true);
   else if(!nu&&st)delLog(d,'dag-gehaald',true)}
 const NIETMEE=['vraag','stempel','afgewezen','opwarm'];
 const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).reduce((a,e)=>a+(e.sec?e.sec/60:(e.min||0)),0));
 const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&CONFIG.ouder.toLowerCase()===String(WIE).toLowerCase());
-const planMin=s=>blokken(s).reduce((a,b)=>a+b.min,0);
+const planMin=s=>blokStatus(s).filter(b=>!b.later).reduce((a,b)=>a+b.min,0);
 function startDag(){return SET.streakStart||DEF.streakStart}
 function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(!vrijDag(d)&&gehaald(d))n++;d=addDays(d,-1);
   while(d>=st&&(vrijDag(d)||gehaald(d))){if(!vrijDag(d))n++;d=addDays(d,-1)}return n}
@@ -597,10 +601,10 @@ function goedkeur(b){if(b.done&&!b.ok)return '';if(!b.auto)return '';
 /* ---------- tab: vandaag ---------- */
 const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
 function rVandaag(){
-  const B=blokStatus(dag),L=logDag(dag),open=B.filter(b=>!b.done);
+  const B=blokStatus(dag),L=logDag(dag),open=B.filter(b=>!b.done&&!b.later);
   const zelf=B.filter(b=>!b.auto&&b.done&&!b.ok&&(b.hwt?hwLog(b.hwt.id)&&!b.hwt.klaar:L.some(e=>e.key===b.key)));
   const rest=(schedule()._rest||[]).filter(r=>r.t.datum>=today()&&r.tot>=15);
-  const plan=B.reduce((a,b)=>a+b.min,0),gedaan=gedaanMin(dag);
+  const plan=B.filter(b=>!b.later).reduce((a,b)=>a+b.min,0),gedaan=gedaanMin(dag);
   const extra=L.filter(e=>!B.some(b=>b.key===e.key)&&!String(e.key).startsWith('hwt-')&&e.soort!=='oefenen'&&e.soort!=='sprint'&&e.soort!=='goedgekeurd'&&!NIETMEE.includes(e.soort));
   const komend=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&diffDays(dag,t.datum)>=0)komend.push({v,t,n:diffDays(dag,t.datum)})}));komend.sort((a,b)=>a.n-b.n);
   const n=streak(),isToday=dag===today(),week=[...Array(7)].map((_,i)=>addDays(today(),i-6));const st=startDag();
@@ -621,7 +625,7 @@ function rVandaag(){
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
   ${vrijDag(dag)?`<div class="note"><b>${esc(vakantieVan(dag).naam)}</b><span>Vandaag staat er niets op het plan. Je reeks staat op pauze: hij gaat niet verloren en loopt na de vakantie gewoon door. Oefenen in de app mag altijd.</span></div>`:''}
-  <div class="stack">${B.map(b=>{const v=vakOf(b.vak),gk=goedkeur(b);
+  <div class="stack">${B.map((b,i)=>(b.later&&!(B[i-1]||{}).later?`<div class="note"><b>Bijgekomen nadat je dag al af was</b><span>Je had alles van ${dag===today()?'vandaag':'deze dag'} al gedaan toen dit erbij kwam. Het hoeft ${dag===today()?'vandaag':'die dag'} niet meer en je reeks blijft staan. Doe je het toch, dan telt het als extra.</span></div>`:'')+(b=>{const v=vakOf(b.vak),gk=goedkeur(b);
     if(b.auto==='opwarm')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span><span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
       <span class="row" style="margin-top:8px"><button class="btn${b.rs?' ghost':''}" data-sprint="reken">${b.rs?'✓ ':''}Rekensprint</button>${RR()?`<button class="btn${b.rr?' ghost':''}" data-rr="1">${b.rr?'✓ ':''}Rekenregels van vandaag</button>`:''}</span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     if(b.auto==='warm')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(vakOf(b.cv))}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
@@ -632,7 +636,7 @@ function rVandaag(){
     if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
       <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     return `<button class="blk${b.done?' done':''}" data-blk="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-soort="${b.soort}" ${canWrite?'':'disabled'}>
-      <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`}).join('')}</div>
+      <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`})(b)).join('')}</div>
   ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
   ${extra.length?`<div class="card stack"><span class="tag">Zelf gelogd</span>${extra.map(e=>`<div class="row" style="justify-content:space-between"><span><b>${esc(vakOf(e.vak)?.naam||'Huiswerk')}</b> · ${esc(e.soort==='huiswerk'?'huiswerk gemaakt':e.soort==='leren'?'geleerd':e.soort)}</span><span><b>${e.min} min</b> ${canWrite?`<button class="x" data-dellog="${esc(e.key)}" aria-label="Verwijder">×</button>`:''}</span></div>`).join('')}</div>`:''}
   ${canWrite?`<details class="card"><summary style="cursor:pointer;font-weight:700">Iets anders gedaan? Zelf tijd toevoegen</summary>
