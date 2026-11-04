@@ -566,7 +566,10 @@ function write(fn){if(!db||!canWrite)return;chain=chain.then(fn).catch(e=>{
   if(e&&e.code==='invalid_argument'){canWrite=false;render()}})}
 function saveVak(v){const body=JSON.parse(JSON.stringify(v));delete body.id;write(()=>db.collection('vakken').doc(v.id).set(body))}
 /* nooit opslaan voordat de instellingen uit Supabase binnen zijn: anders overschrijven de standaardwaarden (vrijdag/zaterdag 0 min) wat de ouder had ingesteld */
-function saveSet(){if(!GELADEN.set)return;write(()=>db.collection('instellingen').doc('plan').set(Object.assign({},SET)))}
+/* alleen de velden opslaan die echt veranderd zijn, samengevoegd met wat NU in Supabase staat.
+   Zo kan een ander apparaat (of een tabblad dat al lang openstaat) met oude instellingen niets meer terugzetten. */
+function saveSet(keys){if(!GELADEN.set)return;const ks=keys||Object.keys(SET),p={v:SET.v};ks.forEach(k=>p[k]=JSON.parse(JSON.stringify(SET[k]??null)));
+  write(()=>{const d=db.collection('instellingen').doc('plan');return d.patch?d.patch(p):d.set(Object.assign({},SET))})}
 function saveLog(wid){const body={entries:(LOG[wid]||{entries:[]}).entries};write(()=>db.collection('log').doc(wid).set(body))}
 function addLog(e,stil){const wid=weekId(e.d);LOG[wid]=LOG[wid]||{entries:[]};LOG[wid].entries=[...LOG[wid].entries.filter(x=>!(x.d===e.d&&x.key==='nee-'+e.key)),e];saveLog(wid);if(!stil)render()}
 function delLog(d,key,stil){const wid=weekId(d);if(!LOG[wid])return;LOG[wid].entries=LOG[wid].entries.filter(e=>!(e.d===d&&e.key===key));saveLog(wid);if(!stil)render()}
@@ -593,7 +596,7 @@ function rVandaag(){
   const extra=L.filter(e=>!B.some(b=>b.key===e.key)&&!String(e.key).startsWith('hwt-')&&e.soort!=='oefenen'&&e.soort!=='sprint'&&e.soort!=='goedgekeurd'&&!NIETMEE.includes(e.soort));
   const komend=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&diffDays(dag,t.datum)>=0)komend.push({v,t,n:diffDays(dag,t.datum)})}));komend.sort((a,b)=>a.n-b.n);
   const n=streak(),isToday=dag===today(),week=[...Array(7)].map((_,i)=>addDays(today(),i-6));const st=startDag();
-  if(n>(SET.record||0)&&canWrite){SET.record=n;saveSet()}
+  if(n>(SET.record||0)&&canWrite){SET.record=n;saveSet(['record'])}
   const chip=v=>v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:'';
   $('#v-vandaag').innerHTML=`
   <div class="card streak">
@@ -730,7 +733,7 @@ function rCijfers(){
     <span>Gemiddelde = (cijfer × weging + …) gedeeld door de totale weging. "Nodig" = wat je gemiddeld moet halen op alle toetsen die nog geen cijfer hebben.</span>
     <span>Een weging met een stippelrand komt niet uit het PTO en staat voorlopig op 1. Vraag de docent hoe vaak de toets meetelt. Vul ook de datum van elke toets in: dan plant de pagina het leren.</span>
   </div>`;
-  document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet();render()});
+  document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet(['doel']);render()});
   document.querySelectorAll('#v-cijfers details.tt').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.v):open.delete(d.dataset.v)});
 }
 function vakHtml(v,c,i){
@@ -802,12 +805,12 @@ function rWeek(){
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
   document.querySelectorAll('[data-s]').forEach(el=>el.onchange=()=>{const k=el.dataset.s;
     if(k==='start'){SET.start=el.value||DEF.start}else{const n=num(el.value);if(n==null||n<0||n>600){el.value=SET[k];return}SET[k]=Math.round(n)}
-    saveSet();render()});
+    saveSet([k]);render()});
   const vks=()=>SET.vakanties=(SET.vakanties||[]).map(v=>Object.assign({},v));
   document.querySelectorAll('[data-vk]').forEach(el=>el.onchange=()=>{const L=vks(),v=L[+el.dataset.vk];if(!v)return;v[el.dataset.vf]=el.value.trim();
-    if(v.van&&v.tot&&v.tot<v.van)v.tot=v.van;SCHED=null;saveSet();render()});
-  document.querySelectorAll('[data-vkdel]').forEach(b=>b.onclick=()=>{const L=vks();L.splice(+b.dataset.vkdel,1);SCHED=null;saveSet();render()});
-  const va=$('#vk-add');if(va)va.onclick=()=>{const L=vks();L.push({van:today(),tot:today(),naam:'Vrije dag'});SCHED=null;saveSet();render()};
+    if(v.van&&v.tot&&v.tot<v.van)v.tot=v.van;SCHED=null;saveSet(['vakanties']);render()});
+  document.querySelectorAll('[data-vkdel]').forEach(b=>b.onclick=()=>{const L=vks();L.splice(+b.dataset.vkdel,1);SCHED=null;saveSet(['vakanties']);render()});
+  const va=$('#vk-add');if(va)va.onclick=()=>{const L=vks();L.push({van:today(),tot:today(),naam:'Vrije dag'});SCHED=null;saveSet(['vakanties']);render()};
 }
 
 /* ---------- invoer cijfers ---------- */
@@ -889,6 +892,11 @@ async function startDb(){
       async set(b){cache[c]=cache[c]||{};cache[c][id]=JSON.parse(JSON.stringify(b));notify(c,true);
         const {error}=await SB.from('docs').upsert({coll:c,id,data:b,updated_at:new Date().toISOString()});
         if(error)throw {code:'unavailable',message:error.message}},
+      async patch(p){const {data,error}=await SB.from('docs').select('data').eq('coll',c).eq('id',id).maybeSingle();
+        if(error)throw {code:'unavailable',message:error.message};
+        const b=Object.assign({},(data&&data.data)||{},JSON.parse(JSON.stringify(p)));cache[c]=cache[c]||{};cache[c][id]=b;notify(c,true);
+        const r=await SB.from('docs').upsert({coll:c,id,data:b,updated_at:new Date().toISOString()});
+        if(r.error)throw {code:'unavailable',message:r.error.message}},
       onSnapshot(f,err){(L[c]=L[c]||[]).push(()=>f({exists:!!(cache[c]||{})[id],data:()=>(cache[c]||{})[id]}));load(c).catch(e=>err&&err(e));return()=>{}}
     })})};
 }
