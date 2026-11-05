@@ -321,6 +321,30 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 .so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
 .lrij{border-collapse:collapse;font-size:1rem;margin:4px 0}.lrij th,.lrij td{padding:3px 12px 3px 0;text-align:left}.lrij th{color:var(--soft);font-weight:600}
 .hwdelen{margin:0;padding-left:20px;display:grid;gap:4px}.hwdelen .sub{font-size:.85rem;margin-left:6px}
+/* open vraag in onderdelen */
+.ko-les{font-size:.95rem;display:flex;flex-direction:column;gap:4px}
+.ko-schema{font-size:.9rem;background:var(--card);border-radius:8px;padding:6px 10px;border:1px solid var(--line)}
+.ko-schema i{font-style:normal;color:var(--pen);margin:0 2px}
+.ko-d{display:flex;flex-direction:column;gap:6px}
+.ko-d label{display:flex;gap:8px;align-items:flex-start;font-weight:600}
+.ko-n{flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--pen);color:#fff;font-size:.85rem;font-weight:700}
+.ko-r{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--tip);color:var(--ink);border:1px solid var(--line);vertical-align:1px}
+textarea.ko-ta{min-height:70px}
+textarea.ko-mist{border-color:var(--bad)}
+.ko-was label{color:var(--bad)}
+.ko-err{color:var(--bad);font-weight:600;margin:0;min-height:0}
+.ko-err:empty{display:none}
+.ko-jij{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:2px}
+.ko-mod{padding:2px 0}
+mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box-shadow:inset 0 -2px 0 var(--ok)}
+.ko-kws{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ko-kw{font-size:.85rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line)}
+.ko-kw.ok{background:var(--okbg);border-color:var(--ok)}
+.ko-kw.no{background:var(--badbg);border-color:var(--bad)}
+.ko-keus .btn.on{background:var(--pen);color:#fff;border-color:var(--pen)}
+.ko-k.k2{border-left:5px solid var(--ok)}
+.ko-k.k1{border-left:5px solid var(--hl)}
+.ko-k.k0{border-left:5px solid var(--bad)}
 </style>
 
 </head>
@@ -342,7 +366,7 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611042008"></script>
-<script src="oefen/engine.js?v=202611042008"></script>
+<script src="oefen/engine.js?v=202611051500"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -350,8 +374,10 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 <script src="vakken/wi-var.js?v=202611042008"></script>
 <script src="vakken/wi-basis.js?v=202611042008"></script>
 <script src="vakken/ak.js?v=202611042008"></script>
+<script src="vakken/ak-ko.js?v=202611051500"></script>
 <script src="vakken/gr.js?v=202611042008"></script>
 <script src="vakken/lv.js?v=202611042008"></script>
+<script src="vakken/lv-ko.js?v=202611051500"></script>
 <script src="vakken/du.js?v=202611042008"></script>
 <script src="vakken/la.js?v=202611042008"></script>
 <script src="huiswerk.js?v=202611042100"></script>

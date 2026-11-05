@@ -3,7 +3,8 @@
    Een vak staat in vakken/<id>.js en vult VAKDATA[id] met
    {SECS, SNAP, BEG, Q, PN, snapHtml, sprint?, leer?, custom?, reken?}.
    Vraagsoorten: meerkeuze (standaard, f = [antwoord, waarom fout] of alleen tekst, uitleg in st of u),
-   t:'open' (zelf nakijken met kernpunten k en voorbeeldantwoorden vb), type:<naam> (V.custom[naam] tekent hem).
+   t:'open' (zelf nakijken met kernpunten k en voorbeeldantwoorden vb),
+   met KO[id] = [[aanwijzing, sleutelwoorden, reden nodig], …] per kernpunt (vakken/<id>-ko.js) in onderdelen, type:<naam> (V.custom[naam] tekent hem).
    BEG = [begrip, uitleg, paragraaf?].
    De pagina geeft Oefen.ctx: state(vid), save(vid), sprintDone(kind,score,best), home().
    ============================================================ */
@@ -372,7 +373,84 @@ window.Oefen=(()=>{
     api.redraw=()=>V.custom[q.type](q,it,el.querySelector('#teken'),api);
     api.redraw();scrollTo(0,0);
   }
+  /* ---------- open vraag in onderdelen (vak met KO[q.id]): eerst per onderdeel een eigen vak met aanwijzing,
+     daarna per onderdeel haar tekst naast het modelpunt, sleutelwoorden, en zelf kiezen: goed / half / mis.
+     Alleen goed als élk onderdeel goed is. Wat ze miste staat in ST.koMis en wordt bij de volgende keer genoemd. ---------- */
+  const koNorm=x=>String(x??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[−–]/g,'-');
+  const KO_REDEN=/(^|[^a-z])(omdat|doordat|want|dus|daardoor|waardoor|hierdoor|zodat|daarom|vanwege|dankzij|door)([^a-z]|$)/;
+  const koGroepen=w=>(w||'').split('|').filter(Boolean).map(g=>g.split('/').map(a=>a.trim()).filter(Boolean));
+  function koMark(raw,alts){
+    const map=[];let n='';for(let i=0;i<raw.length;i++){for(const ch of koNorm(raw[i])){n+=ch;map.push(i)}}
+    const hit=new Array(raw.length).fill(false);
+    alts.forEach(a=>{let p=n.indexOf(a);while(p>=0){for(let j=p;j<p+a.length;j++)hit[map[j]]=true;p=n.indexOf(a,p+1)}});
+    let out='',on=false;for(let i=0;i<raw.length;i++){if(hit[i]&&!on){out+='<mark class="kw">';on=true}if(!hit[i]&&on){out+='</mark>';on=false}out+=esc(raw[i])}
+    if(on)out+='</mark>';return out.replace(/\n/g,'<br>')}
+  function koBegrippen(q){
+    const tekst=koNorm([...q.k,...(q.vb||[])].join(' '));
+    return (V.BEG||[]).filter(b=>{const t=koNorm(String(b[0]).replace(/\(.*\)/,'')).trim();return t.length>=4&&tekst.includes(t)}).slice(0,6)}
+  function askOpenKO(q,it,s,ko){
+    ST.koMis=ST.koMis||{};
+    const mis=ST.koMis[q.id]||[],reden=ko.some(o=>o[2]),beg=R.exam?[]:koBegrippen(q);
+    el.innerHTML=`${kop(it,q,s,false)}
+    <div class="tip stack ko-les"><b>Redeneren, niet opzeggen</b>
+      <span>Je krijgt geen punten voor wat je uit je hoofd weet, maar voor hoe je het <i>gebruikt</i>. ${reden?'Laat met begrippen en wat ze betekenen zien <b>waarom</b> iets zo is.':'Wees precies: gebruik het juiste begrip of feit uit de stof, niet iets wat er een beetje op lijkt.'}</span>
+      ${reden?'<span class="ko-schema"><b>wat</b> <i>→</i> <b>omdat</b> begrip of feit uit de stof <i>→</i> <b>dus</b> terug naar de vraag</span>':''}</div>
+    <div class="card stack">
+      <p style="margin:0">Een goed antwoord heeft <b>${ko.length} ${ko.length===1?'onderdeel':'onderdelen'}</b>.${reden?' Bij een onderdeel met <span class="ko-r">reden</span> schrijf je erbij waaróm.':''}</p>
+      ${mis.length?`<p class="again" style="margin:0">Vorige keer miste je onderdeel ${mis.map(i=>i+1).join(' en ')}. Let daar extra op.</p>`:''}
+      ${ko.map((o,i)=>`<div class="ko-d${mis.includes(i)?' ko-was':''}"><label for="ko${i}"><span class="ko-n">${i+1}</span><span>${fmt(o[0])}${o[2]?' <span class="ko-r">reden</span>':''}</span></label>
+        <textarea id="ko${i}" class="ta ko-ta" placeholder="${o[2]?'… omdat …':'Mijn antwoord…'}"></textarea></div>`).join('')}
+      ${beg.length?`<details class="denk"><summary>Hulp: welke begrippen kun je hier gebruiken?</summary><p class="sub" style="margin:0 0 6px">Op de toets krijg je deze hulp niet. Gebruik niet alleen het woord, maar ook wat het betekent.</p>${beg.map(b=>`<div class="rule"><b>${b[0]}</b><div class="why">${b[1]}</div></div>`).join('')}</details>`:''}
+      <p class="ko-err" id="koerr" role="alert"></p>
+      <button class="btn" id="see">Bekijk het modelantwoord</button></div>
+    <div id="kp"></div><div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    const tas=[...el.querySelectorAll('.ko-ta')],err=el.querySelector('#koerr');
+    tas.forEach(t=>t.oninput=()=>{err.textContent='';t.classList.remove('ko-mist')});
+    el.querySelector('#see').onclick=()=>{
+      for(let i=0;i<ko.length;i++){const v=tas[i].value.trim();
+        if(v.length<3){err.textContent=`Vul eerst vak ${i+1} in.`;tas[i].classList.add('ko-mist');tas[i].focus();return}
+        if(ko[i][2]&&!KO_REDEN.test(koNorm(v))){err.textContent=`Bij vak ${i+1} ontbreekt de reden. Schrijf erbij waaróm: omdat, doordat, want, dus …`;tas[i].classList.add('ko-mist');tas[i].focus();return}}
+      el.querySelector('#see').remove();err.remove();tas.forEach(t=>t.readOnly=true);
+      const antw=tas.map(t=>t.value.trim()),alles=koNorm(antw.join(' ')),keus=ko.map(()=>null);
+      const box=el.querySelector('#kp');
+      box.innerHTML=`<div class="tip" style="margin-bottom:10px"><b>Kijk per onderdeel na.</b> Zet jouw tekst naast het modelpunt. Goed is alleen goed als de kern én de reden erin staan.</div>
+        ${q.vb?`<div class="card stack" style="margin-bottom:10px"><b>${q.vb.length>1?'Voorbeeldantwoorden (twee kanten, allebei goed)':'Voorbeeldantwoord'}</b>${q.vb.map(x=>`<p>${fmt(x)}</p>`).join('')}</div>`:''}
+        ${ko.map((o,i)=>{const gr=koGroepen(o[1]),eigen=koNorm(antw[i]);
+          const chips=gr.map(g=>{const a=g.find(x=>eigen.includes(x));if(a)return `<span class="ko-kw ok">✓ ${esc(a)}</span>`;
+            const j=antw.findIndex(t=>g.some(x=>koNorm(t).includes(x)));if(j>=0)return `<span class="ko-kw ok">✓ ${esc(g.find(x=>koNorm(antw[j]).includes(x)))} <small>(in vak ${j+1})</small></span>`;
+            return `<span class="ko-kw no">✗ ${esc(g.slice(0,3).join(' / '))}</span>`}).join('');
+          return `<div class="card stack ko-k" data-i="${i}"><b><span class="ko-n">${i+1}</span> ${fmt(o[0])}</b>
+            <div><span class="sub">Jij schreef</span><div class="ko-jij">${koMark(antw[i],gr.flat())}</div></div>
+            <div><span class="sub">Modelpunt</span><div class="ko-mod">${fmt(q.k[i])}</div></div>
+            ${gr.length?`<div class="ko-kws"><span class="sub">Sleutelwoorden</span> ${chips}</div>`:''}
+            <div class="row ko-keus"><button class="btn ghost sm" data-v="2">Goed</button><button class="btn ghost sm" data-v="1">${o[2]?'Half: wel wát, geen waarom':'Half: niet volledig'}</button><button class="btn ghost sm" data-v="0">Mis</button></div>
+            <div class="ko-chk"></div></div>`}).join('')}
+        <p class="ko-err" id="koerr2" role="alert"></p>
+        <div class="row" id="kb"><button class="btn" id="koklaar">Klaar met nakijken</button></div>`;
+      const err2=box.querySelector('#koerr2');
+      box.querySelectorAll('.ko-k').forEach(kaart=>{const i=+kaart.dataset.i,chk=kaart.querySelector('.ko-chk'),knoppen=[...kaart.querySelectorAll('[data-v]')];
+        const zet=v=>{keus[i]=v;knoppen.forEach(b=>b.classList.toggle('on',v!==null&&+b.dataset.v===v));kaart.classList.toggle('k2',v===2);kaart.classList.toggle('k1',v===1);kaart.classList.toggle('k0',v===0);err2.textContent=''};
+        knoppen.forEach(b=>b.onclick=()=>{const v=+b.dataset.v;chk.innerHTML='';
+          const weg=koGroepen(ko[i][1]).filter(g=>!g.some(x=>alles.includes(x)));
+          if(v===2&&weg.length){zet(null);
+            chk.innerHTML=`<div class="tip stack"><span>Je gebruikte <b>${weg.map(g=>esc(g[0])).join('</b> en <b>')}</b> niet. Staat het er echt, in andere woorden? Lees je eigen tekst nog eens naast het modelpunt.</span>
+              <div class="row"><button class="btn ghost sm" data-c="2">Ja, in andere woorden</button><button class="btn ghost sm" data-c="1">Nee, dan is het half</button></div></div>`;
+            chk.querySelectorAll('[data-c]').forEach(c=>c.onclick=()=>{zet(+c.dataset.c);chk.innerHTML=+c.dataset.c===2?'<p class="sub" style="margin:0">Oké: in andere woorden, maar wel met dezelfde betekenis.</p>':''});return}
+          zet(v)})});
+      box.querySelector('#koklaar').onclick=()=>{
+        const open=keus.findIndex(v=>v===null);if(open>=0){err2.textContent=`Kies eerst bij onderdeel ${open+1}: goed, half of mis.`;box.querySelector(`.ko-k[data-i="${open}"]`).scrollIntoView({behavior:smooth,block:'center'});return}
+        const ok=keus.every(v=>v===2),fout=keus.map((v,i)=>v<2?i:-1).filter(i=>i>=0);
+        if(ok)delete ST.koMis[q.id];else ST.koMis[q.id]=fout;save();
+        box.querySelector('#kb').remove();box.querySelectorAll('.ko-keus button,.ko-chk button').forEach(b=>b.disabled=true);
+        const lijst=fout.map(i=>`onderdeel ${i+1} (${keus[i]===1?'half':'mis'})`).join(', ');
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Elk onderdeel klopte, met de kern en de reden erbij.</div>'
+          :`<div class="fb bad"><div class="head">Nog niet helemaal</div>Je miste ${lijst}. Lees bij die onderdelen het modelpunt nog eens: wat is de reden, en welk begrip hoort erbij? Schrijf het goede antwoord in je schrift.</div>`)};
+      box.scrollIntoView({behavior:smooth,block:'start'})};
+    scrollTo(0,0);
+  }
   function askOpen(q,it,s){
+    const ko=V.KO&&V.KO[q.id];if(ko&&ko.length===q.k.length)return askOpenKO(q,it,s,ko);
     el.innerHTML=`${kop(it,q,s,false)}
     <div class="card stack">${tvVak()?'<p class="sub" style="font-size:.9rem"><b>Leg uit = geef de reden.</b> Na “omdat” moet iets staan wat nog niet in de vraag stond.</p>':''}<label class="sub" for="ans">Schrijf je antwoord op, hier of in je schrift:</label>
       <textarea id="ans" class="ta" placeholder="Mijn antwoord…"></textarea>
