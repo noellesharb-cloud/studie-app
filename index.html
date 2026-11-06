@@ -409,7 +409,7 @@ const stateEl=$('#state');
 const COL=['--c1','--c2','--c3','--c4','--c5','--c6','--c7'];
 const DAGEN=['zo','ma','di','wo','do','vr','za'],DAGL=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-const DEF={v:3,doel:7,basis:20,blok:25,start:'16:00',totKlein:60,totNormaal:150,totZwaar:360,maxDagSchool:150,maxDagWeekend:0,sprintMin:3,oefenMin:20,bijMin:20,record:0,streakStart:'2026-11-02',
+const DEF={v:3,doel:7,basis:20,blok:25,start:'16:00',totD:90,totNormaal:150,totZwaar:360,maxDagSchool:150,maxDagWeekend:0,sprintMin:3,oefenMin:20,bijMin:20,record:0,streakStart:'2026-11-02',
   /* schoolvakanties regio Midden (Rotterdam) 2026-2027 en vaste vrije dagen; aan te passen bij Instellingen */
   vakanties:[{van:'2026-10-17',tot:'2026-10-25',naam:'Herfstvakantie'},{van:'2026-12-19',tot:'2027-01-03',naam:'Kerstvakantie'},
    {van:'2027-02-20',tot:'2027-02-28',naam:'Voorjaarsvakantie'},{van:'2027-03-29',tot:'2027-03-29',naam:'Tweede Paasdag'},
@@ -499,10 +499,12 @@ function huiswerkMin(s){if(vrijZa(s)||vrijDag(s))return 0;const g=pd(s).getDay()
   return T.length?Math.max(gen,T.reduce((a,h)=>a+(h.min||0),0)):gen}
 /* leertijd per toets terug in de tijd verdelen, eerste toets eerst, met een maximum per dag.
    Vrijdag en zaterdag: alleen een sprint. */
-const zwaarT=(v,t)=>(num(t.weging)??1)>=3||druk(v);
-/* totale leertijd hangt af van hoe vaak de toets meetelt: 1× (zoals een D-toets) klein, 2× gewoon, 3× of meer zwaar.
-   Moet ze bij dat vak omhoog, dan de helft erbij. Een kleine toets wordt zo nooit een zware toets. */
-function leertijd(v,t){const w=num(t.weging)??1,b=w>=3?SET.totZwaar:w>=2?SET.totNormaal:(SET.totKlein??DEF.totKlein);return druk(v)?Math.min(Math.max(b,SET.totZwaar),Math.round(b*1.5/5)*5):b}
+const isD=t=>/^\s*d[\s-]*toets/i.test(t.naam||'');
+const zwaarT=(v,t)=>!isD(t)&&((num(t.weging)??1)>=3||druk(v));
+/* totale leertijd: een D-toets (overhoring in de les over de basis) heeft een eigen, vaste leertijd en is nooit zwaar;
+   moet ze bij dat vak omhoog, dan de helft erbij. Afsluitende toetsen: gewoon, of zwaar bij 3× meetellen of als ze omhoog moet. */
+function leertijd(v,t){if(isD(t)){const b=SET.totD??DEF.totD;return druk(v)?Math.round(b*1.5/5)*5:b}
+  return zwaarT(v,t)?SET.totZwaar:SET.totNormaal}
 /* dagen tot de eerstvolgende toets (met datum, nog zonder cijfer) na dag s; 1e9 = geen komende toets.
    Zonder komende toets geen bijhouden en geen dagelijks oefenen voor dat vak: dan alleen het huiswerk. */
 function dagenTotToets(vid,s){let best=1e9;(vakOf(vid)?.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null){const n=diffDays(s,t.datum);if(n>0&&n<best)best=n}});return best}
@@ -877,9 +879,9 @@ function rWeek(){
       <label for="s-start">Vaste starttijd</label><input class="tm" type="time" id="s-start" data-s="start" value="${esc(SET.start)}" ${dis}>
       <label for="s-basis">Huiswerk per lesuur (min)</label><input class="in" id="s-basis" data-s="basis" inputmode="numeric" value="${SET.basis}" ${dis}>
       <label for="s-blok">Lengte van een blok (min)</label><input class="in" id="s-blok" data-s="blok" inputmode="numeric" value="${SET.blok}" ${dis}>
-      <label for="s-tk">Leertijd kleine toets, telt 1× mee (min)</label><input class="in" id="s-tk" data-s="totKlein" inputmode="numeric" value="${SET.totKlein??DEF.totKlein}" ${dis}>
-      <label for="s-tn">Leertijd gewone toets, telt 2× mee (min)</label><input class="in" id="s-tn" data-s="totNormaal" inputmode="numeric" value="${SET.totNormaal}" ${dis}>
-      <label for="s-tz">Leertijd zware toets, telt 3× of vaker mee (min)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
+      <label for="s-td">Leertijd D-toets (overhoring in de les, min)</label><input class="in" id="s-td" data-s="totD" inputmode="numeric" value="${SET.totD??DEF.totD}" ${dis}>
+      <label for="s-tn">Leertijd afsluitende toets (min)</label><input class="in" id="s-tn" data-s="totNormaal" inputmode="numeric" value="${SET.totNormaal}" ${dis}>
+      <label for="s-tz">Leertijd zware afsluitende toets (min)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
       <label for="s-ms">Maximaal per schooldag, alles samen (min)</label><input class="in" id="s-ms" data-s="maxDagSchool" inputmode="numeric" value="${SET.maxDagSchool}" ${dis}>
       <label for="s-mw">Leren op vrijdag en zaterdag (min)</label><input class="in" id="s-mw" data-s="maxDagWeekend" inputmode="numeric" value="${SET.maxDagWeekend}" ${dis}>
       <label for="s-bm">Bijhouden na huiswerk, per vak (min)</label><input class="in" id="s-bm" data-s="bijMin" inputmode="numeric" value="${SET.bijMin}" ${dis}>
@@ -892,7 +894,7 @@ function rWeek(){
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
       <button class="btn ghost sm" id="vk-add" style="margin-top:8px" ${dis}>Vakantie of vrije dag toevoegen</button></div>
-    <p class="sub" style="font-size:.9rem;margin-top:10px">De leertijd voor een toets hangt af van hoe vaak hij meetelt: 1× (zoals een D-toets) is een kleine toets, 2× een gewone en 3× of meer een zware. Moet ze bij dat vak hoger scoren dan haar doel, dan komt er de helft bij (nooit meer dan bij een zware toets). Oefentijd telt alleen als zij zelf in de app werkt, niet als een ouder ingelogd is. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en in deze periode een toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak in deze periode (tot en met de eerstvolgende toetsweek) geen toets met een datum, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder, maar nooit naar een dag die voorbij is of al af is. Wat niet meer past, staat als melding bovenaan Vandaag. Is een dag af, dan blijft hij af: wat er daarna bijkomt, telt die dag niet meer mee. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
+    <p class="sub" style="font-size:.9rem;margin-top:10px">Een D-toets (een toets waarvan de naam begint met 'D-toets' of 'Dtoets') is een overhoring in de les en heeft een eigen leertijd; moet ze bij dat vak omhoog, dan komt er de helft bij. Een afsluitende toets is zwaar als hij 3 keer of vaker meetelt, of als ze bij dat vak hoger moet scoren dan haar doel. Oefentijd telt alleen als zij zelf in de app werkt, niet als een ouder ingelogd is. Het maximum per schooldag geldt voor alles samen: huiswerk, bijhouden en toetsvoorbereiding. Zondag tot en met donderdag begint het plan met opwarmen: 3 minuten rekensprint en 5 sommen rekenregels van vandaag. Voor het huiswerk van een vak in de app met een komende toets staan eerst 3 opwarmvragen uit eerdere paragrafen (ongeveer 2 minuten); is het huiswerk al af, dan vervalt dat. Na huiswerk voor een vak dat in de app zit en in deze periode een toets heeft, komt bijhouden: dezelfde paragraaf in de app. Heeft een vak in deze periode (tot en met de eerstvolgende toetsweek) geen toets met een datum, dan staat er voor dat vak alleen het huiswerk; ook dagelijks oefenen in de app komt alleen bij vakken met een komende toets. De toetsvoorbereiding wordt verdeeld over de dagen vóór de toets, met de eerste toets eerst; komt een dag aan het maximum, dan schuift het naar eerder, maar nooit naar een dag die voorbij is of al af is. Wat niet meer past, staat als melding bovenaan Vandaag. Is een dag af, dan blijft hij af: wat er daarna bijkomt, telt die dag niet meer mee. Bij vakken in de app wordt de toetsvoorbereiding korter naarmate ze meer paragrafen met een 7 of hoger heeft afgesloten: alle paragrafen gehaald is de helft, met een voldoende proeftoets erbij 30%. Huiswerk staat in de app als het uit SOMtoday is overgenomen, anders lesuren × minuten per lesuur. Vrijdag en zaterdag: alleen een sprint, tenzij je hierboven leertijd voor vrijdag en zaterdag invult. Dan staat er zoveel minuten toetsvoorbereiding of oefenen in de app.</p>
   </details>`;
   $('#logout').onclick=async()=>{flushAct();if(SB)await SB.auth.signOut();location.reload()};
   $('#wprev').onclick=()=>{dag=addDays(dag,-7);render()};$('#wnext').onclick=()=>{dag=addDays(dag,7);render()};
