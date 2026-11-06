@@ -26,6 +26,44 @@ const VOC=[
 ];
 const isN=v=>/^(der|die|das) /.test(v[0]);
 
+/* ---------- woordjes Arbeitsbuch blz. 19 (Deine Wörter 2) en blz. 27 (Deine Wörter 3) ----------
+   Vertalingen door Claude (niet die uit haar schrift: daar staan een paar fouten in, zoals 'de feestjes' en 'ik hou van wortel'). */
+const AB19=[
+ ['die Klasse','de klas','die Klassen'],['meine Klasse','mijn klas',''],['die Pause','de pauze','die Pausen'],['Jetzt ist Pause.','Nu is het pauze.',''],
+ ['aber','maar',''],['Was ist jetzt?','Wat hebben we nu?',''],['Magst du Bio?','Vind je biologie leuk?',''],['Und du?','En jij?',''],['auch gut','ook goed',''],['auch','ook',''],
+ ['Nein, ich mag Bio nicht.','Nee, ik vind biologie niet leuk.',''],['nein','nee',''],['nicht','niet',''],['langweilig','saai',''],['super','super',''],
+ ['Mathe ist super!','Wiskunde is super!',''],['Na ja, es geht.','Nou ja, het gaat wel.',''],['Ja, sehr.','Ja, heel erg.',''],['Wie heißt … auf Deutsch?','Hoe heet … in het Duits?',''],
+ ['toll','geweldig',''],['blöd','stom',''],
+ ['die Freundin','de vriendin','die Freundinnen'],['meine Freundin','mijn vriendin',''],['der Freund','de vriend','die Freunde'],['mein Freund','mijn vriend',''],
+ ['spielen','spelen',''],['viel','veel',''],['zusammen','samen',''],['nur','alleen, slechts',''],['Wir spielen viel zusammen.','We spelen veel samen.',''],
+ ['der Nachmittag','de middag','die Nachmittage'],['heute Nachmittag','vanmiddag',''],['Keine Ahnung.','Geen idee.',''],['gern','graag',''],
+ ['lernen','leren',''],['morgen','morgen',''],['Tschüs, bis morgen!','Doei, tot morgen!',''],['die Handynummer','het mobiele nummer','die Handynummern'],
+ ['die Postleitzahl','de postcode','die Postleitzahlen'],['die Hausnummer','het huisnummer','die Hausnummern'],
+ ['der Bleistift','het potlood','die Bleistifte'],['der Kuli','de pen','die Kulis'],['das Smartphone','de smartphone','die Smartphones'],['die Schere','de schaar','die Scheren'],
+ ['der Radiergummi','de gum','die Radiergummis'],['der Kleber','de lijm',''],['das Buch','het boek','die Bücher'],['das Lineal','de liniaal','die Lineale'],
+ ['die Sporttasche','de sporttas','die Sporttaschen'],['die Brille','de bril','die Brillen'],['der Taschenrechner','de rekenmachine','die Taschenrechner'],
+ ['das Wörterbuch','het woordenboek','die Wörterbücher'],['das Tablet','de tablet','die Tablets'],['der Laptop','de laptop','die Laptops'],['der Computer','de computer','die Computer'],
+ ['der USB-Stick','de usb-stick','die USB-Sticks'],['der Rucksack','de rugzak','die Rucksäcke'],['der Schreibblock','het schrijfblok','die Schreibblöcke'],
+ ['die Brotdose','de broodtrommel','die Brotdosen'],['das Heft','het schrift','die Hefte'],['die Uhr','de klok, het horloge','die Uhren'],
+ ['Deutsch','Duits',''],['Englisch','Engels',''],['Französisch','Frans',''],['Mathe / Mathematik','wiskunde',''],['Physik','natuurkunde',''],['Biologie','biologie',''],
+ ['Erdkunde / Geografie','aardrijkskunde',''],['Geschichte','geschiedenis',''],['Kunst','kunst, tekenen','']
+];
+const AB27=[
+ ['die Katze','de kat','die Katzen'],['Das ist meine Katze.','Dat is mijn kat.',''],['alt','oud',''],['Meine Katze ist vier Jahre alt.','Mijn kat is vier jaar oud.',''],
+ ['das Jahr','het jaar','die Jahre'],['der Hund','de hond','die Hunde'],
+ ['das Lieblingstier','het lievelingsdier','die Lieblingstiere'],['Das weiß ich nicht.','Dat weet ik niet.',''],['glauben','geloven, denken',''],
+ ['das Haustier','het huisdier','die Haustiere'],['kein, keine','geen',''],['der Vogel','de vogel','die Vögel'],['aber','maar',''],
+ ['das Land','het land','die Länder'],['die Stadt','de stad','die Städte'],['das Alter','de leeftijd',''],['das Hobby','de hobby','die Hobbys'],['von','van',''],
+ ['der Hund von Sophie','de hond van Sophie',''],['die Party','het feest','die Partys'],['oder','of',''],
+ ['der Salat','de salade, de sla','die Salate'],['die Karotte','de wortel','die Karotten'],['Er mag Karotten.','Hij houdt van wortels.',''],['klein','klein',''],['groß','groot',''],
+ ['stark','sterk',''],['süß','zoet, schattig',''],['schnell','snel',''],['die Million','het miljoen','die Millionen'],['fast','bijna',''],['fast 10 Millionen','bijna 10 miljoen',''],
+ ['über','over, meer dan',''],['über 10 Millionen','meer dan 10 miljoen',''],['leben','leven, wonen',''],['die Wohnung','de woning, het appartement','die Wohnungen'],
+ ['es gibt','er is, er zijn',''],['viele','veel (meervoud)',''],['andere','andere',''],['z. B. (zum Beispiel)','bijv. (bijvoorbeeld)',''],['usw. (und so weiter)','enz. (enzovoort)',''],
+ ['Afrika','Afrika',''],['Antarktis','Antarctica',''],['Asien','Azië',''],['Australien','Australië',''],['Europa','Europa',''],['Nordamerika','Noord-Amerika',''],['Südamerika','Zuid-Amerika',''],
+ ['grau','grijs',''],['schwarz','zwart',''],['weiß','wit',''],['rot','rood',''],['grün','groen',''],['blau','blauw',''],['gelb','geel',''],['braun','bruin','']
+];
+
+
 /* ---------- werkwoorden ---------- */
 const PERS=['ich','du','er/sie/es','wir','ihr','sie/Sie'];
 const VERBS={
@@ -55,6 +93,14 @@ const JRULE='Ja/nee-vraag: het <b>werkwoord staat vooraan</b>, dan het onderwerp
 const ex={lesen:[1,2],haben:[1,2],mögen:[0,1,2]};
 const rijRegels=Object.entries(VERBS).map(([k,v])=>[`${k} (${v.nl})`,PERS.map((p,j)=>`${p} ${(ex[k]||[]).includes(j)?'<b>'+v.f[j]+'</b>':v.f[j]}`).join(' · '),v.uitleg]);
 const SECS=[
+ {id:'o12',par:'ab',nr:'12',name:'Tiere in Deutschland',c:'--c3',sub:'Arbeitsbuch blz. 24 · opdracht 12 · richtig oder falsch?',
+  rules:[['Lees eerst de tekst in je Arbeitsbuch','Zoek bij elke zin het stukje in de tekst waar het over gaat',''],
+   ['Let op getallen en wie het is','900 Zoos of 900 Tiere? München of heel Deutschland?','Eén woord anders maakt de zin falsch'],
+   ['nicht en kein draaien het om','modern ↔ nicht modern','']]},
+ {id:'w19',par:'ab',nr:'19',name:'Woorden blz. 19',c:'--c5',sub:'Deine Wörter 2 · Duits-Nederlands en Nederlands-Duits',
+  rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Kuli, die Schere, das Heft','']].concat(AB19.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
+ {id:'w27',par:'ab',nr:'27',name:'Woorden blz. 27',c:'--c4',sub:'Deine Wörter 3 · Duits-Nederlands en Nederlands-Duits',
+  rules:[['Leer zelfstandige naamwoorden mét der, die of das, en het meervoud','die Stadt, die Städte','']].concat(AB27.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
  {id:'o6',par:'ws',nr:'6',name:'Verben mit Akkusativ',c:'--c4',sub:'Opdracht 6 · zinnen aanvullen met het goede werkwoord',
   rules:[['Kies uit','lerne – lese – hasse – habe – kenne – schreibe – höre','Elk werkwoord gebruik je één keer.'],
    ['Kijk naar het woord erachter','wat doe je met <b>Bücher</b>, <b>CDs</b>, <b>Texte</b>?',''],
@@ -170,6 +216,27 @@ VOC.filter(isN).forEach((v,i)=>{
     v:{q:`Hoe zeg je <b>${v[1]}</b> in het Duits, met het goede lidwoord?`,a:v[0],f:andere.map(a=>[a+' '+n,`Het is ${art} ${n}.`])}});
 });
 
+/* AB blz. 19 en 27: Nederlands → Duits (variant: Duits → Nederlands), afleiders van dezelfde soort uit dezelfde bladzijde */
+const zinOf=v=>/[.!?]$/.test(v[0]);
+const soort=v=>isN(v)?'n':zinOf(v)?'z':'w';
+[['w19','b',AB19,'blz. 19'],['w27','c',AB27,'blz. 27']].forEach(([o,p,L,bl])=>L.forEach((v,i)=>{
+  const pool=shuf(L.filter(w=>w!==v&&soort(w)===soort(v)&&w[1]!==v[1]&&w[0]!==v[0])).slice(0,3);
+  Q.push({id:p+i,o,nr:'Woorden '+bl,q:`Wat is het Duits voor <b>${v[1]}</b>?`,a:v[0],
+    f:pool.map(w=>[w[0],`${w[0]} betekent ${w[1]}.`]),u:`${v[1]} = <b>${v[0]}</b>${v[2]?` (meervoud: ${v[2]})`:''}`,
+    v:{q:`Wat betekent <b>${v[0]}</b>?`,a:v[1],f:pool.map(w=>[w[1],`Dat is ${w[0]}.`])}});
+}));
+/* AB blz. 24 opdracht 12: richtig oder falsch. De tekst staat in haar Arbeitsbuch; hier alleen de zinnen en uitleg in eigen woorden. */
+[
+ ['Im Zoo in München gibt es 900 Tiere.','Er zijn 900 dieren in de dierentuin van München.','falsch','In de tekst gaat het getal 900 over heel Duitsland: daar zijn bijna 900 dierentuinen (Zoos), geen 900 dieren in München.'],
+ ['Der Zoo in Berlin hat ungefähr 15 000 Tiere.','De dierentuin in Berlijn heeft ongeveer 15.000 dieren.','richtig','De dierentuinen in München, Hamburg en Berlijn zijn heel groot en hebben ongeveer 15.000 dieren. Berlijn hoort daarbij.'],
+ ['Die Zoos haben auch Tiere aus der Arktis.','De dierentuinen hebben ook dieren uit het noordpoolgebied.','richtig','Er komen ook dieren uit de Arktis en de Antarktis, bijvoorbeeld de ijsberen in Berlijn.'],
+ ['Die Delfine leben in einem Swimmingpool.','De dolfijnen leven in een zwembad.','richtig','De dolfijnen in Duisburg leven in een zwembad (Swimming-Pool) met drie miljoen liter water.'],
+ ['Der Zoo in Frankfurt ist nicht modern.','De dierentuin in Frankfurt is niet modern.','falsch','De dierentuin in Frankfurt is wel oud (meer dan 150 jaar), maar juist heel modern. Het apenhuis is helemaal nieuw.'],
+].forEach(([de,nl,a,uit],i)=>Q.push({id:'z12-'+(i+1),o:'o12',nr:'Opdracht 12 · zin '+(i+1),
+  q:`Lees de tekst „Zoos in Deutschland” in je Arbeitsbuch (blz. 24). Klopt deze zin?${DE(de)}`,a,
+  f:[[a==='richtig'?'falsch':'richtig',uit]],u:`<b>${a}</b>. ${uit}`,
+  v:{q:`Klopt dit volgens de tekst „Zoos in Deutschland” (AB blz. 24)?<div class="nl">${nl}</div>`}}));
+
 /* ---------- eigen vraagsoorten ---------- */
 /* rij: tik de vormen in de goede volgorde in de vakjes; er zitten vormen bij die niet bestaan */
 function drawRij(q,it,box,api){
@@ -219,9 +286,10 @@ function drawZin(q,it,box,api){
       ${ok?'':'<div><b>Het goede antwoord is:</b></div>'}${DE(kleur(q.model))}<div class="nl">${q.nl}</div><div class="why">${regel}.</div></div>`)};
 }
 
-const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a']];
-return {woorden:{taal:'Duits',typen:true,lijst:VOC.map(v=>[v[0],v[1]])},id:'du',naam:'Duits',afk:'DU',kop:'Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
-  leer:['ws','ex'],reken:false,volledig:false,snapInVraag:false,
+const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24 en 27','woorden Deine Wörter 2 en 3, opdracht 12']];
+const LIJST=[];[...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
+return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Arbeitsbuch blz. 19, 24 en 27 · Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
+  leer:['ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,
   custom:{rij:drawRij,zin:drawZin},
-  PN:{ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
+  PN:{ab:'Arbeitsbuch blz. 19, 24 en 27 · woorden en opdracht 12',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
 })();
