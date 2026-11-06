@@ -63,17 +63,19 @@ window.Oefen=(()=>{
       <button class="sec" id="b-dag"><span class="sq" style="background:var(--c2)">5</span><span><b>Rekenregels van vandaag</b><small>${B.dag||5} sommen, ongeveer 5 minuten. ${d?'Vooral de regels die nog niet goed gaan.':'Maak eerst de instaptoets, dan weet de app wat je moet oefenen.'}</small></span></button>
       <button class="sec" id="b-ov"><span class="sq" style="background:var(--line)">≡</span><span><b>Alle rekenregels onder elkaar</b><small>Het overzicht. Schrijf het over in je schrift, met bij elke regel een eigen voorbeeld.</small></span></button>`};
     const bh=focusMode==='bijhouden'&&focusPar,tv=focusMode==='toets';
+    /* V.extra = {par, titel, n}: een korte vaste ronde die bij elke keer bijhouden en bij de toetsvoorbereiding hoort (aardrijkskunde: topografie) */
+    const X=V.extra,xLi=X&&(tv||bh&&focusPar!==X.par)?`<li>En elke keer even: <button class="link" id="bh-x">${X.titel}</button> (${X.n} vragen, een paar minuten)</li>`:'';
     const ok=leerPars().filter(p=>ST.ptoets[p]&&ST.ptoets[p].best>=7);
     el.innerHTML=`
     ${top('Alle vakken',V.kop)}
     <h2>${V.naam}</h2>
     ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
       <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
-      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li></ol>
+      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
       <p>${ok.length} van ${leerPars().length} paragrafen gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
-      <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li></ol></div>`:''}
+      <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li>${xLi}</ol></div>`:''}
     <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
       ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
     ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)+(tvVak()&&tvParIds(p).length?`<button class="sec" data-tvp="${p}"><span class="sq" style="background:var(--line)">✎</span><span><b>Toetsvorm</b><small>5 vragen zonder opties en zonder hulp: zelf uitwerken op papier, dan nakijken</small></span></button>`:'')}</div>`).join('')}
@@ -94,6 +96,8 @@ window.Oefen=(()=>{
     const q=x=>el.querySelector(x);
     if(q('#bh-beg'))q('#bh-beg').onclick=()=>kStart(shuf(begVan(focusPar)),false);
     if(q('#bh-pt'))q('#bh-pt').onclick=()=>ptoets(focusPar);
+    if(q('#bh-x'))q('#bh-x').onclick=()=>{const al=V.Q.filter(x=>secOf(x.o).par===X.par&&x.t!=='open').map(x=>x.id),fout=shuf(al.filter(id=>ST.wrong.includes(id)));
+      start('oefen',[...fout,...shuf(al.filter(id=>!fout.includes(id)))].slice(0,X.n),X.titel)};
     if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');

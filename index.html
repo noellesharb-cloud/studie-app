@@ -345,6 +345,23 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 .ko-k.k2{border-left:5px solid var(--ok)}
 .ko-k.k1{border-left:5px solid var(--hl)}
 .ko-k.k0{border-left:5px solid var(--bad)}
+/* blinde kaart topografie (aardrijkskunde) */
+.kaartopdr{font-size:1.15rem;margin:4px 0 10px}
+.kaartbox{background:var(--card);border:1.5px solid var(--line);border-radius:14px;overflow:hidden;touch-action:manipulation}
+.mekaart{display:block;width:100%;height:auto;--zee:#CFE6FA;--buur:#E4E7EC;--land:#F3E2B8;--rand:#5B6784}
+.mekaart .zee{fill:var(--zee)} .mekaart .buur{fill:var(--buur);stroke:#A9B2C3;stroke-width:.5;vector-effect:non-scaling-stroke}
+.mekaart .me{fill:var(--land);stroke:var(--rand);stroke-width:.8;vector-effect:non-scaling-stroke;cursor:pointer}
+.mekaart .me.hl{fill:#FFE14D} .mekaart .me.ok{fill:#8FE0A3} .mekaart .me.bad{fill:#FF8F8A}
+.mekaart .hit{fill:transparent;cursor:pointer}
+.mekaart .stip{fill:#1D2842;stroke:#fff;stroke-width:.6;vector-effect:non-scaling-stroke}
+.mekaart .stip.hl{fill:#E0A800} .mekaart .stip.ok{fill:#1E8A4C} .mekaart .stip.bad{fill:#D93A33}
+.mekaart .let,.mekaart .num{font-family:var(--display);font-weight:800;fill:#1D2842;paint-order:stroke;stroke:#fff;stroke-width:2.5px;stroke-linejoin:round;pointer-events:none}
+.mekaart .naam{font-family:var(--body);font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;pointer-events:none} .mekaart .naam.ok{fill:#1E6B3D} .mekaart .naam.bad{fill:#B02A24}
+.mekaart .lijn{stroke:#1D2842;stroke-width:.8;vector-effect:non-scaling-stroke}
+.zoomrij{margin:8px 0 10px;flex-wrap:wrap;gap:6px}
+.opt.kok{border-color:var(--ok);background:var(--okbg)} .opt.kbad{border-color:var(--bad);background:var(--badbg)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mekaart{--zee:#22395A;--buur:#2E3850;--land:#6B5C3A;--rand:#C9D3E6}}
+:root[data-theme="dark"] .mekaart{--zee:#22395A;--buur:#2E3850;--land:#6B5C3A;--rand:#C9D3E6}
 </style>
 
 </head>
@@ -366,14 +383,15 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="oefen/engine.js?v=202611061430"></script>
+<script src="oefen/engine.js?v=202611061900"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
 <script src="vakken/wi.js?v=202611061430"></script>
 <script src="vakken/wi-var.js?v=202611042008"></script>
 <script src="vakken/wi-basis.js?v=202611042008"></script>
-<script src="vakken/ak.js?v=202611042008"></script>
+<script src="vakken/ak-kaart.js?v=202611061900"></script>
+<script src="vakken/ak.js?v=202611061900"></script>
 <script src="vakken/ak-ko.js?v=202611051500"></script>
 <script src="vakken/gr.js?v=202611042008"></script>
 <script src="vakken/lv.js?v=202611042008"></script>
@@ -564,7 +582,7 @@ function blokken(s){
     B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
     const b=BH.find(x=>x.h===h);
     if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
-      titel:`${V.naam}: ${V.PN[b.par]||b.par} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
+      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
   const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();

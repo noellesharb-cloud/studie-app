@@ -19,12 +19,15 @@ const STAD=[[1,'Muscat (Masqat)','Oman'],[2,'Teheran','Iran'],[3,'Abu Dhabi','Ve
 
 const Q={topo:[],p31:[],p32:[],p33:[],p34:[],p35:[]};
 function pick(arr,n,not){const a=arr.filter(x=>x!==not);shuffle(a);return a.slice(0,n)}
+/* topografie op de blinde kaart (vakken/ak-kaart.js): letters en nummers zoals op kaart W2 */
 LAND.forEach(([l,c])=>{
-  Q.topo.push({id:'tl'+l,v:{q:`Welke letter heeft ${c} op kaart W2?`,a:l,f:pick(LAND.map(x=>x[0]),3,l)},t:'mc',nr:'1a',q:`Kaart W2: welk land is letter ${l}?`,a:c,f:pick(LAND.map(x=>x[1]),3,c),u:`Letter ${l} = ${c}.`});
+  Q.topo.push({id:'tl'+l,t:'kaart',k:'welkland',lab:'letters',doel:c,nr:'1a',q:`Welk land is letter ${l}?`,a:c,u:`Letter ${l} = ${c}.`});
+  Q.topo.push({id:'tk'+l,t:'kaart',k:'tikland',doel:c,nr:'1a',q:`Waar ligt ${c}?`,a:c,u:`${c} is letter ${l} op kaart W2.`});
 });
 STAD.forEach(([n,s,c])=>{
   Q.topo.push({id:'ts'+n,v:{q:`${s} is de hoofdstad van welk land?`,a:c,f:pick(LAND.map(x=>x[1]),3,c)},t:'mc',nr:'1a',q:`Wat is de hoofdstad van ${c}?`,a:s,f:pick(STAD.map(x=>x[1]),3,s),u:`De hoofdstad van ${c} is ${s} (nummer ${n} op kaart W2).`});
-  Q.topo.push({id:'tn'+n,v:{q:`Welk nummer heeft ${s} op kaart W2?`,a:'nummer '+n,f:pick(STAD.map(x=>'nummer '+x[0]),3,'nummer '+n)},t:'mc',nr:'1a',q:`Kaart W2: welke hoofdstad is nummer ${n}?`,a:s,f:pick(STAD.map(x=>x[1]),3,s),u:`Nummer ${n} = ${s}, hoofdstad van ${c}.`});
+  Q.topo.push({id:'tn'+n,t:'kaart',k:'welkestad',lab:'nummers',doel:s,nr:'1a',q:`Welke hoofdstad is nummer ${n}?`,a:s,u:`Nummer ${n} = ${s}, hoofdstad van ${c}.`});
+  Q.topo.push({id:'tc'+n,t:'kaart',k:'tikstad',doel:s,nr:'1a',q:`Waar ligt ${s}, de hoofdstad van ${c}?`,a:s,u:`${s} is nummer ${n} op kaart W2.`});
 });
 Q.topo.push(
  {id:'t1b',t:'mc',nr:'1b',q:'Welk land ligt NIET op het Arabisch Schiereiland?',a:'Irak',f:['Oman','Jemen','Qatar'],u:'Op het Arabisch Schiereiland liggen Saudi-Arabië, Jemen, Oman, de VAE, Qatar, Bahrein en Koeweit. Irak ligt erboven, tussen Syrië en Iran.'},
@@ -351,11 +354,13 @@ const SECS2=SECS.map((s,i)=>({id:s.id,par:PAR(s.id),nr:String(s.n),name:s.t,c:'-
 const Q2=[];
 Object.entries(Q).forEach(([sec,list])=>list.forEach(q=>{
   const b={id:q.id,o:sec,nr:NR(q.nr),q:T(q.q),v:VARI(q.v)};
-  if(q.t==='open')Q2.push(Object.assign(b,{t:'open',k:q.k.map(T),vb:q.vb?q.vb.map(T):undefined}));
+  if(q.t==='kaart')Q2.push(Object.assign(b,{type:'kaart',k:q.k,doel:q.doel,lab:q.lab,a:T(q.a),u:T(q.u||'')}));
+  else if(q.t==='open')Q2.push(Object.assign(b,{t:'open',k:q.k.map(T),vb:q.vb?q.vb.map(T):undefined}));
   else Q2.push(Object.assign(b,{a:T(q.a),f:q.f.map(x=>[T(x),'']),u:T(q.u||'')}));
 }));
 const BEG2=[];Object.entries(BEG).forEach(([sec,l])=>l.forEach(([w,d])=>{if(!d.startsWith('Zie '))BEG2.push([T(w),T(d),PAR(sec)])}));
 const PN={topo:'Topografie'};SECS.forEach(s=>{if(s.id!=='topo')PN[PAR(s.id)]='§'+s.t});PN.mix='Door elkaar';
 return {id:'ak',naam:'Aardrijkskunde',afk:'AK',kop:'H3 Het Midden-Oosten',SECS:SECS2,SNAP:{},BEG:BEG2,Q:Q2,snapHtml:()=>'',
-  leer:['3.1','3.2','3.3','3.4','3.5','topo'],reken:false,PN};
+  leer:['3.1','3.2','3.3','3.4','3.5','topo'],reken:false,PN,extra:{par:'topo',titel:'Topografie op de kaart',n:8},
+  custom:{kaart:(q,it,box,api)=>window.AK_KAART.draw(q,it,box,api,LAND,STAD)}};
 })();
