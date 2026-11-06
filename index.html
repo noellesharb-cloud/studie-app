@@ -380,7 +380,7 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 <script src="vakken/lv-ko.js?v=202611051500"></script>
 <script src="vakken/du.js?v=202611042008"></script>
 <script src="vakken/la.js?v=202611042008"></script>
-<script src="huiswerk.js?v=202611061435"></script>
+<script src="huiswerk.js?v=202611061445"></script>
 <script>
 /* ---------- basis ---------- */
 const $=s=>document.querySelector(s);
@@ -470,7 +470,9 @@ function hwAfgewezen(id){for(const w of Object.values(LOG))for(const e of (w.ent
 function afwKnop(e,klaar){if(!isOuder()||!e||klaar||!canWrite)return '';
   return `<span class="row" style="margin-top:6px"><span class="sub" style="font-size:.85rem">Zelf afgevinkt${e.t?' om '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):''}.</span><button class="btn ghost sm" data-afw="${esc(e.key)}" data-afwd="${e.d}" data-stop>Afwijzen</button></span>`}
 function huiswerkMin(s){if(vrijZa(s)||vrijDag(s))return 0;const g=pd(s).getDay();const nd=volgendeSchooldag(s),T=hwVoor(nd);
-  if(T.length&&hwCompleet(nd))return T.reduce((a,h)=>a+(h.min||0),0);
+  /* staat al het huiswerk voor die dag in de app, dan telt alleen dat (ook als het 0 is): geen schatting en geen leeg 'kijk in SOMtoday'-blok.
+     De vrije tijd gaat dan naar toetsvoorbereiding, bijhouden of oefenen in de app. */
+  if(hwCompleet(nd))return T.reduce((a,h)=>a+(h.min||0),0);
   if(inToetsweek(volgendeSchooldag(s))||inToetsweek(s)&&g!==0)return 0;
   const lu=VAK.reduce((a,v)=>a+(num(v.lesuren)??0),0),gen=Math.round(lu*SET.basis/5/5)*5;
   return T.length?Math.max(gen,T.reduce((a,h)=>a+(h.min||0),0)):gen}
@@ -563,7 +565,7 @@ function blokken(s){
     const b=BH.find(x=>x.h===h);
     if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
       titel:`${V.naam}: ${V.PN[b.par]||b.par} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
-  const rest=hwCompleet(nd)&&T.length?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
+  const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
   prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
