@@ -43,6 +43,16 @@ window.HUISWERK=[
   {id:'2026-11-11-ak',d:'2026-11-11',vak:'aardrijkskunde',t:'Taak 5: §3.5 Turkije',wat:['Bestudeer LB H3.5','Maak ALLE opdrachten van WB H3.5: opdracht 1 t/m 8 (afspraak met de docent: niet de helft maar alles)','# Begrippen: snappen, niet overschrijven','Overschrijven in je schrift hoeft voorlopig niet. Zorg dat je ze kunt gebruiken als je iets verklaart.','Opkomend land, middenklasse, ruimtelijke ongelijkheid, toeristen','# Woensdag 11-11 in de les','Controle huiswerk H3: alle opdrachten van H3 moeten af zijn','Oefentoets H3','# Nakijken','Na de controle krijg je ALLE antwoorden. Kijk alles na met een andere kleur pen en schrijf bij elke fout kort waarom het goede antwoord klopt.'],min:65,app:'ak',par:'3.5',opg:[1,2,3,4,5,6,7,8]},
   {id:'2026-11-09-na',d:'2026-11-09',vak:'natuurkunde',t:'L5.03',wat:['Maken ✎ o.11-14','Maken ★ o.12-15'],min:25,app:'na',par:'5.1',opg:[11,12,13,14,15]},
   {id:'2026-11-10-na',d:'2026-11-10',vak:'natuurkunde',t:'L5.04',wat:['Uitwerken practicum H5P12 IJking thermometer'],min:30},
+
+  /* maandag 9 november */
+  {id:'2026-11-09-du',d:'2026-11-09',vak:'duits',t:'AB blz 24 en 26, woorden blz 19 en 27',wat:['# Maken','AB blz 24 opdr 12','AB blz 26 opdr 1 (hele zinnen), 2, 3 (hele zinnen in je schrift)','# Leren','Woorden AB blz 19 en 27, Duits-Nederlands én Nederlands-Duits','Niet compleet? Vul aan met de bijlagen in SOMtoday: Prima A1.1 Wörter E3 en Prima 1.1 Wörter E2'],min:45},
+  /* woensdag 11 november */
+  {id:'2026-11-11-ne',d:'2026-11-11',vak:'nederlands',t:'Grammatica woordsoorten §4',wat:['Maken van Grammatica woordsoorten §4: opdracht 1, 2 en 4 (blz. 213)'],min:25},
+  {id:'2026-11-11-wi',d:'2026-11-11',vak:'wiskunde',t:'Leren H3.5',wat:['Leren H3.5, blz 84','Maken: 70 t/m 72','Maken: Opdracht T1 (bijlage in SOMtoday, ook in de app)'],min:50,app:'wi',par:'3.5',opg:[70,71,72],leer:[{titel:'Opdracht T1',ids:['t1a','t1b','t1c','t1d','t1e']}]},
+  /* donderdag 12 november */
+  {id:'2026-11-12-wi',d:'2026-11-12',vak:'wiskunde',t:'Herhalen H3.1 en H3.2',wat:['Leren H3.1 blz 68','Bekijken uitleg filmpje(s) H3.1. Eventueel afspelen op snelheid 1,3 of 1,5','Leren: 7 stappenplan van Van Neck','Maken: Extra opdrachten H3: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (zie Teams)','Maken: Opdracht R1 (bijlage in SOMtoday, ook in de app). Let op juiste notatie!!!!'],min:60,app:'wi',par:'3.1',leer:[{titel:'Opdracht R1',ids:['r1a','r1b','r1c','r1d']}]},
+  {id:'2026-11-12-la',d:'2026-11-12',vak:'latijn',t:'Krantenartikelen samenvatten',wat:['Lees 2 krantenartikelen en lever een samenvatting van 1-3 zinnen over deze artikelen in bij je docent op Teams.','Zinnen moeten grammaticaal correcte volzinnen zijn! Fouten in het Nederlands geven een \'huiswerk-niet-gemaakt\' op SOM en puntenaftrek van het uiteindelijke cijfer (zie beoordelingsformulier).'],min:30},
+  /* vrijdag 13 november: D-toets Latijn (woorden 7A + 7B, zelfstandige naamwoorden groep 3, bijvoeglijke naamwoorden groep 3). Toetsdatum staat in Cijfers, niet hier. */
   /* dinsdag 17 november */
   {id:'2026-11-17-na',d:'2026-11-17',vak:'natuurkunde',t:'L5.06',wat:['Kijk in SOMtoday bij L5.06 wat je moet maken (de omschrijving staat nog niet in de app)'],min:30}
 ];

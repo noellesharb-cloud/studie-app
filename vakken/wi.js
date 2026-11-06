@@ -45,7 +45,8 @@ const LOG=[
  ['Dag 2','di 27 okt','Heel hoofdstuk 3: §3.1 t/m 3.5 en de toetsvoorbereiding (opgave 75 t/m 89)'],
  ['Dag 2','di 27 okt','Voorkennis uit H6 van vorig jaar, alleen wat nodig is voor H3. De tekenopgaven van H3 zijn nu aantikoefeningen'],
  ['Dag 3','ma 2 nov','§3.3 huiswerk voor dinsdag: opgave 37, 38, 39, 40, 41, 42 en 43 erbij (45 en 46 stonden er al in)'],
- ['Dag 4','ma 2 nov','§3.4 opgave 50 t/m 61 (huiswerk voor woensdag 4 en donderdag 5 november)']
+ ['Dag 4','ma 2 nov','§3.4 opgave 50 t/m 61 (huiswerk voor woensdag 4 en donderdag 5 november)'],
+ ['Dag 5','vr 6 nov','Opdracht T1 (wortelformules, bij §3.5) en opdracht R1 (lijn door twee punten, bij §3.1) van Teams']
 ];
 
 /* ---------- onderdelen ---------- */
@@ -218,6 +219,7 @@ const G46=plot({x:[-4,6],y:[-4,6],u:20,fns:[{f:x=>(x+2)*(x-4)/3}],label:'dalpara
 const G41=(f,l)=>plot({x:[-10,6],y:[-120,20],ux:17,uy:1.5,sx:2,sy:20,gx:1,gy:10,fns:[{f}],label:l||'parabool'});
 const GR=(f,from,pts)=>plot({x:[-1,10],y:[-1,7],u:16,fns:[{f,from}],pts,label:'wortelgrafiek'});
 const G66=plot({x:[-3,10],y:[-1,5],u:18,fns:[{f:x=>Math.sqrt(x+2)+1,from:-2}],label:'grafiek van y = wortel(x + 2) + 1'});
+const GT1=(f,dir,pts)=>plot({x:[-4,4],y:[-10,1],u:20,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const GR68=(f,from,pts)=>plot({x:[-3,12],y:[-1,8],u:14,fns:[{f,from}],pts,label:'wortelgrafiek'});
 const GR70=(f,dir,pts)=>plot({x:[-8,6],y:[-1,9],u:14,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const G78=(f,pts)=>plot({x:[-2,5],y:[-5,9],u:16,fns:[{f}],pts,label:'parabool'});
@@ -1187,6 +1189,46 @@ const Q=[
  denk:'Vul $k = 15$ in. Weg met de wortel: kwadrateer beide kanten.',
  st:[S('Vul in.','$15 = √{12,7h}$'),S('Kwadrateren.','$225 = 12,7h$'),S('Delen door 12,7.','$h ≈ 17,7$ m'),S('Voor de toren: trek er je eigen ooghoogte af (bijv. 1,75 m).','toren ongeveer 16 m')],
  a:'ongeveer 17,7 m',f:[['ongeveer 1,2 m','Dat is $15 : 12,7$. Eerst de wortel wegwerken: $15^2 = 225$.'],['190,5 m','Dat is $15 · 12,7$. Je moet $225 : 12,7$ doen.']]},
+
+/* ===== Opdracht T1 (Teams, huiswerk wo 11 nov). In het bestand staat 'Opdracht T2'; vraag b is gekopieerd uit R1 en hier gelezen als: ligt R op de grafiek van f7? ===== */
+{id:'t1a',o:'rand',nr:'Opdracht T1a',q:'Gegeven is $f₇: y = -[[1|2]]√{-2x + 4} - 7$.<br>Bereken het startpunt (randpunt).',
+ denk:'Bij het startpunt is wat onder de wortel staat 0: $-2x + 4 = 0$.',
+ st:[S('Onder de wortel = 0.','$-2x + 4 = 0$'),S('Balansmethode.','$-2x = -4$, dus $x = 2$'),S('Vul $x = 2$ in.','$-[[1|2]]·√{0} - 7 = -7$')],
+ a:'$(2, -7)$',f:[['$(-2, -7)$','$-2x = -4$: delen door $-2$ geeft $x = +2$. Controle: $-2·2 + 4 = 0$ ✓'],['$(2, -7[[1|2]])$','$√{0} = 0$, en $-[[1|2]]·0 = 0$. Dus $y = -7$.'],['$(2, 7)$','Er staat $- 7$ achter de wortel, dus $y = -7$.']]},
+{id:'t1b',o:'rand',nr:'Opdracht T1b',q:'Ligt het punt $R(3, [[1|3]])$ op de grafiek van $f₇: y = -[[1|2]]√{-2x + 4} - 7$? Toon het aan met een berekening.<br><span class="sub">In de opdracht staat \'lijn m\'. Dat komt uit opdracht R1; hier gaat het vast om de grafiek van $f₇$. Vraag het je docent als je twijfelt.</span>',
+ denk:'Vul $x = 3$ in. Wat komt er onder de wortel?',
+ st:[S('Vul $x = 3$ in onder de wortel.','$-2·3 + 4 = -6 + 4 = -2$'),S('Kan $√{-2}$?','Nee: onder de wortel mag niets negatiefs staan'),S('Dus.','$x = 3$ kun je niet invullen, R ligt niet op de grafiek (de grafiek bestaat alleen voor $x ≤ 2$)')],
+ a:'Nee, want $-2·3 + 4 = -2$ en $√{-2}$ bestaat niet',f:[['Ja, want $y = [[1|3]]$ komt eruit','Reken het na: $-2·3 + 4 = -2$. Van een negatief getal kun je geen wortel nemen.'],['Nee, want $y = -8$ bij $x = 3$','Je kunt $x = 3$ niet eens invullen: $-2·3 + 4 = -2$. De grafiek bestaat alleen voor $x ≤ 2$.']]},
+{id:'t1c',o:'rand',nr:'Opdracht T1c',q:'Gegeven is $fₐ: y = -[[1|2]]√{-2x + 4} - a$.<br>Punt $T(2, 3)$ ligt op $fₐ$. Bereken de waarde van a.',
+ denk:'Vul $x = 2$ en $y = 3$ in en los op.',
+ st:[S('Vul $x = 2$ en $y = 3$ in.','$3 = -[[1|2]]√{-2·2 + 4} - a$'),S('Onder de wortel.','$-4 + 4 = 0$, dus $3 = -[[1|2]]·0 - a = -a$'),S('Los op.','$-a = 3$, dus $a = -3$')],
+ a:'$a = -3$',f:[['$a = 3$','$3 = -a$. Dan is $a = -3$. Controle: $-(-3) = 3$ ✓'],['$a = 10$','Je hebt met $-7$ gerekend. Hier staat a in plaats van 7.']]},
+{id:'t1d',o:'rand',nr:'Opdracht T1d',q:'Vul de tabel in voor $f₇: y = -[[1|2]]√{-2x + 4} - 7$. Rond af op één decimaal.'+tbl(['−2½',-1,0,1],['?','?',-8,'?']),
+ denk:'Reken stap voor stap: eerst onder de wortel, dan de wortel, dan keer $-[[1|2]]$, dan $- 7$.',
+ st:[S('$x = -2[[1|2]]$:','$-2·(-2,5) + 4 = 9$, $√{9} = 3$, $-[[1|2]]·3 = -1,5$, $-1,5 - 7 = -8,5$'),S('$x = -1$:','$2 + 4 = 6$, $√{6} ≈ 2,45$, $-[[1|2]]·2,45 ≈ -1,22$, dus $y ≈ -8,2$'),S('$x = 1$:','$-2 + 4 = 2$, $√{2} ≈ 1,41$, $-[[1|2]]·1,41 ≈ -0,71$, dus $y ≈ -7,7$'),S('Controle bij $x = 0$:','$√{4} = 2$, $-1 - 7 = -8$ ✓')],
+ a:tbl(['−2½',-1,0,1],['−8,5','−8,2',-8,'−7,7']),f:[[tbl(['−2½',-1,0,1],['−5,5','−5,8',-8,'−6,3']),'Je hebt $+ [[1|2]]√{…}$ gerekend. Er staat $-[[1|2]]√{…}$: de wortel gaat eraf.'],[tbl(['−2½',-1,0,1],['−10','−9,4',-8,'−8,4']),'Je bent het halve vergeten: $-[[1|2]]·3 = -1,5$, niet $-3$.']]},
+{id:'t1e',o:'rand',nr:'Opdracht T1d',q:'Teken in je schrift de grafiek van $f₇: y = -[[1|2]]√{-2x + 4} - 7$. Gebruik je tabel en het startpunt.<br>Welke grafiek lijkt op die van jou?',
+ denk:'Startpunt $(2, -7)$. x mag alleen kleiner zijn dan 2, dus de grafiek loopt naar <b>links</b>. Door $-[[1|2]]√{…}$ gaat hij omlaag.',
+ st:[S('Punten uit je tabel en het startpunt.',tbl(['−2½',-1,0,1,2],['−8,5','−8,2',-8,'−7,7',-7])),S('Zet de punten uit en trek een vloeiende lijn. Begin bij het startpunt $(2, -7)$.',GT1(x=>-0.5*Math.sqrt(-2*x+4)-7,'L',[[-2.5,-8.5],[-1,-8.22],[0,-8],[1,-7.71],[2,-7]]))],
+ a:GT1(x=>-0.5*Math.sqrt(-2*x+4)-7,'L'),f:[[GT1(x=>-0.5*Math.sqrt(2*x-4)-7,'R'),'Deze loopt naar rechts. Bij $√{-2x + 4}$ mag x niet groter zijn dan 2.'],[GT1(x=>0.5*Math.sqrt(-2*x+4)-7,'L'),'Deze stijgt naar links. Bij $-[[1|2]]√{…}$ wordt y kleiner dan $-7$.']]},
+
+/* ===== Opdracht R1 (Teams, huiswerk do 12 nov). Let op juiste notatie! ===== */
+{id:'r1a',o:'ab',nr:'Opdracht R1a',q:'Bereken de formule van lijn m die gaat door $P(-7, 21)$ en $Q(12, -3)$.',
+ denk:'Eerst a: verschil in y gedeeld door verschil in x. Dan b: vul een punt in.',
+ st:[S('Verschil in y.','$-3 - 21 = -24$'),S('Verschil in x.','$12 - (-7) = 19$'),S('a.','$a = -24 : 19 = -[[24|19]]$'),S('Vul P in: $21 = -[[24|19]]·(-7) + b$.','$21 = [[168|19]] + b$'),S('Los b op.','$b = [[399|19]] - [[168|19]] = [[231|19]] = 12[[3|19]]$'),S('Formule. Controle met Q: $-[[24|19]]·12 + [[231|19]] = [[-57|19]] = -3$ ✓','$y = -[[24|19]]x + [[231|19]]$')],
+ a:'$y = -[[24|19]]x + 12[[3|19]]$',f:[['$y = -[[19|24]]x + 15[[11|24]]$','Je hebt x-verschil gedeeld door y-verschil. Het is andersom: a = y-verschil : x-verschil $= -24 : 19$.'],['$y = [[24|19]]x + 29[[16|19]]$','De lijn daalt (van 21 naar $-3$), dus a is negatief: $-[[24|19]]$.'],['$y = -[[24|19]]x + 21$','21 is niet het startgetal: P ligt niet op de y-as. Vul P in om b te berekenen.']]},
+{id:'r1b',o:'ab',nr:'Opdracht R1b',q:'Lijn m: $y = -[[24|19]]x + [[231|19]]$.<br>Ligt het punt $R(3, [[1|3]])$ op lijn m? Toon het aan met een berekening.',
+ denk:'Vul $x = 3$ in en kijk of er $[[1|3]]$ uitkomt.',
+ st:[S('Vul $x = 3$ in.','$-[[24|19]]·3 = -[[72|19]]$'),S('Plus b.','$-[[72|19]] + [[231|19]] = [[159|19]] = 8[[7|19]]$'),S('Vergelijk.','$8[[7|19]] ≠ [[1|3]]$, dus R ligt niet op m')],
+ a:'Nee, want bij $x = 3$ is $y = 8[[7|19]]$ en niet $[[1|3]]$',f:[['Ja, want $y = [[1|3]]$ bij $x = 3$','Reken het na: $-[[72|19]] + [[231|19]] = [[159|19]] = 8[[7|19]]$.'],['Nee, want bij $x = 3$ is $y = -3$','$-3$ hoort bij $x = 12$ (punt Q). Vul $x = 3$ in.']]},
+{id:'r1c',o:'ab',nr:'Opdracht R1c',q:'Stel de formule op van de lijn die evenwijdig loopt aan m ($y = -[[24|19]]x + [[231|19]]$) en die door $T(2, 3)$ gaat.',
+ denk:'Evenwijdig = dezelfde a. Vul T in om b te vinden.',
+ st:[S('Evenwijdig.','$a = -[[24|19]]$'),S('Vul T in: $3 = -[[24|19]]·2 + b$.','$3 = -[[48|19]] + b$'),S('Los b op.','$b = [[57|19]] + [[48|19]] = [[105|19]] = 5[[10|19]]$')],
+ a:'$y = -[[24|19]]x + 5[[10|19]]$',f:[['$y = [[19|24]]x + 1[[5|12]]$','Dat is een loodrechte richting. Evenwijdig betekent precies dezelfde a: $-[[24|19]]$.'],['$y = -[[24|19]]x + 3$','3 is de y van T, maar T ligt niet op de y-as. Vul T in om b te berekenen.'],['$y = -[[24|19]]x + [[9|19]]$','$3 = -[[48|19]] + b$, dus b = $3 + [[48|19]]$, niet $3 - [[48|19]]$.']]},
+{id:'r1d',o:'ab',nr:'Opdracht R1d',q:'Punt $U(121, z)$ ligt op lijn m: $y = -[[24|19]]x + [[231|19]]$. Bereken de waarde van z.',
+ denk:'Vul $x = 121$ in.',
+ st:[S('Vul in.','$z = -[[24|19]]·121 + [[231|19]]$'),S('Reken uit.','$-[[2904|19]] + [[231|19]] = -[[2673|19]]$'),S('Als gemengd getal.','$2673 : 19 = 140$ rest 13, dus $z = -140[[13|19]]$ (≈ $-140,68$)')],
+ a:'$z = -140[[13|19]]$',f:[['$z = 140[[13|19]]$','$-[[2904|19]] + [[231|19]]$ is negatief: $z = -140[[13|19]]$.'],['$z = -152[[16|19]]$','Je hebt $[[231|19]]$ afgetrokken in plaats van opgeteld.']]},
 
 /* ===== Toetsvoorbereiding ===== */
 {id:'tv1',o:'tv',nr:'75a',q:'Een vliegtuig zet op 1200 m de motoren uit en glijdt tot 300 m hoogte. Het glijgetal is 30.<br>Welke horizontale afstand legt het af?',
