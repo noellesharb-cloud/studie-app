@@ -46,7 +46,7 @@ window.HUISWERK=[
   {id:'2026-11-10-na',d:'2026-11-10',vak:'natuurkunde',t:'L5.04',wat:['Uitwerken practicum H5P12 IJking thermometer'],min:30},
 
   /* maandag 9 november */
-  {id:'2026-11-09-du',d:'2026-11-09',vak:'duits',t:'AB blz 24 en 26, woorden blz 19 en 27',wat:['# Maken','AB blz 24 opdr 12','AB blz 26 opdr 1 (hele zinnen), 2, 3 (hele zinnen in je schrift)','# Leren','Woorden AB blz 19 en 27, Duits-Nederlands én Nederlands-Duits','Niet compleet? Vul aan met de bijlagen in SOMtoday: Prima A1.1 Wörter E3 en Prima 1.1 Wörter E2'],min:45,app:'du',par:'ab',opg:[12],leer:[{titel:'Woorden AB blz. 19',o:'w19'},{titel:'Woorden AB blz. 27',o:'w27'}]},
+  {id:'2026-11-09-du',d:'2026-11-09',vak:'duits',t:'AB blz 24 en 26, woorden blz 19 en 27',wat:['# Maken','AB blz 24 opdr 12','AB blz 26 opdr 1 (hele zinnen), 2, 3 (hele zinnen in je schrift)','# Leren','Woorden AB blz 19 en 27, Duits-Nederlands én Nederlands-Duits','Niet compleet? Vul aan met de bijlagen in SOMtoday: Prima A1.1 Wörter E3 en Prima 1.1 Wörter E2'],min:45,app:'du',par:'ab',opg:[1,2,3,12],leer:[{titel:'Woorden AB blz. 19',o:'w19'},{titel:'Woorden AB blz. 27',o:'w27'}]},
   /* woensdag 11 november */
   {id:'2026-11-11-ne',d:'2026-11-11',vak:'nederlands',t:'Grammatica woordsoorten §4',wat:['Maken van Grammatica woordsoorten §4: opdracht 1, 2 en 4 (blz. 213)'],min:25},
   {id:'2026-11-11-wi',d:'2026-11-11',vak:'wiskunde',t:'Leren H3.5',wat:['Leren H3.5, blz 84','Maken: 70 t/m 72','Maken: Opdracht T1 (bijlage in SOMtoday, ook in de app)'],min:50,app:'wi',par:'3.5',opg:[70,71,72],leer:[{titel:'Opdracht T1',ids:['t1a','t1b','t1c','t1d','t1e']}]},

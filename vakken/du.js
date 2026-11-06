@@ -97,6 +97,17 @@ const SECS=[
   rules:[['Lees eerst de tekst in je Arbeitsbuch','Zoek bij elke zin het stukje in de tekst waar het over gaat',''],
    ['Let op getallen en wie het is','900 Zoos of 900 Tiere? München of heel Deutschland?','Eén woord anders maakt de zin falsch'],
    ['nicht en kein draaien het om','modern ↔ nicht modern','']]},
+ {id:'p1',par:'ab',nr:'1',name:'Über Tiere sprechen: antworten',c:'--c1',sub:'Arbeitsbuch blz. 26 · opdracht 1 · hele zinnen',
+  rules:[['Antwoord in een hele zin','Hast du …? → Ja, ich habe … / Nein, ich habe kein …','Neem de woorden uit de vraag over'],
+   ['du in de vraag wordt ich in je antwoord','hast → habe · magst → mag',''],
+   ['geen = kein, keine, keinen','der → keinen · die/meervoud → keine · das → kein','Ich habe keinen Hund. Ich mag keine Spinnen.']]},
+ {id:'p2',par:'ab',nr:'2',name:'Über Tiere sprechen: fragen',c:'--c2',sub:'Arbeitsbuch blz. 26 · opdracht 2 · de vraag bij het antwoord',
+  rules:[['Kijk naar het antwoord','Er heißt Cox → je vroeg naar de naam: Wie heißt …?',''],
+   ['W-vraag','vraagwoord – werkwoord – onderwerp','Wie heißt dein Hund? · Wie alt ist dein Hund?'],
+   ['Ja/nee-vraag','werkwoord vooraan','Hast du ein Haustier? · Magst du Katzen?']]},
+ {id:'p3',par:'ab',nr:'3',name:'Berichten: Siri',c:'--c6',sub:'Arbeitsbuch blz. 26 · opdracht 3 · zinnen voor je schrift',
+  rules:[['die Katze = sie, der Hund = er','Over een die-woord zeg je sie, over een der-woord er','Die Katze heißt Mux. Sie ist schwarz.'],
+   ['Leeftijd: sein, niet haben','Sie ist 13 Jahre alt.','Niet: Sie hat 13 Jahre.']]},
  {id:'w19',par:'ab',nr:'19',name:'Woorden blz. 19',c:'--c5',sub:'Deine Wörter 2 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Kuli, die Schere, das Heft','']].concat(AB19.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
  {id:'w27',par:'ab',nr:'27',name:'Woorden blz. 27',c:'--c4',sub:'Deine Wörter 3 · Duits-Nederlands en Nederlands-Duits',
@@ -225,6 +236,50 @@ const soort=v=>isN(v)?'n':zinOf(v)?'z':'w';
     f:pool.map(w=>[w[0],`${w[0]} betekent ${w[1]}.`]),u:`${v[1]} = <b>${v[0]}</b>${v[2]?` (meervoud: ${v[2]})`:''}`,
     v:{q:`Wat betekent <b>${v[0]}</b>?`,a:v[1],f:pool.map(w=>[w[1],`Dat is ${w[0]}.`])}});
 }));
+/* AB blz. 26 opdracht 1: antwoorden in hele zinnen. Haar eigen antwoord schrijft ze in haar boek; hier: welke hele zin is goed? */
+[
+ ['Hast du ein Haustier?','Ja, ich habe ein Haustier.',[['Ja, ich habe einen Haustier.','Het is das Haustier. Bij das blijft het ein, ook als lijdend voorwerp.'],['Ja, ich hast ein Haustier.','hast hoort bij du. Bij ich is het habe.'],['Ja, du hast ein Haustier.','In je antwoord praat je over jezelf: ich habe.']],
+   'Nein, ich habe kein Haustier.',[['Nein, ich habe nicht ein Haustier.','Geen + zelfstandig naamwoord is kein: ich habe kein Haustier.'],['Nein, ich habe keinen Haustier.','keinen is voor der-woorden. Het is das Haustier: kein.'],['Nein, ich habe keine Haustier.','keine is voor die-woorden en meervoud. Het is das Haustier: kein.']]],
+ ['Hast du eine Katze?','Nein, ich habe keine Katze.',[['Nein, ich habe keinen Katze.','keinen is voor der-woorden. Het is die Katze: keine.'],['Nein, ich habe nicht eine Katze.','Geen + zelfstandig naamwoord is kein(e): keine Katze.'],['Nein, ich habe kein Katze.','Het is die Katze: keine, net als eine.']],
+   'Ja, ich habe eine Katze.',[['Ja, ich habe einen Katze.','einen is voor der-woorden. Het is die Katze: eine.'],['Ja, ich habe ein Katze.','Het is die Katze: eine.'],['Ja, ich hat eine Katze.','hat hoort bij er/sie/es. Bij ich is het habe.']]],
+ ['Was ist dein Lieblingstier?','Mein Lieblingstier ist der Hund.',[['Meine Lieblingstier ist der Hund.','Het is das Lieblingstier: mein, zonder e.'],['Mein Lieblingstier bin der Hund.','bin hoort bij ich. Bij mein Lieblingstier (es) is het ist.'],['Mein Lieblingstier ist den Hund.','Na ist verandert der niet in den. Ist heeft geen lijdend voorwerp.']],
+   'Mein Lieblingstier ist die Katze.',[['Meine Lieblingstier ist die Katze.','Het is das Lieblingstier: mein, zonder e.'],['Mein Lieblingstier sind die Katze.','sind is meervoud. Eén lievelingsdier: ist.'],['Mein Lieblingstier ist der Katze.','Het is die Katze.']]],
+ ['Magst du Spinnen?','Nein, ich mag keine Spinnen.',[['Nein, ich magst keine Spinnen.','magst hoort bij du. Bij ich is het mag.'],['Nein, ich möge keine Spinnen.','mögen is onregelmatig: ich mag.'],['Nein, ich mag keinen Spinnen.','Spinnen is meervoud: keine.']],
+   'Ja, ich mag Spinnen.',[['Ja, ich mage Spinnen.','Bij ich is het mag, zonder e.'],['Ja, ich magst Spinnen.','magst hoort bij du.'],['Ja, ich mögen Spinnen.','mögen hoort bij wir of sie (meervoud). Bij ich: mag.']]],
+ ['Mag dein Freund / deine Freundin Hunde?','Ja, meine Freundin mag Hunde.',[['Ja, mein Freundin mag Hunde.','Het is die Freundin: meine.'],['Ja, meine Freundin magt Hunde.','mögen is onregelmatig: er/sie mag, zonder t.'],['Ja, meine Freundin magst Hunde.','magst hoort bij du. Meine Freundin is sie: mag.']],
+   'Nein, mein Freund mag keine Hunde.',[['Nein, meine Freund mag keine Hunde.','Het is der Freund: mein, zonder e.'],['Nein, mein Freund mag keinen Hunde.','Hunde is meervoud: keine.'],['Nein, mein Freund magst keine Hunde.','magst hoort bij du. Mein Freund is er: mag.']]],
+].forEach(([vr,a,f,a2,f2],i)=>Q.push({id:'p1-'+(i+1),o:'p1',nr:'Opdracht 1 · zin '+(i+1),
+  q:`Welk antwoord is een goede hele zin?${DE(vr)}`,a,f,u:`${DE(a)}Schrijf in je boek je eigen antwoord, ook als een hele zin. Ja of nee mag allebei.`,
+  v:{q:`Welk antwoord is een goede hele zin?${DE(vr)}`,a:a2,f:f2}}));
+
+/* AB blz. 26 opdracht 2: de vraag bij het antwoord bouwen (zelfde vraagsoort als opdracht 8a) */
+[
+ ['Ich habe einen Hund.','haben','du',['hast',['habst','haben is onregelmatig: bij du valt de b weg: du hast.'],['hat','hat hoort bij er/sie/es.']],['hast','du','ein','Haustier'],'j','Hast du '+A('ein Haustier')+'?','Heb jij een huisdier? (Hast du einen Hund? is ook goed.)'],
+ ['Er heißt Cox.','heißen','dein Hund',['heißt',['heißst','De stam eindigt op ß. Dan alleen -t: heißt.'],['heißen','heißen hoort bij meervoud. „dein Hund” is één hond (er).']],['wie','heißt','dein','Hund'],'w','Wie heißt dein Hund?','Hoe heet jouw hond?'],
+ ['Er ist sechs Jahre alt.','sein','dein Hund',['ist',['bist','bist hoort bij du. „dein Hund” is er: ist.'],['sind','sind hoort bij wir of sie (meervoud).']],['wie alt','ist','dein','Hund'],'w','Wie alt ist dein Hund?','Hoe oud is jouw hond?'],
+ ['Mein Lieblingstier heißt Cox.','heißen','dein Lieblingstier',['heißt',['heißst','De stam eindigt op ß. Dan alleen -t: heißt.'],['heißen','heißen hoort bij meervoud. „dein Lieblingstier” is één dier (es): heißt.']],['wie','heißt','dein','Lieblingstier'],'w','Wie heißt dein Lieblingstier?','Hoe heet jouw lievelingsdier?'],
+ ['Nein, ich mag keine Katzen.','mögen','du',['magst',['mögst','mögen is onregelmatig: du magst, met een a.'],['mag','mag hoort bij ich en er/sie/es.']],['magst','du','Katzen'],'j','Magst du '+A('Katzen')+'?','Vind jij katten leuk?'],
+].forEach(([antw,inf,subj,vopts,words,kind,model,nl],i)=>Q.push({id:'p2-'+(i+1),o:'p2',nr:'Opdracht 2 · zin '+(i+1),type:'zin',
+  q:`Schrijf de vraag bij dit antwoord.<div class="prompt">… ? → ${antw}</div>`,
+  denk:(kind==='w'?WRULE:JRULE)+'. Kijk naar het antwoord: waar vroeg je naar? Zoek dan het onderwerp: daar hoort de vorm van het werkwoord bij.',
+  inf,subj,vopts:[[vopts[0]],...vopts.slice(1)],words,kind,model,nl,a:kaal(model)}));
+
+/* AB blz. 26 opdracht 3: zinnen over Siri; daarna schrijft ze de tekst in haar schrift */
+const SIRI='Das ist Siri. Sie ist in Klasse 7. Sie ist dreizehn Jahre alt. Siris Lieblingstier ist die Katze. Sie mag Hunde und Mäuse. Die Katze heißt Mux. Sie ist drei Jahre alt, schwarz und sehr lieb. Der Hund heißt Tasso. Er ist fünf Jahre alt, braun und groß.';
+[
+ ['Klasse 7','Siri zit in klas 7.','Sie ist in Klasse 7.',[['Sie bin in Klasse 7.','bin hoort bij ich. Bij sie (Siri): ist.'],['Sie hat in Klasse 7.','Je bent in een klas: sein, dus ist.'],['Sie sind in Klasse 7.','sind is meervoud of Sie (beleefd). Siri is één persoon: ist.']]],
+ ['13 Jahre','Siri is 13 jaar.','Sie ist dreizehn Jahre alt.',[['Sie hat dreizehn Jahre.','Leeftijd gaat met sein: Sie ist … Jahre alt.'],['Sie ist dreizehn Jahr alt.','Bij meer dan één jaar: Jahre.'],['Sie sind dreizehn Jahre alt.','Siri is één persoon: ist.']]],
+ ['Lieblingstier: Katze','Siri’s lievelingsdier is de kat.','Siris Lieblingstier ist die Katze.',[['Siris Lieblingstier ist der Katze.','Het is die Katze.'],['Siris Lieblingstier sind die Katze.','Eén lievelingsdier: ist.'],['Siris Lieblingstier ist den Katze.','Na ist geen den. En het is die Katze.']]],
+ ['mag Hunde und Mäuse','Siri vindt honden en muizen leuk.','Sie mag Hunde und Mäuse.',[['Sie magt Hunde und Mäuse.','mögen is onregelmatig: sie mag, zonder t.'],['Sie magst Hunde und Mäuse.','magst hoort bij du.'],['Sie mag Hunde und Mause.','Eén Maus, meer Mäuse (met ä).']]],
+ ['Katze: Mux','De kat heet Mux.','Die Katze heißt Mux.',[['Der Katze heißt Mux.','Het is die Katze.'],['Die Katze heiße Mux.','heiße hoort bij ich. Die Katze (sie): heißt.'],['Die Katze heißen Mux.','heißen is meervoud. Eén kat: heißt.']]],
+ ['3 Jahre, schwarz, sehr lieb','De kat is 3 jaar, zwart en heel lief.','Sie ist drei Jahre alt, schwarz und sehr lieb.',[['Er ist drei Jahre alt, schwarz und sehr lieb.','Het gaat over die Katze. Een die-woord wordt sie, niet er.'],['Sie hat drei Jahre, schwarz und sehr lieb.','Leeftijd gaat met sein: Sie ist drei Jahre alt.'],['Es ist drei Jahre alt, schwarz und sehr lieb.','es is voor das-woorden. Die Katze → sie.']]],
+ ['Hund: Tasso','De hond heet Tasso.','Der Hund heißt Tasso.',[['Die Hund heißt Tasso.','Het is der Hund.'],['Das Hund heißt Tasso.','Het is der Hund.'],['Der Hund heißst Tasso.','De stam eindigt op ß: alleen -t, heißt.']]],
+ ['5 Jahre, braun, groß','De hond is 5 jaar, bruin en groot.','Er ist fünf Jahre alt, braun und groß.',[['Sie ist fünf Jahre alt, braun und groß.','Het gaat over der Hund. Een der-woord wordt er.'],['Er hat fünf Jahre, braun und groß.','Leeftijd gaat met sein: Er ist fünf Jahre alt.'],['Es ist fünf Jahre alt, braun und groß.','es is voor das-woorden. Der Hund → er.']]],
+].forEach(([info,nl,a,f],i,L)=>Q.push({id:'p3-'+(i+1),o:'p3',nr:'Opdracht 3 · zin '+(i+1),
+  q:`Siri: <b>${info}</b>. Welke zin is goed?`,a,f,
+  u:`${DE(a)}`+(i===L.length-1?`<p><b>Zo kan je hele tekst in je schrift eruitzien:</b></p>${DE(SIRI)}<p class="sub">Schrijf hem in je schrift, met je eigen zinnen mag ook.</p>`:''),
+  v:{q:`${nl} Welke Duitse zin is goed?`}}));
+
 /* AB blz. 24 opdracht 12: richtig oder falsch. De tekst staat in haar Arbeitsbuch; hier alleen de zinnen en uitleg in eigen woorden. */
 [
  ['Im Zoo in München gibt es 900 Tiere.','Er zijn 900 dieren in de dierentuin van München.','falsch','In de tekst gaat het getal 900 over heel Duitsland: daar zijn bijna 900 dierentuinen (Zoos), geen 900 dieren in München.'],
@@ -286,10 +341,10 @@ function drawZin(q,it,box,api){
       ${ok?'':'<div><b>Het goede antwoord is:</b></div>'}${DE(kleur(q.model))}<div class="nl">${q.nl}</div><div class="why">${regel}.</div></div>`)};
 }
 
-const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24 en 27','woorden Deine Wörter 2 en 3, opdracht 12']];
+const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)']];
 const LIJST=[];[...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
-return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Arbeitsbuch blz. 19, 24 en 27 · Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
+return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Arbeitsbuch blz. 19, 24, 26 en 27 · Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
   leer:['ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,
   custom:{rij:drawRij,zin:drawZin},
-  PN:{ab:'Arbeitsbuch blz. 19, 24 en 27 · woorden en opdracht 12',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
+  PN:{ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
 })();
