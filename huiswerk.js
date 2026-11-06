@@ -54,6 +54,8 @@ window.HUISWERK=[
   {id:'2026-11-12-wi',d:'2026-11-12',vak:'wiskunde',t:'Herhalen H3.1 en H3.2',wat:['Leren H3.1 blz 68','Bekijken uitleg filmpje(s) H3.1. Eventueel afspelen op snelheid 1,3 of 1,5','Leren: 7 stappenplan van Van Neck','Maken: Extra opdrachten H3: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (zie Teams)','Maken: Opdracht R1 (bijlage in SOMtoday, ook in de app). Let op juiste notatie!!!!'],min:60,app:'wi',par:'3.1',leer:[{titel:'Opdracht R1',ids:['r1a','r1b','r1c','r1d']}]},
   {id:'2026-11-12-la',d:'2026-11-12',vak:'latijn',t:'Krantenartikelen samenvatten',wat:['Lees 2 krantenartikelen en lever een samenvatting van 1-3 zinnen over deze artikelen in bij je docent op Teams.','Zinnen moeten grammaticaal correcte volzinnen zijn! Fouten in het Nederlands geven een \'huiswerk-niet-gemaakt\' op SOM en puntenaftrek van het uiteindelijke cijfer (zie beoordelingsformulier).'],min:30},
   /* vrijdag 13 november: D-toets Latijn (woorden 7A + 7B, zelfstandige naamwoorden groep 3, bijvoeglijke naamwoorden groep 3). Toetsdatum staat in Cijfers, niet hier. */
+  /* vrijdag 13 november */
+  {id:'2026-11-13-fa',d:'2026-11-13',vak:'frans',t:'Exercices digitaal via Noordhoff',wat:['Maak digitaal via Noordhoff:','Exercice 12a','Exercice 12b','Exercice 10c'],min:20},
   /* dinsdag 17 november */
   {id:'2026-11-17-na',d:'2026-11-17',vak:'natuurkunde',t:'L5.06',wat:['Kijk in SOMtoday bij L5.06 wat je moet maken (de omschrijving staat nog niet in de app)'],min:30}
 ];
