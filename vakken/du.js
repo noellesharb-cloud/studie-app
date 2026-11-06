@@ -33,7 +33,7 @@ const AB19=[
  ['aber','maar',''],['Was ist jetzt?','Wat hebben we nu?',''],['Magst du Bio?','Vind je biologie leuk?',''],['Und du?','En jij?',''],['auch gut','ook goed',''],['auch','ook',''],
  ['Nein, ich mag Bio nicht.','Nee, ik vind biologie niet leuk.',''],['nein','nee',''],['nicht','niet',''],['langweilig','saai',''],['super','super',''],
  ['Mathe ist super!','Wiskunde is super!',''],['Na ja, es geht.','Nou ja, het gaat wel.',''],['Ja, sehr.','Ja, heel erg.',''],['Wie heißt … auf Deutsch?','Hoe heet … in het Duits?',''],
- ['toll','geweldig',''],['blöd','stom',''],
+ ['toll','geweldig, leuk, gaaf',''],['blöd','stom',''],
  ['die Freundin','de vriendin','die Freundinnen'],['meine Freundin','mijn vriendin',''],['der Freund','de vriend','die Freunde'],['mein Freund','mijn vriend',''],
  ['spielen','spelen',''],['viel','veel',''],['zusammen','samen',''],['nur','alleen, slechts',''],['Wir spielen viel zusammen.','We spelen veel samen.',''],
  ['der Nachmittag','de middag','die Nachmittage'],['heute Nachmittag','vanmiddag',''],['Keine Ahnung.','Geen idee.',''],['gern','graag',''],
@@ -46,7 +46,14 @@ const AB19=[
  ['der USB-Stick','de usb-stick','die USB-Sticks'],['der Rucksack','de rugzak','die Rucksäcke'],['der Schreibblock','het schrijfblok','die Schreibblöcke'],
  ['die Brotdose','de broodtrommel','die Brotdosen'],['das Heft','het schrift','die Hefte'],['die Uhr','de klok, het horloge','die Uhren'],
  ['Deutsch','Duits',''],['Englisch','Engels',''],['Französisch','Frans',''],['Mathe / Mathematik','wiskunde',''],['Physik','natuurkunde',''],['Biologie','biologie',''],
- ['Erdkunde / Geografie','aardrijkskunde',''],['Geschichte','geschiedenis',''],['Kunst','kunst, tekenen','']
+ ['Erdkunde / Geografie','aardrijkskunde',''],['Geschichte','geschiedenis',''],['Kunst','beeldende vorming, kunst',''],
+ /* aanvulling uit de bijlage 'Prima 1.1 Wörter E2' (SOMtoday) */
+ ['ach so','o zo, o oké',''],['alles','alles',''],['die Auskunft','de inlichting, de informatie','die Auskünfte'],['dein, deine','jouw',''],['ein, eine','een',''],
+ ['englisch','Engels (bijvoeglijk naamwoord)',''],['er','hij',''],['sie','zij',''],['ihr','jullie',''],['die Feuerwehr','de brandweer','die Feuerwehren'],['fit','fit',''],
+ ['die Geige','de viool','die Geigen'],['heute','vandaag',''],['der Kugelschreiber','de balpen (het lange woord voor Kuli)','die Kugelschreiber'],
+ ['das Mäppchen','het etui','die Mäppchen'],['die Nacht','de nacht','die Nächte'],['oft','vaak',''],['die Präsentation','de presentatie','die Präsentationen'],
+ ['die Schule','de school','die Schulen'],['die Schulsachen','de schoolspullen',''],['Sport','lo, gym (schoolvak)',''],['die Tafel','het (school)bord','die Tafeln'],
+ ['die Telefonnummer','het telefoonnummer','die Telefonnummern'],['weg sein','weg zijn',''],['die Zahl','het getal','die Zahlen']
 ];
 const AB27=[
  ['die Katze','de kat','die Katzen'],['Das ist meine Katze.','Dat is mijn kat.',''],['alt','oud',''],['Meine Katze ist vier Jahre alt.','Mijn kat is vier jaar oud.',''],
@@ -60,7 +67,12 @@ const AB27=[
  ['über','over, meer dan',''],['über 10 Millionen','meer dan 10 miljoen',''],['leben','leven, wonen',''],['die Wohnung','de woning, het appartement','die Wohnungen'],
  ['es gibt','er is, er zijn',''],['viele','veel (meervoud)',''],['andere','andere',''],['z. B. (zum Beispiel)','bijv. (bijvoorbeeld)',''],['usw. (und so weiter)','enz. (enzovoort)',''],
  ['Afrika','Afrika',''],['Antarktis','Antarctica',''],['Asien','Azië',''],['Australien','Australië',''],['Europa','Europa',''],['Nordamerika','Noord-Amerika',''],['Südamerika','Zuid-Amerika',''],
- ['grau','grijs',''],['schwarz','zwart',''],['weiß','wit',''],['rot','rood',''],['grün','groen',''],['blau','blauw',''],['gelb','geel',''],['braun','bruin','']
+ ['grau','grijs',''],['schwarz','zwart',''],['weiß','wit',''],['rot','rood',''],['grün','groen',''],['blau','blauw',''],['gelb','geel',''],['braun','bruin',''],
+ /* aanvulling uit de bijlage 'Prima A1.1 Wörter E3' (SOMtoday) */
+ ['das Bild','de afbeelding, het plaatje','die Bilder'],['der / die Deutsche','de Duitser, de Duitse','die Deutschen'],['der Fisch','de vis','die Fische'],
+ ['haben','hebben',''],['das Handy','het mobieltje','die Handys'],['das Telefon','de telefoon','die Telefone'],['das Tier','het dier','die Tiere'],
+ ['das Kaninchen','het konijn','die Kaninchen'],['die Kuh','de koe','die Kühe'],['die Maus','de muis','die Mäuse'],['das Meerschweinchen','de cavia','die Meerschweinchen'],
+ ['die Möwe','de meeuw','die Möwen'],['das Pferd','het paard','die Pferde'],['die Ratte','de rat','die Ratten'],['der Schmetterling','de vlinder','die Schmetterlinge'],['schon','al','']
 ];
 
 
@@ -108,9 +120,9 @@ const SECS=[
  {id:'p3',par:'ab',nr:'3',name:'Berichten: Siri',c:'--c6',sub:'Arbeitsbuch blz. 26 · opdracht 3 · zinnen voor je schrift',
   rules:[['die Katze = sie, der Hund = er','Over een die-woord zeg je sie, over een der-woord er','Die Katze heißt Mux. Sie ist schwarz.'],
    ['Leeftijd: sein, niet haben','Sie ist 13 Jahre alt.','Niet: Sie hat 13 Jahre.']]},
- {id:'w19',par:'ab',nr:'19',name:'Woorden blz. 19',c:'--c5',sub:'Deine Wörter 2 · Duits-Nederlands en Nederlands-Duits',
+ {id:'w19',par:'ab',nr:'19',name:'Woorden blz. 19',c:'--c5',sub:'Deine Wörter 2 + bijlage Wörter E2 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Kuli, die Schere, das Heft','']].concat(AB19.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
- {id:'w27',par:'ab',nr:'27',name:'Woorden blz. 27',c:'--c4',sub:'Deine Wörter 3 · Duits-Nederlands en Nederlands-Duits',
+ {id:'w27',par:'ab',nr:'27',name:'Woorden blz. 27',c:'--c4',sub:'Deine Wörter 3 + bijlage Wörter E3 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das, en het meervoud','die Stadt, die Städte','']].concat(AB27.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
  {id:'o6',par:'ws',nr:'6',name:'Verben mit Akkusativ',c:'--c4',sub:'Opdracht 6 · zinnen aanvullen met het goede werkwoord',
   rules:[['Kies uit','lerne – lese – hasse – habe – kenne – schreibe – höre','Elk werkwoord gebruik je één keer.'],
