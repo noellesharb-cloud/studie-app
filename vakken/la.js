@@ -45,7 +45,14 @@ const RIJ={
  pes:{nl:'voet',g:'m',f:['pes','pedis','pedi','pedem','pede','pedes','pedum','pedibus','pedes','pedibus'],x:['pesem','pesis','pedium'],bron:'Extra, woordenlijst',
    u:'Stam <b>ped-</b> (gen. ped-is). In tekst 7A: ad imperatoris <b>pedes</b> (acc mv, r. 12). Denk aan pedicure.'},
  mors:{nl:'dood',g:'v',f:['mors','mortis','morti','mortem','morte','mortes','mortium','mortibus','mortes','mortibus'],x:['mortum','morsem','morsis'],bron:'Extra, woordenlijst',
-   u:'Stam <b>mort-</b>. Net als mons: gen mv <b>mortium</b>. In tekst 7A: a <b>morte</b> (abl ev, r. 20).'}
+   u:'Stam <b>mort-</b>. Net als mons: gen mv <b>mortium</b>. In tekst 7A: a <b>morte</b> (abl ev, r. 20).'},
+ /* --- groep 1 en 2 (basis, D-toets periode 1) --- */
+ silva:{nl:'bos',g:'v',f:['silva','silvae','silvae','silvam','silva','silvae','silvarum','silvis','silvas','silvis'],x:['silvum','silvos','silvibus','silvorum'],bron:'D-toets P1',
+   u:'Groep 1 (a-stammen). Uitgangen: -a, -ae, -ae, -am, -a · -ae, -arum, -is, -as, -is. Let op: nom ev en abl ev zijn allebei <b>silva</b>.'},
+ donum:{nl:'geschenk',g:'o',f:['donum','doni','dono','donum','dono','dona','donorum','donis','dona','donis'],x:['donae','donam','donibus','donarum'],bron:'D-toets P1',
+   u:'Groep 2, onzijdig. Nom en acc zijn gelijk (ev <b>donum</b>, mv <b>dona</b> op -a). Verder als equus.'},
+ equus:{nl:'paard',g:'m',f:['equus','equi','equo','equum','equo','equi','equorum','equis','equos','equis'],x:['equae','equam','equibus','equarum'],bron:'D-toets P1',
+   u:'Groep 2 (o-stammen). Uitgangen: -us, -i, -o, -um, -o · -i, -orum, -is, -os, -is.'}
 };
 const PL=['nom ev','gen ev','dat ev','acc ev','abl ev','nom mv','gen mv','dat mv','acc mv','abl mv'];
 const rijHtml=k=>{const r=RIJ[k];return `<table class="lrij"><tr><th></th><th>ev</th><th>mv</th></tr>${NV.map((n,i)=>`<tr><td>${MK(n,n)}</td><td>${r.f[i]}</td><td>${r.f[i+5]}</td></tr>`).join('')}</table>`};
@@ -80,10 +87,23 @@ const SECS=[
    ['Onzijdig (zoals nomen)','nom = acc, ev en mv · mv op <b>-a</b>: nomina','Net als bij donum in groep 2.'],
    ['Let op: lijken op elkaar','reg-<b>em</b> (acc ev) en reg-<b>um</b> (gen mv)',''],
    ['Twee naamvallen, één vorm','-es = nom of acc mv · -ibus = dat of abl mv','Welke het is, zie je aan de zin.'],
-   ['Soms -ium in de gen mv','urbs → urbium · mons → montium · mors → mortium','']].concat(Object.keys(RIJ).map(k=>[`${k} (${RIJ[k].nl}) <small>${RIJ[k].bron}</small>`,rijHtml(k),RIJ[k].u]))},
+   ['Soms -ium in de gen mv','urbs → urbium · mons → montium · mors → mortium','']].concat(Object.keys(RIJ).filter(k=>!['silva','donum','equus'].includes(k)).map(k=>[`${k} (${RIJ[k].nl}) <small>${RIJ[k].bron}</small>`,rijHtml(k),RIJ[k].u]))},
  {id:'t7',par:'7t',nr:'4',name:'Tekst 7A',c:'--c4',sub:'Door het oog van de naald · Pollio en Augustus',
   rules:[['Woorden naast de tekst','Pollio, Pollionis · peccaverat · eum · vivarium · inicĕre · murena · quae · saginare + abl · quodam die · cena · cenare · imprudens · crystallinum · illum · confugit · motus · his · ipse · adesse · manumittĕre · gaudeamus + abl · castigare',''],
    ['Groep 3 in de tekst','sanguine (r. 5) · hominum (r. 5) · imperatorem (r. 7) · Pollionis (r. 9, 13) · imperatoris, pedes (r. 12) · crudelitatem (r. 13) · Pollioni (r. 15) · hominem (r. 18) · morte (r. 20)','']]},
+ {id:'b-rij',par:'bas',nr:'B1',name:'Rijtjes groep 1 en 2',c:'--c6',sub:'D-toets P1 \u00b7 silva, donum, equus',
+  rules:[['Groep 1 (silva): a-stammen','ev: -a \u00b7 -ae \u00b7 -ae \u00b7 -am \u00b7 -a<br>mv: -ae \u00b7 -arum \u00b7 -is \u00b7 -as \u00b7 -is','Let op: nom ev en abl ev zijn allebei silva.'],
+   ['Groep 2 (equus): o-stammen','ev: -us \u00b7 -i \u00b7 -o \u00b7 -um \u00b7 -o<br>mv: -i \u00b7 -orum \u00b7 -is \u00b7 -os \u00b7 -is',''],
+   ['Groep 2 onzijdig (donum)','nom = acc, ev en mv \u00b7 mv op <b>-a</b>: dona','Net als nomen bij groep 3.']]
+   .concat(['silva','donum','equus'].map(k=>[`${k} (${RIJ[k].nl}) <small>${RIJ[k].bron}</small>`,rijHtml(k),RIJ[k].u]))},
+ {id:'b-ww',par:'bas',nr:'B2',name:'Werkwoorden',c:'--c1',sub:'D-toets P1 \u00b7 flecto, perfectum, infinitivus',
+  rules:[['flecto (buigen) presens','flecto \u00b7 flectis \u00b7 flectit \u00b7 flectimus \u00b7 flectitis \u00b7 flectunt',''],
+   ['Perfectum herkennen','appropinquavi \u2192 appropinquo (naderen)<br>dixi \u2192 dico (zeggen)',''],
+   ['Infinitivus','appropinquare (naderen) \u00b7 dicere (zeggen)','De infinitivus eindigt op -re.']]},
+ {id:'b-st',par:'bas',nr:'B3',name:'Stamtijden',c:'--c2',sub:'D-toets P1 \u00b7 perfectum \u2192 presens',
+  rules:[['cognovi','cognosco (leren kennen)',''],['potui','possum (kunnen)',''],['respondi','respondeo (antwoorden)','']]},
+ {id:'b-wo',par:'bas',nr:'B4',name:'Basiswoorden',c:'--c3',sub:'D-toets P1',
+  rules:[[L('ingenium'),'aanleg, talent',''],[L('tum'),'toen, dan',''],[L('sol'),'zon','']]},
  {id:'mix7',par:'mix',nr:'?',name:'7A door elkaar',c:'--c5',sub:'Woorden, rijtjes en tekst',
   rules:[['Zoek eerst de persoonsvorm en het onderwerp (nom)','',''],['Groep 3? Zoek de genitivus in de woordenlijst en haal -is eraf','','']]}
 ];
@@ -93,7 +113,10 @@ const SNAP={
  g3:[['Waarom moet ik de genitivus leren?','Bij groep 3 lijkt de nominativus vaak niet op de rest: <b>pes</b> → pedis, <b>sanguis</b> → sanguinis, <b>frater</b> → fratris. Pas aan de genitivus zie je de stam. Haal -is eraf en plak de uitgangen erachter.'],
   ['Hoe zie ik of regem of regum is?','<b>-em</b> = acc ev (één koning als lijdend voorwerp). <b>-um</b> = gen mv (van de koningen). Ezelsbrug: reg<b>u</b>m klinkt als een groep (van de koningen), reg<b>e</b>m als <b>é</b>én koning.'],
   ['Waarom is nomen ook de accusativus?','nomen is onzijdig. Bij onzijdige woorden zijn nom en acc altijd gelijk, in ev én mv. Het meervoud eindigt dan op <b>-a</b>: nomina. Dat ken je al van donum → dona.']],
- t7:Z.map(z=>[`r. ${z[0]}: ${z[1].slice(0,55)}${z[1].length>55?'…':''}`,`${L(z[1])}<br><b>${z[2]}</b>${z[4]?'<br><span class="why">'+z[4]+'</span>':''}`])
+ t7:Z.map(z=>[`r. ${z[0]}: ${z[1].slice(0,55)}${z[1].length>55?'…':''}`,`${L(z[1])}<br><b>${z[2]}</b>${z[4]?'<br><span class="why">'+z[4]+'</span>':''}`]),
+ bas:[['Wat is het verschil tussen groep 1 en groep 2?','Groep 1 (silva) zijn vrouwelijk met <b>a-stammen</b>: gen mv -arum. Groep 2 (equus, donum) zijn mannelijk of onzijdig met <b>o-stammen</b>: gen mv -orum. Onzijdig: nom = acc, mv op -a.'],
+  ['Hoe herken ik welke groep?','Kijk naar de nominativus: -a = groep 1 (v), -us = groep 2 (m), -um = groep 2 (o). Bij groep 3 lijkt de nominativus niet op de rest (rex, pes, sanguis).'],
+  ['Wat zijn stamtijden?','De drie basisvormen van een werkwoord: presens (ik doe), perfectum (ik deed/heb gedaan) en het participium. Met de stamtijden kun je alle vormen afleiden. Bijv. cognosco (presens) \u2192 cognovi (perfectum).']]
 };
 function snapHtml(id){return (SNAP[id]||[]).map(x=>`<details class="snap"><summary>${x[0]}</summary><div>${x[1]}</div></details>`).join('')}
 
@@ -185,6 +208,75 @@ Z.forEach((z,i)=>Q.push({id:'vt'+i,o:'t7',nr:`Vertalen r. ${z[0]}`,t:'open',q:`V
  ['mx3','Wat betekent omnia in omnia crystallina?','alle',['ieder','geheel','bovendien'],'omnis in het meervoud = alle(n). omnia is onzijdig mv.']
 ].forEach(([id,q,a,f,u])=>Q.push({id,o:'mix7',nr:'Door elkaar',q,a,f,u,v:{q}}));
 
+/* ---------- basis Latijn: D-toets periode 1 ---------- */
+/* rijtjes groep 1 en 2 */
+['silva','donum','equus'].forEach(k=>Q.push({id:'br-'+k,o:'b-rij',nr:'Rijtje \u00b7 '+RIJ[k].bron,type:'rij',w:k,a:RIJ[k].f.join(', '),
+  q:`Maak het rijtje van <b>${k}</b>, ${RIJ[k].f[1]} <span class="sub">(${RIJ[k].nl})</span>. Zet de vormen op de goede plek.`}));
+
+/* naamval herkennen groep 1 en 2 */
+[['silvam','acc ev','silv-am: accusativus enkelvoud.'],
+ ['silvarum','gen mv','silv-arum: genitivus meervoud.'],
+ ['silvas','acc mv','silv-as: accusativus meervoud.'],
+ ['silvis','dat of abl mv','silv-is: dativus of ablativus meervoud.'],
+ ['equum','acc ev','equ-um: accusativus enkelvoud.'],
+ ['equorum','gen mv','equ-orum: genitivus meervoud.'],
+ ['equos','acc mv','equ-os: accusativus meervoud.'],
+ ['equi','gen ev of nom mv','equ-i: genitivus ev of nominativus mv. Kijk naar de zin.'],
+ ['equis','dat of abl mv','equ-is: dativus of ablativus meervoud.'],
+ ['dona','nom of acc mv','don-a: onzijdig meervoud. Nom en acc zijn altijd gelijk.'],
+ ['doni','gen ev','don-i: genitivus enkelvoud.'],
+ ['dono','dat of abl ev','don-o: dativus of ablativus enkelvoud.']
+].forEach(([v,a,u],i)=>Q.push({id:'bnv'+i,o:'b-rij',nr:'Naamval',q:`Welke naamval is ${L(v)}?`,a,f:pick(NA,3,a),u,
+  v:{q:`In welke naamval en welk getal staat ${L(v)}?`}}));
+
+/* vorm maken groep 1 en 2 */
+[['silva','acc ev','silvam',['silvum','silvae','silvarum']],
+ ['silva','gen mv','silvarum',['silvorum','silvae','silvas']],
+ ['equus','acc ev','equum',['equam','equi','equo']],
+ ['equus','gen mv','equorum',['equarum','equis','equi']],
+ ['donum','nom mv','dona',['donae','doni','donum']],
+ ['donum','dat ev','dono',['donum','donae','doni']]
+].forEach(([w,nv,a,f],i)=>Q.push({id:'bvm'+i,o:'b-rij',nr:'Vorm maken',q:`Wat is de <b>${nv}</b> van ${L(w)}, ${L(RIJ[w].f[1])}?`,a,f,u:RIJ[w].u,
+  v:{q:`Maak de ${nv} van ${L(w)} (${RIJ[w].nl}).`}}));
+
+/* flecto presens */
+[['1e pers. ev','flecto',['flecti','flectum','flectis']],['2e pers. ev','flectis',['flecto','flectit','flectas']],
+ ['3e pers. ev','flectit',['flectis','flecto','flectunt']],['1e pers. mv','flectimus',['flectitis','flectunt','flectamus']],
+ ['2e pers. mv','flectitis',['flectimus','flectunt','flectatis']],['3e pers. mv','flectunt',['flectitis','flectimus','flectant']]
+].forEach(([p,a,f],i)=>Q.push({id:'bwv'+i,o:'b-ww',nr:'Presens',q:`Wat is de <b>${p}</b> van ${L('flecto')}?`,a,f,
+  u:'flecto, flectis, flectit, flectimus, flectitis, flectunt.',
+  v:{q:`Vervoeg ${L('flecto')} in de ${p}.`}}));
+
+/* perfectum herkennen */
+[['appropinquavi','appropinquo','naderen',['appello','advenio','accuso']],
+ ['dixi','dico','zeggen',['duco','disco','doceo']]
+].forEach(([perf,pres,nl,f],i)=>Q.push({id:'bwp'+i,o:'b-ww',nr:'Perfectum',q:`Van welk werkwoord is ${L(perf)} de perfectumvorm?`,a:pres,f,
+  u:`${L(perf)} is de perfectum (1e pers. ev) van ${L(pres)} (${nl}).`,
+  v:{q:`${L(perf)} is een perfectumvorm. Welk werkwoord hoort erbij?`}}));
+
+/* infinitivus */
+[['appropinquavi','appropinquare','naderen',['appropinquere','appropinquire','appropinquari']],
+ ['dixi','dicere','zeggen',['dixere','dicire','dicari']]
+].forEach(([perf,inf,nl,f],i)=>Q.push({id:'bwi'+i,o:'b-ww',nr:'Infinitivus',q:`Wat is de infinitivus van ${L(perf)}?`,a:inf,f,
+  u:`De infinitivus is ${L(inf)} (${nl}).`,
+  v:{q:`Schrijf de infinitivus op van ${L(perf)}.`}}));
+
+/* stamtijden */
+[['cognovi','cognosco','leren kennen',['cogno','cognosceo','cognitio']],
+ ['potui','possum','kunnen',['poteo','potesco','potior']],
+ ['respondi','respondeo','antwoorden',['respondo','responsio','respondio']]
+].forEach(([perf,pres,nl,f],i)=>Q.push({id:'bst'+i,o:'b-st',nr:'Stamtijd',q:`Wat is de presens (1e pers. ev) van ${L(perf)}?`,a:pres,f,
+  u:`${L(perf)} \u2192 ${L(pres)} (${nl}).`,
+  v:{q:`${L(perf)} is een perfectumvorm. Wat is de presensvorm?`}}));
+
+/* basiswoorden */
+const BW=[[L('ingenium'),'aanleg, talent'],[L('tum'),'toen, dan'],[L('sol'),'zon']];
+BW.forEach((w,i)=>{const pool=BW.filter(x=>x!==w);
+  Q.push({id:'bwo'+i,o:'b-wo',nr:'Woord',q:`Wat betekent ${w[0]}?`,a:w[1],
+    f:[...pool.map(x=>x[1]),'bloed'],
+    u:`${w[0]} = ${w[1]}.`,
+    v:{q:`Welk Latijns woord betekent <b>${w[1]}</b>?`,a:w[0],f:[...pool.map(x=>x[0]),L('sanguis')]}})});
+
 /* ---------- eigen vraagsoort: rijtje bouwen ---------- */
 function drawRij(q,it,box,api){
   const r=RIJ[q.w];
@@ -206,6 +298,6 @@ function drawRij(q,it,box,api){
 
 return {id:'la',naam:'Latijn',afk:'LA',kop:'H7A Door het oog van de naald',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'7w']),Q,snapHtml,
   woorden:{taal:'Latijn',lijst:W.map(w=>[w[0],w[1]])},
-  leer:['wo','7w','g3','7t'],reken:false,volledig:false,snapInVraag:false,custom:{rij:drawRij},
-  PN:{wo:'Opdracht Woorden 1 (p. 81–82)','7w':'Woorden 7A','g3':'Rijtjes groep 3 (p. 90)','7t':'Tekst 7A','mix':'Door elkaar'}};
+  leer:['bas','wo','7w','g3','7t'],reken:false,volledig:false,snapInVraag:false,custom:{rij:drawRij},
+  PN:{bas:'Basis Latijn (D-toets P1)',wo:'Opdracht Woorden 1 (p. 81–82)','7w':'Woorden 7A','g3':'Rijtjes groep 3 (p. 90)','7t':'Tekst 7A','mix':'Door elkaar'}};
 })();
