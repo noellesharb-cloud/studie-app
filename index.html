@@ -365,7 +365,7 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
-<script src="config.js?v=202611042008"></script>
+<script src="config.js?v=202611061200"></script>
 <script src="oefen/engine.js?v=202611051500"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
@@ -613,7 +613,7 @@ function stempelBij(){if(!canWrite||!db||vrijDag(today()))return;const d=today()
   else if(!nu&&st){delLog(d,'dag-gehaald',true);SCHED=null}}
 const NIETMEE=['vraag','stempel','afgewezen','opwarm'];
 const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).reduce((a,e)=>a+(e.sec?e.sec/60:(e.min||0)),0));
-const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&CONFIG.ouder.toLowerCase()===String(WIE).toLowerCase());
+const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&[].concat(CONFIG.ouder).some(e=>String(e).toLowerCase()===String(WIE).toLowerCase()));
 const planMin=s=>blokStatus(s).filter(b=>!b.later).reduce((a,b)=>a+b.min,0);
 function startDag(){return SET.streakStart||DEF.streakStart}
 function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(!vrijDag(d)&&gehaald(d))n++;d=addDays(d,-1);
