@@ -14,7 +14,10 @@ window.Gate=(()=>{
   const aan=vid=>!!(window.VAKDATA&&VAKDATA[vid]&&VAKDATA[vid].gate);
   const hws=vid=>(window.HUISWERK||[]).filter(h=>h.app===vid);
   /* alle vraag-id's die een huiswerk opgeeft */
-  function idsVan(V,h){
+  /* onthouden: huiswerk en vakdata veranderen niet terwijl de app open is, en dit werd honderden keren per scherm uitgerekend (traag) */
+  const IDS=new Map(),VIEW=new Map();
+  function idsVan(V,h){const k=V.id+'|'+h.id;if(!IDS.has(k))IDS.set(k,idsVan0(V,h));return IDS.get(k)}
+  function idsVan0(V,h){
     const sec=Object.fromEntries(V.SECS.map(s=>[s.id,s.par])),uit=new Set();
     if(h.opg&&h.opg.length){const want=h.opg.map(Number);V.Q.forEach(q=>{const n=nrNum(q);if(n!=null&&want.includes(n)&&(!h.par||sec[q.o]===h.par))uit.add(q.id)})}
     (h.leer||[]).forEach(L=>{if(L.ids)L.ids.forEach(id=>uit.add(id));else V.Q.forEach(q=>{if(q.o===L.o)uit.add(q.id)})});
@@ -35,6 +38,12 @@ window.Gate=(()=>{
   /* het vak zoals het vrij oefenen het mag zien */
   function view(vid,extra){
     const V=VAKDATA[vid];if(!V||!V.gate)return V;
+    const hw=((window.Oefen&&Oefen.ctx&&Oefen.ctx.state)?Oefen.ctx.state(vid):{}).hw||{};
+    const k=[vid,extra||'',morgen(),...hws(vid).filter(h=>hw[h.id]&&hw[h.id].length).map(h=>h.id)].join('|');
+    if(!VIEW.has(k)){if(VIEW.size>50)VIEW.clear();VIEW.set(k,view0(vid,extra))}
+    return VIEW.get(k)}
+  function view0(vid,extra){
+    const V=VAKDATA[vid];
     const b=beh(vid,extra),Q=V.Q.filter(q=>b.has(q.id)),inQ=new Set(Q.map(q=>q.o));
     const SECS=V.SECS.filter(s=>inQ.has(s.id)),pars=new Set(SECS.map(s=>s.par));
     const dicht=V.SECS.filter(s=>!inQ.has(s.id)).map(s=>({s,d:komt(vid,s.id)}));
