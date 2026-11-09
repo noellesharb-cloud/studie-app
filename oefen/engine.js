@@ -60,8 +60,10 @@ window.Oefen=(()=>{
       return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${ST.diag&&ST.diag.r[s.id]?` · instaptoets ${ST.diag.r[s.id][0]}/${ST.diag.r[s.id][1]}`:''}${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
     const wacht=new Set((Oefen.ctx.wacht?Oefen.ctx.wacht(vid):[]));
     const voorl=rs=>(rs||[]).some(x=>wacht.has(x.rid))?'<br><small>voorlopig</small>':'';
-    const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7;
-      return `<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>10 vragen zonder hulp${V.toetsvorm?' en zonder antwoorden om uit te kiezen: je schrijft ze zelf op':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
+    const ttCard=p=>{if(!ttHeeft(p))return '';const b=(ST.ttoets||{})[p],ok=ttGehaald(p);
+      return `<button class="sec pt${ok?' gehaald':''}" data-tt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--c2)'};color:var(--bg)">${ok?'✓':'1'}</span><span><b>Tussentoets</b><small>6 meerkeuzevragen: zit de basis? ${ok?'Gehaald: de paragraaftoets staat open.':'Haal een 7, dan gaat de paragraaftoets open.'}</small></span><span class="best">${b!=null?'beste<br>'+f1(b):''}</span></button>`};
+    const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7,dicht=ttNodig(p);
+      return ttCard(p)+`<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>${dicht?'🔒 Eerst de tussentoets. ':''}10 vragen zonder hulp${V.toetsvorm||tvVak()?' en zonder antwoorden om uit te kiezen, zoals op school':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
     const B=V.basis,isB=p=>!!B&&p===B.par;
     const basisCards=p=>{const d=ST.diag,n=diagIds(p).length,dg=d&&Object.values(d.r).reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]);
       return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
@@ -78,7 +80,7 @@ window.Oefen=(()=>{
       <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
       <button class="btn" id="bh-her">Herhaalronde (10 vragen)</button>
       <p class="sub" style="font-size:.9rem;margin:0">Niet de vragen die je net als huiswerk maakte, maar eerst wat je daarin fout had en dan andere vragen uit deze paragraaf. Elke keer een nieuwe mix. Of kies zelf:</p>
-      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
+      <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">${ttNodig(focusPar)?'tussentoets':'paragraaftoets'}</button>${ttNodig(focusPar)?' (meerkeuze). Bij een 7 gaat de paragraaftoets open, zonder keuzes':''}. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
       <p>${ok.length} van ${leerPars().length} paragrafen gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
@@ -98,6 +100,7 @@ window.Oefen=(()=>{
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
     el.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>section(b.dataset.s));
     el.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>ptoets(b.dataset.pt));
+    el.querySelectorAll('[data-tt]').forEach(b=>b.onclick=()=>ttoets(b.dataset.tt));
     el.querySelector('#kort').onclick=()=>start('oefen',kortIds(),'Korte ronde');
     const ka=el.querySelector('#kaart');if(ka)ka.onclick=kaartMenu;
     el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>kStart(shuf(begVan(b.dataset.bp)),false));
@@ -152,7 +155,16 @@ window.Oefen=(()=>{
     add(shuf(inP.map(q=>q.id)));return shuf(R)}
   function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
   function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
-  function ptoets(p){const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
+  /* tussentoets (afspraak 9 nov): per paragraaf eerst 6 meerkeuzevragen. Een 7 of hoger zet de paragraaftoets (zonder keuzes) open.
+     Is de paragraaftoets al eens gehaald, of heeft de paragraaf te weinig meerkeuzevragen, dan is er geen tussentoets nodig. */
+  const mcVraag=q=>!q.type&&q.t!=='open'&&!q.in&&Array.isArray(q.f)&&q.f.length>=1;
+  const ttPool=p=>V.Q.filter(q=>secOf(q.o).par===p&&mcVraag(q));
+  const ttHeeft=p=>ttPool(p).length>=3;
+  const ttGehaald=p=>((ST.ttoets||{})[p]||0)>=7||!!(ST.ptoets[p]&&ST.ptoets[p].best>=7);
+  const ttNodig=p=>ttHeeft(p)&&!ttGehaald(p);
+  function ttoets(p){const pool=ttPool(p),pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(pool.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
+    const rest=shuf(pool.map(q=>q.id).filter(id=>!pick.includes(id)));start('ttoets',shuf([...shuf(pick).slice(0,6),...rest].slice(0,6)),'Tussentoets '+(V.PN[p]||p),null,p)}
+  function ptoets(p){if(ttNodig(p))return ttoets(p);const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
     const rest=shuf(parIds(p).filter(id=>!pick.includes(id)));let no=0;
     const ids=[...pick,...rest].filter(id=>{if(QM[id].t!=='open')return true;return ++no<=3});
     start('ptoets',shuf(ids.slice(0,10)),'Paragraaftoets '+(V.PN[p]||p),null,p)}
@@ -238,7 +250,7 @@ window.Oefen=(()=>{
   function start(mode,ids,title,sec,par,hw){
     if((mode==='ptoets'||mode==='toets')&&(V.toetsvorm||tvVak())&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
     if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
-    const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='diag';
+    const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='ttoets'||mode==='diag';
     R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
     ask();
   }
@@ -257,7 +269,7 @@ window.Oefen=(()=>{
     if(schrijfVorm(q,it))return askSchrijf(q,it,s);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
     /* vakken met open toetsen (levensbeschouwing): meerkeuzevraag met open versie wordt open gesteld, behalve bij opwarmen en herkansing */
-    if(QM[it.id].open&&R.mode!=='opwarm'&&R.mode!=='stap'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
+    if(QM[it.id].open&&R.mode!=='opwarm'&&R.mode!=='stap'&&R.mode!=='ttoets'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
     if(q.t==='open')return askOpen(q,it,s);
     if(q.in)return askTyped(q,it,s);
     if(tvorm(q,it))return askToets(q,it,s);
@@ -677,28 +689,30 @@ window.Oefen=(()=>{
       <div class="stack"><button class="btn" id="hm">Naar vandaag</button></div>`;
       el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()};scrollTo(0,0);return}
     const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
-    const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
+    const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'||R.mode==='ttoets'?null:R.sec;
     const vorigToets=ST.best.toets;R._vorigToets=vorigToets;R._ptOud=R.mode==='ptoets'&&ST.ptoets[R.par]?JSON.parse(JSON.stringify(ST.ptoets[R.par])):null;
     R._tOud=R.mode==='toets'&&ST.toetsR&&ST.toetsR.rondes.length?ST.toetsR.rondes[ST.toetsR.rondes.length-1]:null;
     if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
     /* per ronde bewaren (laatste 10), zodat nakijken door de ouder het cijfer achteraf kan verlagen; 'oud' = het beste van daarvoor */
     if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0},rs=(o.rondes||[]).concat([{rid:R.rid,g:good,t:tot,c}]),weg=rs.slice(0,-10);
       const oud=Math.max(o.rondes?o.oud||0:o.best||0,...weg.map(x=>x.c));ST.ptoets[R.par]={best:Math.max(o.best||0,c),laatst:c,oud,rondes:rs.slice(-10)}}
+    if(R.mode==='ttoets'){ST.ttoets=ST.ttoets||{};ST.ttoets[R.par]=Math.max(ST.ttoets[R.par]||0,c)}
     if(R.mode==='toets'){const o=ST.toetsR||{oud:vorigToets??null,rondes:[]},rs=o.rondes.concat([{rid:R.rid,g:good,t:tot,p:pct}]),weg=rs.slice(0,-10);
       const oud=[o.oud,...weg.map(x=>x.p)].filter(x=>x!=null);ST.toetsR={oud:oud.length?Math.max(...oud):null,rondes:rs.slice(-10)}}
     save();
     const wrong=R.ids.filter(id=>!R.first[id]);
     const rest=R.mode==='fout'?foutIds(R.sec).length:0;
-    const msg=R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
+    const msg=R.mode==='ttoets'?(c>=7?'De basis zit! Nu de paragraaftoets: zonder antwoorden om uit te kiezen, zoals op school.':'Nog geen 7. Bekijk wat je fout had, oefen nog even en doe de tussentoets opnieuw. Daarna komt de paragraaftoets.')
+      :R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
       :pct===100?'Alles in één keer goed!':pct>=80?'Heel goed gedaan!':pct>=55?'Goed bezig. Oefen je fouten nog even.':'Niet erg, zo leer je het. Oefen je fouten nog een keer.';
     el.innerHTML=`<span class="tag">${R.title}</span>
     <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${aanmoedig(good,tot,c)}${R.nk?`<p class="sub">${R.nk===1?'Eén antwoord heb':R.nk+' antwoorden heb'} je zelf goed gerekend. Je ouder kijkt ${R.nk===1?'het':'ze'} nog na, dus je cijfer kan nog veranderen.</p>`:''}${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}${R.mode==='fout'?`<p class="sub">${rest?`Er staan nog ${rest} foute vragen op je stapel. Die komen een volgende keer; je hoeft ze niet allemaal vandaag te doen.`:'Je stapel foute vragen is leeg!'}</p>`:''}</div>
     ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
     <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
-      ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
+      ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ttoets'?(c>=7?'Door naar de paragraaftoets':'Tussentoets opnieuw'):R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
-    const nwb=el.querySelector('#nw');if(nwb)nwb.onclick=()=>R.mode==='fout'?start('fout',foutIds(R.sec),R.title,R.sec):R.mode==='ptoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    const nwb=el.querySelector('#nw');if(nwb)nwb.onclick=()=>R.mode==='fout'?start('fout',foutIds(R.sec),R.title,R.sec):R.mode==='ptoets'||R.mode==='ttoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
   }
 
