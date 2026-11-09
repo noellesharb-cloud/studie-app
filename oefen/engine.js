@@ -56,7 +56,7 @@ window.Oefen=(()=>{
     const secBtn=s=>{const n=V.Q.filter(q=>q.o===s.id).length,b=ST.best[s.id],w=wrongIn(s.id);
       return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${ST.diag&&ST.diag.r[s.id]?` · instaptoets ${ST.diag.r[s.id][0]}/${ST.diag.r[s.id][1]}`:''}${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
     const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7;
-      return `<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>10 vragen zonder hulp, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best):''}</span></button>`};
+      return `<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>10 vragen zonder hulp${V.toetsvorm?' en zonder antwoorden om uit te kiezen: je schrijft ze zelf op':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best):''}</span></button>`};
     const B=V.basis,isB=p=>!!B&&p===B.par;
     const basisCards=p=>{const d=ST.diag,n=diagIds(p).length,dg=d&&Object.values(d.r).reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]);
       return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
@@ -82,7 +82,7 @@ window.Oefen=(()=>{
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
-      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
+      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%':''}</span></button>
       <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,ST.wrong.length)}.`:'Nog niets fout gedaan'}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
     </div>
@@ -219,6 +219,7 @@ window.Oefen=(()=>{
   function ask(){
     if(R.i>=R.queue.length)return end();
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
+    if(schrijfVorm(q,it))return askSchrijf(q,it,s);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
     /* vakken met open toetsen (levensbeschouwing): meerkeuzevraag met open versie wordt open gesteld, behalve bij opwarmen en herkansing */
     if(QM[it.id].open&&R.mode!=='opwarm'&&R.mode!=='stap'&&!it.retry){const b=QM[it.id],o=b.open;return askOpen(Object.assign({},b,{t:'open',q:o.q||b.q,k:o.k,vb:o.vb}),Object.assign({},it,{alt:false}),s)}
@@ -266,7 +267,7 @@ window.Oefen=(()=>{
       ins.forEach((i,j)=>{i.readOnly=true;i.classList.add(goed[j]?'ok':'bad')});
       el.querySelector('#tok').remove();
       const ok=goed.every(Boolean),hb2=el.querySelector('#help');if(hb2)hb2.remove();
-      if(!(q.id in R.first)){R.first[q.id]=ok;if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);save()}
+      if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,ins.map((i,j)=>(q.in.length>1?q.in[j].lab+' = ':'')+i.value.trim()).join(', '),ok);if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);save()}
       if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
       else R.terug=nogEens(q,it)
       const ul=uitl(q),fb=el.querySelector('#fb');
@@ -299,7 +300,7 @@ window.Oefen=(()=>{
     const ok=opts[k][1]===1;
     el.querySelectorAll('.opt[data-k]').forEach((b,j)=>{b.disabled=true;if(opts[j][1]===1)b.classList.add('ok');else if(j===k)b.classList.add('bad');else b.classList.add('dim')});
     const hb=el.querySelector('#help');if(hb)hb.remove();
-    if(!(q.id in R.first)){R.first[q.id]=ok;
+    if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,opts[k][0],ok);
       if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
       /* pas uit de stapel als hij in een LATERE ronde in één keer goed gaat */
       if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);
@@ -318,8 +319,8 @@ window.Oefen=(()=>{
     fb.scrollIntoView({behavior:smooth,block:'start'});
   }
   /* afronden van een vraag die niet meerkeuze is (open vraag of eigen vraagsoort van een vak) */
-  function finishCustom(q,it,ok,html){
-    if(!(q.id in R.first)){R.first[q.id]=ok;
+  function finishCustom(q,it,ok,html,jij){
+    if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,jij,ok);
       if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
       if(ok&&R.was.has(q.id))ST.wrong=ST.wrong.filter(x=>x!==q.id);
       save();}
@@ -363,7 +364,7 @@ window.Oefen=(()=>{
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
       const upd=()=>{okb.disabled=goed===false||!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
       const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>')};
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed||'(op papier)')};
       okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
@@ -373,9 +374,68 @@ window.Oefen=(()=>{
   function askCustom(q,it,s){
     el.innerHTML=`${kop(it,q,s,R.mode==='stap')}<div id="teken"></div><div id="fb"></div>`;
     el.querySelector('#stop').onclick=stopRonde;
-    const api={smooth,finish:(ok,html)=>finishCustom(q,it,ok,html),scroll:()=>el.querySelector('#teken').scrollIntoView({behavior:smooth,block:'start'})};
+    const api={smooth,finish:(ok,html,jij)=>finishCustom(q,it,ok,html,jij),scroll:()=>el.querySelector('#teken').scrollIntoView({behavior:smooth,block:'start'})};
     api.redraw=()=>V.custom[q.type](q,it,el.querySelector('#teken'),api);
     api.redraw();scrollTo(0,0);
+  }
+  /* ---------- toetsvorm voor talen en aardrijkskunde (vak met toetsvorm:true): in de paragraaftoets en de proeftoets
+     geen antwoorden om uit te kiezen. Ze schrijft het antwoord zelf: typen, of op papier en het vak leeg laten.
+     Klopt het getypte antwoord precies, dan is het meteen goed. Is alleen een hoofdletter (vak met hoofdletters:true), umlaut of accent anders,
+     dan is het fout, zoals op de toets. Anders zet de app haar antwoord naast het goede en kijkt ze zelf na.
+     Extra goede antwoorden staan in q.tvAlt, een eigen opdrachttekst in q.tv. Een eigen vraagsoort doet mee met vakjes (q.tvIn met
+     de antwoorden in q.tvA) of als het vak hem in tvCustom noemt (dan één antwoord: q.a). Vragen met maar één fout antwoord
+     (richtig/falsch, ja/nee) en plaatjes blijven meerkeuze. ---------- */
+  const tvNorm=(x,hl)=>{let t=schoon(x).replace(/[’‘`´]/g,"'").replace(/[“”„]/g,'"').replace(/\s*([,;:])\s*/g,'$1 ').replace(/\s+/g,' ').replace(/[\s.!]+$/,'').trim();return hl?t:t.toLowerCase()};
+  const tvKaal=x=>tvNorm(x).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9Ͱ-Ͽ ]/g,'').replace(/\s+/g,' ').trim();
+  function tvMatch(t,goed){
+    if(goed.some(a=>tvNorm(a)===tvNorm(t)))return V.hoofdletters&&!goed.some(a=>tvNorm(a,1)===tvNorm(t,1))?'bijna':'goed';
+    return goed.some(a=>tvKaal(a)===tvKaal(t))?'bijna':'mis'}
+  function tvGoed(q){const basis=[goedTxt(q),...(q.tvAlt||[])].map(schoon),uit=new Set(basis),vert=/^(wat betekent|wat is het [a-z]+ voor|hoe zeg je|vertaal)/i.test(schoon(q.q));
+    basis.forEach(a=>{const zonder=a.replace(/\s*\([^)]*\)/g,'').trim();
+      if(zonder&&zonder!==a&&!/\s/.test(zonder)){uit.add(zonder);(a.match(/\(([^)]*)\)/g)||[]).forEach(p=>uit.add(p.slice(1,-1).trim()))}
+      const sl=a.split(/\s+\/\s+/);if(sl.length>1&&sl.every(p=>!/\s/.test(p.trim())))sl.forEach(p=>uit.add(p.trim()));
+      if(vert&&!/[.!?]$/.test(a))(zonder||a).split(/\s*[,;]\s*/).forEach(p=>p&&uit.add(p))});
+    return [...uit].filter(Boolean)}
+  function schrijfVorm(q,it){if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets')||it.retry)return false;
+    if(q.type)return !!q.tvIn||(V.tvCustom||[]).includes(q.type);
+    const svg=x=>String(Array.isArray(x)?x[0]:x).includes('<svg');
+    return q.t!=='open'&&!q.in&&!q.open&&Array.isArray(q.f)&&q.f.length>=2&&!svg(q.a)&&!q.f.some(svg)}
+  function askSchrijf(q,it,s){
+    const vak=q.tvIn,ga=schoon(goedTxt(q)),kort=!vak&&ga.length<=45&&!/[.!?;]\s/.test(ga);
+    el.innerHTML=`${kop(it,Object.assign({},q,{q:String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,'')}),s,false)}
+    <div class="card stack"><span class="tag">Toetsvorm · zelf opschrijven</span>
+      <p class="sub" style="margin:0;font-size:.9rem">Geen antwoorden om uit te kiezen, net als op de toets. Typ je antwoord. Schrijf je liever op papier? Laat ${vak?'de vakjes':'het vak'} dan leeg.</p>
+      ${vak?`<div class="tv-in">${vak.map((l,i)=>`<label class="tv-r"><span class="sub">${l}</span><span><input class="tv-v" data-i="${i}" autocomplete="off" autocapitalize="off" spellcheck="false"></span></label>`).join('')}</div>`
+        :kort?'<input id="tvi" class="tv-v tv-1" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Je antwoord">'
+        :'<textarea id="tvi" class="ta tv-v" placeholder="Mijn antwoord…" spellcheck="false" aria-label="Je antwoord"></textarea>'}
+      <button class="btn" id="see">Nakijken</button></div><div id="kp"></div><div id="fb"></div>`;
+    el.querySelector('#stop').onclick=stopRonde;
+    const ins=[...el.querySelectorAll('.tv-v')];
+    ins.forEach((x,j)=>{if(x.tagName==='INPUT')x.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();if(ins[j+1])ins[j+1].focus();else el.querySelector('#see').click()}}});
+    el.querySelector('#see').onclick=()=>{
+      el.querySelector('#see').remove();ins.forEach(x=>x.readOnly=true);
+      const box=el.querySelector('#kp'),ul=uitl(q),uitleg=ul?`<div><b>Zo zit het:</b></div>${ul}`:'';
+      const goedHtml=vak?q.tvA.map((w,i)=>`${vak[i]}: <b>${w}</b>`).join('<br>'):[goedTxt(q),...(q.tvAlt||[])].map(fmt).join('<br><span class="sub">of</span> ');
+      const zelf=jij=>{
+        box.innerHTML=`<div class="tip stack"><b>${jij?'Kijk zelf na: zet jouw antwoord naast het goede':'Kijk je antwoord op papier na'}</b>
+          ${jij?`<div><span class="sub">Jij schreef</span><div class="aw-jij">${esc(jij).replace(/\n/g,'<br>')}</div></div>`:''}
+          <div><span class="sub">Het goede antwoord</span><div class="res">${goedHtml}</div></div>
+          <span class="sub" style="font-size:.88rem">${V.reken===false&&V.woorden?'Goed is alleen goed als het helemaal klopt. Een spelfout of een verkeerde uitgang is op de toets ook fout. Iets anders opgeschreven dat óók goed is, mag wel.':'Goed is goed als jouw antwoord hetzelfde zegt, ook in andere woorden. Mist er een deel, dan is het fout.'}</span></div>
+          <div class="row" id="kb"><button class="btn ghost" id="okb">Mijn antwoord is goed</button><button class="btn ghost" id="nob">Mijn antwoord is fout</button></div>`;
+        box.querySelector('#okb').onclick=()=>klaar(true,jij);box.querySelector('#nob').onclick=()=>klaar(false,jij);
+        box.scrollIntoView({behavior:smooth,block:'start'})};
+      const klaar=(ok,jij)=>{const kb=box.querySelector('#kb');if(kb)kb.remove();
+        finishCustom(q,it,ok,ok?`<div class="fb ok"><div class="head">Goed!</div>Zelf opgeschreven, zoals op de toets.</div>`:`<div class="fb bad"><div class="head">Fout</div>${box.innerHTML?'':`<div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>`}${uitleg}</div>`,jij||'(op papier)')};
+      if(vak){const vals=ins.map(x=>x.value.trim()),lv=vals.map((v,i)=>v?tvMatch(v,[q.tvA[i]]):null),jij=vals.some(Boolean)?vals.map(v=>v||'…').join(', '):'';
+        if(!lv.every(Boolean))return zelf(jij);
+        ins.forEach((x,j)=>{x.classList.add(lv[j]==='goed'?'ok':'bad');if(lv[j]!=='goed')x.insertAdjacentHTML('afterend',`<small class="tv-c">→ ${q.tvA[j]}</small>`)});
+        const ok=lv.every(x=>x==='goed');
+        return finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Alles zelf goed opgeschreven.</div>':`<div class="fb bad"><div class="head">Niet goed</div>De rode vakjes kloppen niet. Het goede antwoord staat erachter.${lv.includes('bijna')?' Soms is het maar één letter, een hoofdletter of een accent, maar op de toets is dat ook fout.':''}${ul?`<div>${ul}</div>`:''}</div>`,jij)}
+      const t=ins[0].value.trim(),lv=t?tvMatch(t,tvGoed(q)):null;
+      if(lv==='goed'){ins[0].classList.add('ok');return finishCustom(q,it,true,`<div class="fb ok"><div class="head">Goed!</div>${ul||''}</div>`,t)}
+      if(lv==='bijna'){ins[0].classList.add('bad');return finishCustom(q,it,false,`<div class="fb bad"><div class="head">Bijna, maar fout</div>Alleen ${V.hoofdletters?'een hoofdletter, ':''}een umlaut of een accent is anders. Op de toets is dat ook fout.<div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>${uitleg}</div>`,t)}
+      zelf(t)};
+    if(ins[0])ins[0].focus({preventScroll:true});scrollTo(0,0);
   }
   /* ---------- open vraag in onderdelen (vak met KO[q.id]): eerst per onderdeel een eigen vak met aanwijzing,
      daarna per onderdeel haar tekst naast het modelpunt, sleutelwoorden, en zelf kiezen: goed / half / mis.
@@ -449,7 +509,7 @@ window.Oefen=(()=>{
         box.querySelector('#kb').remove();box.querySelectorAll('.ko-keus button,.ko-chk button').forEach(b=>b.disabled=true);
         const lijst=fout.map(i=>`onderdeel ${i+1} (${keus[i]===1?'half':'mis'})`).join(', ');
         finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Elk onderdeel klopte, met de kern en de reden erbij.</div>'
-          :`<div class="fb bad"><div class="head">Nog niet helemaal</div>Je miste ${lijst}. Lees bij die onderdelen het modelpunt nog eens: wat is de reden, en welk begrip hoort erbij? Schrijf het goede antwoord in je schrift.</div>`)};
+          :`<div class="fb bad"><div class="head">Nog niet helemaal</div>Je miste ${lijst}. Lees bij die onderdelen het modelpunt nog eens: wat is de reden, en welk begrip hoort erbij? Schrijf het goede antwoord in je schrift.</div>`,antw.map((t,i)=>(i+1)+'. '+t).join('\n'))};
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
   }
@@ -469,12 +529,17 @@ window.Oefen=(()=>{
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
       const upd=()=>{okb.disabled=!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
       const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>')};
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>',el.querySelector('#ans').value.trim()||'(op papier)')};
       okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
   }
   /* ---------- huiswerk uit het boek: precies de opgaven van die dag, stap voor stap ---------- */
+  /* haar eerste antwoord per huiswerkvraag, voor het overzicht 'Antwoorden voor je schrift' (ST.hwAns[huiswerk][vraag] = {j, ok, v?}) */
+  const schoon=x=>String(x??'').includes('<svg')?'(plaatje)':String(x??'').replace(/<button[\s\S]*?<\/button>/g,'').replace(/<br\s*\/?>/g,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&#36;/g,'$').replace(/&amp;/g,'&').replace(/[ \t]+/g,' ').trim();
+  function hwRec(q,it,jij,ok){if(!R.hw)return;const A=ST.hwAns=ST.hwAns||{},m=A[R.hw]=A[R.hw]||{};
+    m[q.id]=it&&it.alt?{ok:!!ok,v:1}:{j:schoon(jij),ok:!!ok};
+    const ks=Object.keys(A).sort();ks.slice(0,Math.max(0,ks.length-15)).forEach(k=>delete A[k])}
   function hwMark(id){if(!R.hw)return;const l=ST.hw[R.hw]=ST.hw[R.hw]||[];if(!l.includes(id)){l.push(id);save()}}
   const nrNum=q=>{const m=String(q.nr||'').replace(/^(Opdracht|Opgave) /,'').match(/^(\d+)([a-z]?)(?![0-9])/);return m?[+m[1],m[2]]:null}; /* ook 'Opdracht 6a/b' */
   function hwIds(nrs,par){const want=nrs.map(Number);
@@ -486,7 +551,7 @@ window.Oefen=(()=>{
     const opgIds=hwIds(H.nrs,H.par),delen=[{titel:null,ids:opgIds}];
     (H.leer||[]).forEach(L=>{const li=(L.ids||V.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).filter(id=>QM[id]&&!delen.some(d=>d.ids.includes(id)));if(li.length)delen.push({titel:L.titel,ids:li})});
     const ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
-    const deelVan=id=>delen.find(d=>d.ids.includes(id));
+    const deelVan=id=>delen.find(d=>d.ids.includes(id)),antw=(ST.hwAns||{})[H.key]||{};
     const ontbreekt=H.nrs.filter(n=>!ids.some(id=>(nrNum(QM[id])||[])[0]===+n));
     const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>{const d=deelVan(q.id);if(d&&d.titel)return d.titel.charAt(0).toLowerCase()+d.titel.slice(1);return /^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1)};
     const nrsTxt=H.nrs.length?Wc+' '+H.nrs.join(', '):'',tagTxt=[nrsTxt,...delen.slice(1).map(d=>d.titel)].filter(Boolean).join(' · ');
@@ -494,20 +559,46 @@ window.Oefen=(()=>{
     el.innerHTML=`${top('Vandaag','Huiswerk')}
     <h2>${H.titel||'Je huiswerk'}</h2>
     <div class="card stack plan"><span class="tag">${tagTxt}</span>
-      <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
+      <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af. Geen boek bij je? Maak het hier. Als de opdrachten af zijn, staan bij <b>Antwoorden voor je schrift</b> jouw antwoorden met de verbeteringen onder elkaar.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
       ${delen.length>1?`<p>${H.nrs.length?'Daarna doe je in de app':'In de app doe je'}${delen.slice(1).map(d=>' <b>'+d.titel.charAt(0).toLowerCase()+d.titel.slice(1)+'</b>').join(' en')}. Dat hoort ook bij je huiswerk. Pas als alles hieronder af is, is je huiswerk klaar.</p>
       <ol class="hwdelen">${delen.filter(d=>d.ids.length).map((d,i)=>{const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span></li>`}).join('')}</ol>`:''}
       <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
     <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
+      ${opgIds.length&&opgIds.every(id=>gedaan.includes(id)||antw[id])?'<button class="btn'+(rest.length?' ghost':'')+'" id="hwantw">Antwoorden voor je schrift</button>':''}
       ${gedaan.length?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
       <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
     el.querySelectorAll('[data-hwm]').forEach(b=>b.onclick=()=>{const m=b.dataset.hwm;if(kies){ST.hwVorm=m;save()}start(m,rest,titel+(m==='tvorm'?' · zelf op papier':''),null,null,H.key)});
-    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
+    const aw=el.querySelector('#hwantw');if(aw)aw.onclick=()=>hwAntw(H,opgIds);
+    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
     el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
     Oefen._hw=H;scrollTo(0,0);
+  }
+  /* ---------- antwoorden voor je schrift: na het huiswerk haar eigen antwoord en het goede antwoord onder elkaar.
+     Ze schrijft eerst haar eigen antwoord over en zet de verbetering in een andere kleur erachter,
+     zodat de docent kan zien waar ze moeite mee had. ---------- */
+  const goedTxt=q=>q.model||(q.t==='open'?(q.vb&&q.vb.length?q.vb[0]:(q.k||[]).join(' ')):q.a);
+  function hwAntw(H,ids){
+    const m=(ST.hwAns||{})[H.key]||{},geen=!ids.some(id=>m[id]);
+    const vraag=q=>fmt(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,''));
+    const kaart=id=>{const q=QM[id],r=m[id],goed=fmt(goedTxt(q));
+      if(!r)return `<div class="card stack antw"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div><div class="aw-r"><span class="aw-l">Antwoord</span><div class="res">${goed}</div></div></div>`;
+      const jij=r.v?'<span class="sub">In de app kreeg je deze vraag in andere woorden.</span>':fmt(esc(r.j||'')).replace(/\n/g,'<br>')||'<span class="sub">(leeg)</span>';
+      return `<div class="card stack antw ${r.ok?'aw-ok':'aw-bad'}"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div>
+        <div class="aw-r"><span class="aw-l">Jij</span><div class="aw-jij">${jij} <b class="aw-m">${r.ok?'✓':'✗'}</b></div></div>
+        ${r.ok&&!r.v?'':`<div class="aw-r"><span class="aw-l">${r.ok?'Antwoord':'Verbetering'}</span><div class="res aw-pen">${goed}</div></div>`}</div>`};
+    const fout=ids.filter(id=>m[id]&&!m[id].ok).length;
+    el.innerHTML=`${top('Je huiswerk','Antwoorden')}
+    <h2>Antwoorden voor je schrift</h2>
+    <div class="tip stack">${geen?'<span>Je maakte dit huiswerk voordat de app je antwoorden bewaarde. Hieronder staan daarom alleen de goede antwoorden.</span>'
+      :`<span><b>Zo schrijf je het over:</b> schrijf eerst op wat <i>jij</i> antwoordde. Was het fout, zet de verbetering er dan achter <span class="aw-pen"><b>in een andere kleur</b></span>. Dan ziet je docent waar je nog moeite mee hebt.</span>
+      <span>${fout?`Je had ${fout} van de ${ids.length} in één keer fout.`:'Je had alles in één keer goed!'}</span>`}
+      <span class="sub" style="font-size:.88rem">De antwoorden in de app zijn niet van je docent. Twijfel je of je docent iets anders bedoelt? Vraag het in de les.</span></div>
+    <div class="wl stack">${ids.map(kaart).join('')}</div>
+    <div class="stack"><button class="btn ghost" id="hwterug">Terug naar je huiswerk</button></div>`;
+    el.querySelector('#back').onclick=()=>hwHome(H);el.querySelector('#hwterug').onclick=()=>hwHome(H);scrollTo(0,0);
   }
   function end(){
     if(R.mode==='diag')return diagEnd();

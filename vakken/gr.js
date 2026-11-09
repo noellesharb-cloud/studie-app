@@ -253,6 +253,6 @@ Z.forEach((z,i)=>Q.push({id:'vt'+i,o:secVan(z[0]),nr:`Vertalen r. ${z[0]}${z[1]>
   v:{q:`Vertaal nog een keer, nu met de kleurhulp:<br>${kleur(z[2])}`}}));
 
 return {woorden:{taal:'Grieks',lijst:WL.map(w=>[w[0],w[1]])},id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']),Q,snapHtml,
-  leer:['9w','pv','9t'],reken:false,volledig:false,snapInVraag:false,
+  leer:['9w','pv','9t'],reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
   PN:{'9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','mix':'Door elkaar'}};
 })();

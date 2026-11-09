@@ -365,6 +365,16 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 .opt.kok{border-color:var(--ok);background:var(--okbg)} .opt.kbad{border-color:var(--bad);background:var(--badbg)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mekaart{--zee:#22395A;--buur:#2E3850;--land:#6B5C3A;--rand:#C9D3E6}}
 :root[data-theme="dark"] .mekaart{--zee:#22395A;--buur:#2E3850;--land:#6B5C3A;--rand:#C9D3E6}
+/* antwoorden voor je schrift en toetsvorm voor talen */
+.antw{border-left:4px solid var(--line)} .antw.aw-ok{border-left-color:var(--ok)} .antw.aw-bad{border-left-color:var(--bad)}
+.aw-r{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:baseline} .aw-l{font-size:.85rem;opacity:.7}
+.aw-jij{font-size:1.1rem;white-space:normal;overflow-wrap:anywhere} .aw-ok .aw-m{color:var(--ok)} .aw-bad .aw-m{color:var(--bad)}
+.aw-pen,.aw-pen *{color:var(--pen)}
+.tv-in{display:grid;gap:8px} .tv-r{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center}
+input.tv-v{font:inherit;font-size:1.1rem;width:100%;max-width:340px;box-sizing:border-box;border:1.5px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--card);color:var(--ink)}
+input.tv-v.ok{border-color:var(--ok);background:var(--okbg)} input.tv-v.bad{border-color:var(--bad);background:var(--badbg)}
+.tv-c{display:block;color:var(--pen);margin-top:2px}
+@media (max-width:420px){.aw-r,.tv-r{grid-template-columns:1fr;gap:2px}}
 </style>
 
 </head>
@@ -386,7 +396,7 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="oefen/engine.js?v=202611061900"></script>
+<script src="oefen/engine.js?v=202611090900"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -394,13 +404,13 @@ mark.kw{background:var(--okbg);color:inherit;border-radius:4px;padding:0 2px;box
 <script src="vakken/wi-var.js?v=202611042008"></script>
 <script src="vakken/wi-basis.js?v=202611042008"></script>
 <script src="vakken/ak-kaart.js?v=202611061945"></script>
-<script src="vakken/ak.js?v=202611061945"></script>
+<script src="vakken/ak.js?v=202611090900"></script>
 <script src="vakken/ak-ko.js?v=202611051500"></script>
-<script src="vakken/gr.js?v=202611042008"></script>
+<script src="vakken/gr.js?v=202611090900"></script>
 <script src="vakken/lv.js?v=202611042008"></script>
 <script src="vakken/lv-ko.js?v=202611051500"></script>
-<script src="vakken/du.js?v=202611061600"></script>
-<script src="vakken/la.js?v=202611062010"></script>
+<script src="vakken/du.js?v=202611090900"></script>
+<script src="vakken/la.js?v=202611090900"></script>
 <script src="huiswerk.js?v=202611061830"></script>
 <script>
 /* ---------- basis ---------- */

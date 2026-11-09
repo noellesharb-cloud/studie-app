@@ -293,11 +293,13 @@ function drawRij(q,it,box,api){
   box.querySelectorAll('.slot[data-j]').forEach(b=>b.onclick=()=>{const j=+b.dataset.j,c=S.slots[j];if(!c)return;c.used=false;S.slots[j]=null;api.redraw()});
   box.querySelector('#rijok').onclick=()=>{S.res=S.slots.map((c,j)=>c.w===r.f[j]);S.done=true;const ok=S.res.every(Boolean);api.redraw();
     api.finish(ok,ok?`<div class="fb ok"><div class="head">Goed!</div><div class="why">${r.u}</div></div>`
-      :`<div class="fb bad"><div class="head">Niet goed</div><div class="mistake">De rode vakjes kloppen niet. Het goede antwoord staat erachter. Schrijf het rijtje nog een keer goed in je schrift.</div><div class="why">${r.u}</div></div>`)};
+      :`<div class="fb bad"><div class="head">Niet goed</div><div class="mistake">De rode vakjes kloppen niet. Het goede antwoord staat erachter. Schrijf het rijtje nog een keer goed in je schrift.</div><div class="why">${r.u}</div></div>`,S.slots.map(c=>c.w).join(', '))};
 }
 
+/* toetsvorm: rijtjes zelf opschrijven in tien vakjes */
+Q.forEach(q=>{if(q.type==='rij'){q.tvIn=PL;q.tvA=RIJ[q.w].f;q.tv=q.q.replace('Zet de vormen op de goede plek.','Schrijf alle vormen op.')}});
 return {id:'la',naam:'Latijn',afk:'LA',kop:'H7A Door het oog van de naald',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'7w']),Q,snapHtml,
   woorden:{taal:'Latijn',lijst:W.map(w=>[w[0],w[1]])},
-  leer:['bas','wo','7w','g3','7t'],reken:false,volledig:false,snapInVraag:false,custom:{rij:drawRij},
+  leer:['bas','wo','7w','g3','7t'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,custom:{rij:drawRij},
   PN:{bas:'Basis Latijn (D-toets P1)',wo:'Opdracht Woorden 1 (p. 81–82)','7w':'Woorden 7A','g3':'Rijtjes groep 3 (p. 90)','7t':'Tekst 7A','mix':'Door elkaar'}};
 })();

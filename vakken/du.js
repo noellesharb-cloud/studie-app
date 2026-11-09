@@ -165,13 +165,14 @@ const Q=[];
  ['Ich ___ immer '+A('meine Deutschvokabeln')+' …','lerne','Ik leer altijd mijn Duitse woordjes …'],
  ['… und ___ '+A('Texte')+'.','schreibe','… en schrijf teksten.'],
 ].forEach(([zin,ans,nl],i)=>Q.push({id:'g'+(i+1),o:'o6',nr:'Opdracht 6 · zin '+(i+1),
-  q:`Kies het passende werkwoord.${DE(zin)}${KH}`,a:ans,
+  q:`Kies het passende werkwoord.${DE(zin)}${KH}`,a:ans,tv:`Vul het passende werkwoord in: lerne, lese, hasse, habe, kenne, schreibe of höre.${DE(zin)}`,
   f:BANK.filter(w=>w!==ans).map(w=>[w,`„${w}” betekent ${MEAN[w]}. Dat past hier niet.`]),
   u:`${DE(kleur(zin.replace('___','<b>'+ans+'</b>')))}<span class="nl">${nl}</span>`,
   v:{q:`Wat doe je met het blauwe stuk? Kies het werkwoord dat past.${DE(kleur(zin))}`}}));
 
 /* 7: rijtjes bouwen */
-Object.keys(VERBS).forEach(v=>Q.push({id:'r-'+v,o:'o7',nr:'Opdracht 7 · rijtje',type:'rij',verb:v,a:VERBS[v].f.join(', '),
+Object.keys(VERBS).forEach(v=>Q.push({id:'r-'+v,o:'o7',nr:'Opdracht 7 · rijtje',type:'rij',verb:v,a:VERBS[v].f.join(', '),tvIn:PERS,tvA:VERBS[v].f,
+  tv:`Schrijf het rijtje van <b>${v}</b> <span class="nl">(${VERBS[v].nl})</span>.`,
   q:`Maak het rijtje van <b>${v}</b> <span class="nl">(${VERBS[v].nl})</span>. Zet de vormen op de goede plek.`}));
 /* 7: losse vormen; variant = omgekeerd: bij welk persoon hoort deze vorm? */
 [
@@ -261,7 +262,7 @@ const soort=v=>isN(v)?'n':zinOf(v)?'z':'w';
  ['Mag dein Freund / deine Freundin Hunde?','Ja, meine Freundin mag Hunde.',[['Ja, mein Freundin mag Hunde.','Het is die Freundin: meine.'],['Ja, meine Freundin magt Hunde.','mögen is onregelmatig: er/sie mag, zonder t.'],['Ja, meine Freundin magst Hunde.','magst hoort bij du. Meine Freundin is sie: mag.']],
    'Nein, mein Freund mag keine Hunde.',[['Nein, meine Freund mag keine Hunde.','Het is der Freund: mein, zonder e.'],['Nein, mein Freund mag keinen Hunde.','Hunde is meervoud: keine.'],['Nein, mein Freund magst keine Hunde.','magst hoort bij du. Mein Freund is er: mag.']]],
 ].forEach(([vr,a,f,a2,f2],i)=>Q.push({id:'p1-'+(i+1),o:'p1',nr:'Opdracht 1 · zin '+(i+1),
-  q:`Welk antwoord is een goede hele zin?${DE(vr)}`,a,f,u:`${DE(a)}Schrijf in je boek je eigen antwoord, ook als een hele zin. Ja of nee mag allebei.`,
+  q:`Welk antwoord is een goede hele zin?${DE(vr)}`,a,f,tv:`Beantwoord de vraag in een hele zin. Ja of nee mag allebei.${DE(vr)}`,tvAlt:[a2],u:`${DE(a)}Schrijf in je boek je eigen antwoord, ook als een hele zin. Ja of nee mag allebei.`,
   v:{q:`Welk antwoord is een goede hele zin?${DE(vr)}`,a:a2,f:f2}}));
 
 /* AB blz. 26 opdracht 2: de vraag bij het antwoord bouwen (zelfde vraagsoort als opdracht 8a) */
@@ -274,7 +275,7 @@ const soort=v=>isN(v)?'n':zinOf(v)?'z':'w';
 ].forEach(([antw,inf,subj,vopts,words,kind,model,nl],i)=>Q.push({id:'p2-'+(i+1),o:'p2',nr:'Opdracht 2 · zin '+(i+1),type:'zin',
   q:`Schrijf de vraag bij dit antwoord.<div class="prompt">… ? → ${antw}</div>`,
   denk:(kind==='w'?WRULE:JRULE)+'. Kijk naar het antwoord: waar vroeg je naar? Zoek dan het onderwerp: daar hoort de vorm van het werkwoord bij.',
-  inf,subj,vopts:[[vopts[0]],...vopts.slice(1)],words,kind,model,nl,a:kaal(model)}));
+  inf,subj,vopts:[[vopts[0]],...vopts.slice(1)],words,kind,model,nl,a:kaal(model),tvAlt:i===0?['Hast du einen Hund?']:undefined}));
 
 /* AB blz. 26 opdracht 3: zinnen over Siri; daarna schrijft ze de tekst in haar schrift */
 const SIRI='Das ist Siri. Sie ist in Klasse 7. Sie ist dreizehn Jahre alt. Siris Lieblingstier ist die Katze. Sie mag Hunde und Mäuse. Die Katze heißt Mux. Sie ist drei Jahre alt, schwarz und sehr lieb. Der Hund heißt Tasso. Er ist fünf Jahre alt, braun und groß.';
@@ -288,7 +289,7 @@ const SIRI='Das ist Siri. Sie ist in Klasse 7. Sie ist dreizehn Jahre alt. Siris
  ['Hund: Tasso','De hond heet Tasso.','Der Hund heißt Tasso.',[['Die Hund heißt Tasso.','Het is der Hund.'],['Das Hund heißt Tasso.','Het is der Hund.'],['Der Hund heißst Tasso.','De stam eindigt op ß: alleen -t, heißt.']]],
  ['5 Jahre, braun, groß','De hond is 5 jaar, bruin en groot.','Er ist fünf Jahre alt, braun und groß.',[['Sie ist fünf Jahre alt, braun und groß.','Het gaat over der Hund. Een der-woord wordt er.'],['Er hat fünf Jahre, braun und groß.','Leeftijd gaat met sein: Er ist fünf Jahre alt.'],['Es ist fünf Jahre alt, braun und groß.','es is voor das-woorden. Der Hund → er.']]],
 ].forEach(([info,nl,a,f],i,L)=>Q.push({id:'p3-'+(i+1),o:'p3',nr:'Opdracht 3 · zin '+(i+1),
-  q:`Siri: <b>${info}</b>. Welke zin is goed?`,a,f,
+  q:`Siri: <b>${info}</b>. Welke zin is goed?`,a,f,tv:`Schrijf een hele Duitse zin over Siri: <b>${info}</b>.<div class="nl">(${nl})</div>`,
   u:`${DE(a)}`+(i===L.length-1?`<p><b>Zo kan je hele tekst in je schrift eruitzien:</b></p>${DE(SIRI)}<p class="sub">Schrijf hem in je schrift, met je eigen zinnen mag ook.</p>`:''),
   v:{q:`${nl} Welke Duitse zin is goed?`}}));
 
@@ -321,7 +322,7 @@ function drawRij(q,it,box,api){
   box.querySelectorAll('.slot[data-j]').forEach(b=>b.onclick=()=>{const j=+b.dataset.j,c=S.slots[j];if(!c)return;c.used=false;S.slots[j]=null;api.redraw()});
   box.querySelector('#rijok').onclick=()=>{S.res=S.slots.map((c,j)=>c.w===v.f[j]);S.done=true;const ok=S.res.every(Boolean);api.redraw();
     api.finish(ok,ok?`<div class="fb ok"><div class="head">Goed!</div><div class="why">${v.uitleg}</div></div>`
-      :`<div class="fb bad"><div class="head">Niet goed</div><div><b>Dit ging er mis:</b></div><div class="mistake">De rode vakjes kloppen niet. Het goede antwoord staat erachter.</div><div class="why">${v.uitleg}</div></div>`)};
+      :`<div class="fb bad"><div class="head">Niet goed</div><div><b>Dit ging er mis:</b></div><div class="mistake">De rode vakjes kloppen niet. Het goede antwoord staat erachter.</div><div class="why">${v.uitleg}</div></div>`,S.slots.map(c=>c.w).join(', '))};
 }
 /* zin: stap 1 de vorm van het werkwoord kiezen, stap 2 de woorden in de goede volgorde zetten */
 function drawZin(q,it,box,api){
@@ -350,13 +351,14 @@ function drawZin(q,it,box,api){
     const ok=S.zok&&S.vk===0,regel=q.kind==='w'?WRULE:q.kind==='k'?JRULE+'. Het tweede werkwoord (sprechen) gaat helemaal naar achteren':JRULE;
     const mis=S.zok?(S.vk===0?'':'De volgorde is goed, maar in stap 1 koos je de verkeerde vorm.'):'De woorden staan niet in de goede volgorde.';
     api.finish(ok,`<div class="fb ${ok?'ok':'bad'}"><div class="head">${ok?'Goed!':'Niet goed'}</div>${mis?`<div><b>Dit ging er mis:</b></div><div class="mistake">${mis}</div>`:''}
-      ${ok?'':'<div><b>Het goede antwoord is:</b></div>'}${DE(kleur(q.model))}<div class="nl">${q.nl}</div><div class="why">${regel}.</div></div>`)};
+      ${ok?'':'<div><b>Het goede antwoord is:</b></div>'}${DE(kleur(q.model))}<div class="nl">${q.nl}</div><div class="why">${regel}.</div></div>`,
+      cap(S.built.map(c=>c.w).join(' '))+'?'+(S.vk===0?'':` (werkwoord gekozen: ${q.vopts[S.vk][0]})`))};
 }
 
 const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)']];
 const LIJST=[];[...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
 return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Arbeitsbuch blz. 19, 24, 26 en 27 · Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
-  leer:['ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,
+  leer:['ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
   custom:{rij:drawRij,zin:drawZin},
   PN:{ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
 })();

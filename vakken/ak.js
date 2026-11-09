@@ -376,6 +376,6 @@ Object.entries(Q).forEach(([sec,list])=>list.forEach(q=>{
 const BEG2=[];Object.entries(BEG).forEach(([sec,l])=>l.forEach(([w,d])=>{if(!d.startsWith('Zie '))BEG2.push([T(w),T(d),PAR(sec)])}));
 const PN={topo:'Topografie'};SECS.forEach(s=>{if(s.id!=='topo')PN[PAR(s.id)]='§'+s.t});PN.mix='Door elkaar';
 return {id:'ak',naam:'Aardrijkskunde',afk:'AK',kop:'H3 Het Midden-Oosten',SECS:SECS2,SNAP:{},BEG:BEG2,Q:Q2,snapHtml:()=>'',
-  leer:['3.1','3.2','3.3','3.4','3.5','topo'],reken:false,PN,extra:{par:'topo',titel:'Topografie op de kaart',n:8},
+  leer:['3.1','3.2','3.3','3.4','3.5','topo'],reken:false,toetsvorm:true,PN,extra:{par:'topo',titel:'Topografie op de kaart',n:8},
   custom:{kaart:(q,it,box,api)=>window.AK_KAART.draw(q,it,box,api,LAND,STAD)}};
 })();
