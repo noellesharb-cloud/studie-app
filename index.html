@@ -400,7 +400,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611091700"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611091730"></script>
+<script src="oefen/engine.js?v=202611091800"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -728,6 +728,10 @@ function rVandaag(){
     <div class="row" style="justify-content:space-between"><span><b>${mins(gedaan)}</b> <span class="sub">van ${mins(plan)} gedaan</span></span><span class="sub">Start om <b>${esc(SET.start)}</b></span></div>
     <div class="prog"><i style="width:${plan?Math.min(100,gedaan/plan*100):0}%"></i></div>
   </div>
+  ${(()=>{if(!isToday||vrijDag(dag))return '';const m=addDays(dag,1);if(vrijDag(m))return '';
+    const BM=blokStatus(m).filter(b=>!b.later),open=BM.filter(b=>!b.done).reduce((a,b)=>a+b.min,0),max=vrijZa(m)?SET.maxDagWeekend:SET.maxDagSchool;
+    if(!(open>max&&open>=60))return '';const kan=BM.filter(b=>b.hwt&&!b.done&&!b.hwt.klaar).sort((a,b)=>a.min-b.min);if(!kan.length)return '';
+    return `<div class="note warn"><b>Morgen wordt een lange dag: ${mins(open)}</b><span>Wil je iets vooruitwerken? Dan wordt morgen korter. Dit kan al: ${kan.map(b=>`${esc(hwVak(b.hwt.vak)?.naam||b.hwt.vak)} (${b.min} min)`).join(', ')}. Je vindt het onderaan bij Huiswerk dat eraan komt. Wat je afvinkt, valt morgen weg.</span></div>`})()}
   ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past binnen ${mins(SET.maxDagSchool)} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Je kunt bij Week → Instellingen het maximum per dag verhogen of op zaterdag leertijd toevoegen. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt.</span></div>`:''}
   ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
   ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}

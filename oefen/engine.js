@@ -229,14 +229,14 @@ window.Oefen=(()=>{
     <h2>Toetsen zoals op school</h2>
     <div class="card stack">
       <p><b>Geen antwoorden meer om uit te kiezen.</b> In de paragraaftoets en de proeftoets schrijf je alles zelf op, net als op de echte toets.</p>
-      <p>Woordjes, vormen en rijtjes kijkt de app zelf na. Zinnen en uitleg kijk je zelf na, en je ouder kijkt mee.</p>
+      <p>${tvVak()?'Sommen werk je helemaal uit op papier: formule, invullen, uitkomst en eenheid. Het eindgetal typ je in, dat kijkt de app na. Daarna vink je aan welke stappen je goed had. Uitleg schrijf je ook op papier, en je ouder kijkt mee.':'Woordjes, vormen en rijtjes kijkt de app zelf na. Zinnen en uitleg kijk je zelf na, en je ouder kijkt mee.'}</p>
       <p><b>Je cijfers worden eerst lager dan je gewend bent.</b> Dat is normaal. Je weet niet minder: de toets is moeilijker geworden. Een 7 is nu meer waard dan een 9 vroeger.</p>
       <p>Lukt het niet meteen? Je mag een paragraaftoets zo vaak overdoen als je wilt. Je beste cijfer telt.</p></div>
     <div class="stack"><button class="btn" id="tvbegin">Begin de toets</button><button class="btn ghost" id="tvterug">Terug</button></div>`;
     el.querySelector('#back').onclick=home;el.querySelector('#tvterug').onclick=home;
     el.querySelector('#tvbegin').onclick=()=>{ST.tvIntro=1;save();verder()};scrollTo(0,0)}
   function start(mode,ids,title,sec,par,hw){
-    if((mode==='ptoets'||mode==='toets')&&V.toetsvorm&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
+    if((mode==='ptoets'||mode==='toets')&&(V.toetsvorm||tvVak())&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
     if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
     const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='diag';
     R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
@@ -375,12 +375,12 @@ window.Oefen=(()=>{
     const n=Number(x);return isFinite(n)?n:null};
   const tvVak=()=>V.reken!==false;
   function tvorm(q,it){if(!tvVak()||!hasSt(q)||q.type||q.t==='open'||q.in||it.retry)return false;
-    if(R.mode==='tvorm')return true;
+    if(R.mode==='tvorm'||R.mode==='ptoets'||R.mode==='toets')return true;
     return !R.exam&&!['stap','opwarm','diag','fout'].includes(R.mode)&&(ST.ok||[]).includes(q.id)}
   function askToets(q,it,s){
     const g=eindGetal(q.a);
     el.innerHTML=`${kop(it,q,s,false)}
-    <div class="card stack"><span class="tag">Toetsvorm</span><p>${g!=null?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
+    <div class="card stack"><span class="tag">Toetsvorm</span><p>${g!=null?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':R.exam?' Zo gaat het ook op de echte toets.':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
       ${g!=null?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`:''}
       <button class="btn" id="see">Klaar: laat de uitwerking zien</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelectorAll('details.denk').forEach(d=>d.remove());
@@ -398,8 +398,12 @@ window.Oefen=(()=>{
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles goed</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
       const upd=()=>{okb.disabled=goed===false||!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
+      /* in een toets: wat ze zelf goed rekent zonder dat de app het eindgetal heeft kunnen controleren, gaat naar de ouder om na te kijken */
+      const naarOuder=ok=>ok&&R.exam&&R.rid&&Oefen.ctx.nakijk&&!(g!=null&&goed);
       const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed||'(op papier)')};
+        if(naarOuder(ok)){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
+          vraag:schoon(q.q).slice(0,600),jij:(typed?typed+' · ':'')+'uitwerking op papier: kijk in haar schrift',goed:schoon([fmt(q.a),...q.st.map(x=>x.t+(x.s?' '+x.s:''))].join('\n')).slice(0,800)})}
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.'+(naarOuder(ok)?' Je ouder kijkt je uitwerking nog na: bewaar je papier.':'')+'</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed||'(op papier)')};
       okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
@@ -655,7 +659,7 @@ window.Oefen=(()=>{
   /* bij de toetsvorm (talen, aardrijkskunde): laat zien hoe dichtbij een 7 ze zat, of ze vooruitgaat,
      en dat een lager cijfer dan vroeger door de nieuwe toetsvorm komt */
   function aanmoedig(good,tot,c){
-    if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets'))return '';
+    if(!(V.toetsvorm||tvVak())||(R.mode!=='ptoets'&&R.mode!=='toets'))return '';
     const nodig=Array.from({length:tot+1},(_,g)=>g).find(g=>cijfer(g,tot)>=7),r=[];
     const vorig=R.mode==='ptoets'?(R._ptOud&&R._ptOud.laatst!=null?R._ptOud.laatst:null):(R._tOud?cijfer(R._tOud.g,R._tOud.t):null);
     const best=R.mode==='ptoets'?(R._ptOud?R._ptOud.best:null):(R._vorigToets!=null?cijfer(R._vorigToets,100):null);
