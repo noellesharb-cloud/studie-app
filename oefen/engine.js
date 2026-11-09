@@ -611,17 +611,20 @@ window.Oefen=(()=>{
   function hwAntw(H,ids){
     const m=(ST.hwAns||{})[H.key]||{},geen=!ids.some(id=>m[id]);
     const vraag=q=>fmt(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,''));
+    /* de hele uitwerking (de stappen van 'Help mij stap voor stap'): open bij een fout, ingeklapt bij goed */
+    const uitwHtml=(q,open)=>hasSt(q)?`<details class="aw-uw"${open?' open':''}><summary>${open?'De uitwerking':'Bekijk de uitwerking'}</summary>${uitw(q)}</details>`:'';
     const kaart=id=>{const q=QM[id],r=m[id],goed=fmt(goedTxt(q));
-      if(!r)return `<div class="card stack antw"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div><div class="aw-r"><span class="aw-l">Antwoord</span><div class="res">${goed}</div></div></div>`;
+      if(!r)return `<div class="card stack antw"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div><div class="aw-r"><span class="aw-l">Antwoord</span><div class="res">${goed}</div></div>${uitwHtml(q,false)}</div>`;
       const jij=r.v?'<span class="sub">In de app kreeg je deze vraag in andere woorden.</span>':fmt(esc(r.j||'')).replace(/\n/g,'<br>')||'<span class="sub">(leeg)</span>';
       return `<div class="card stack antw ${r.ok?'aw-ok':'aw-bad'}"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div>
         <div class="aw-r"><span class="aw-l">Jij</span><div class="aw-jij">${jij} <b class="aw-m">${r.ok?'✓':'✗'}</b></div></div>
-        ${r.ok&&!r.v?'':`<div class="aw-r"><span class="aw-l">${r.ok?'Antwoord':'Verbetering'}</span><div class="res aw-pen">${goed}</div></div>`}</div>`};
+        ${r.ok&&!r.v?'':`<div class="aw-r"><span class="aw-l">${r.ok?'Antwoord':'Verbetering'}</span><div class="res aw-pen">${goed}</div></div>`}${uitwHtml(q,!r.ok)}</div>`};
     const fout=ids.filter(id=>m[id]&&!m[id].ok).length;
     el.innerHTML=`${top('Je huiswerk','Antwoorden')}
     <h2>Antwoorden voor je schrift</h2>
     <div class="tip stack">${geen?'<span>Je maakte dit huiswerk voordat de app je antwoorden bewaarde. Hieronder staan daarom alleen de goede antwoorden.</span>'
       :`<span><b>Zo schrijf je het over:</b> schrijf eerst op wat <i>jij</i> antwoordde. Was het fout, zet de verbetering er dan achter <span class="aw-pen"><b>in een andere kleur</b></span>. Dan ziet je docent waar je nog moeite mee hebt.</span>
+      ${ids.some(id=>hasSt(QM[id]))?'<span>Bij een som die fout ging, staat de uitwerking eronder. Leg die naast jouw uitwerking in je schrift: bij welke stap ging het mis? Schrijf vanaf die stap de verbetering in je andere kleur.</span>':''}
       <span>${fout?`Je had ${fout} van de ${ids.length} in één keer fout.`:'Je had alles in één keer goed!'}</span>`}
       <span class="sub" style="font-size:.88rem">De antwoorden in de app zijn niet van je docent. Twijfel je of je docent iets anders bedoelt? Vraag het in de les.</span></div>
     <div class="wl stack">${ids.map(kaart).join('')}</div>
