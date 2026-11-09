@@ -252,7 +252,83 @@ Z.forEach((z,i)=>Q.push({id:'vt'+i,o:secVan(z[0]),nr:`Vertalen r. ${z[0]}${z[1]>
   q:`Vertaal in je schrift:<br>${G(kaal(z[2]))}`,k:z[4],vb:[z[3]+(z[5]?' ('+z[5]+')':'')],
   v:{q:`Vertaal nog een keer, nu met de kleurhulp:<br>${kleur(z[2])}`}}));
 
+/* ---------- Hulpboek les 9, opdrachten (HB p. 38–39) ----------
+   Alleen opdrachten die in een huiswerk staan (HUISWERK, app 'gr', par 'hb9', opg) worden zichtbaar.
+   Zo komt er niets in de app wat nog niet is opgegeven. huiswerk.js wordt daarom vóór de vakken geladen.
+   Opdracht 30 en 34 zijn (nog) niet opgegeven en daarom niet gebouwd; 28, 29 gaan over tekstboek p. 46. */
+const HBSECS=[
+ {id:'o31',hb:31,par:'hb9',nr:'31',name:'Opdracht 31: persoonlijk voornaamwoord',c:'--c3',sub:'HB p. 38 · vormen uit r. 1–12: getal, geslacht, functie, naar wie',
+  rules:[['Zoek in r. 1–12 de vormen van αὐτός','αὐτόν (r. 3, 6), αὐτοῖς (r. 4), αὐτῷ (r. 5), αὐτοῦ (r. 7), αὐτάς (r. 10)','Vier verschillende is genoeg voor 31a.'],
+   ['Getal en geslacht','Kijk naar de uitgang: -ον/-ου/-ῳ/-οις mnl, -ας/-ης vrl','HB p. 106'],
+   ['Functie uit de naamval','acc = lijdend voorwerp · dat = meewerkend voorwerp · gen bij een zelfstandig naamwoord = bijvoeglijke bepaling ("zijn")','Bij βοηθέω staat een dativus: "hen helpen".'],
+   ['Naar wie verwijst het?','Zoek iemand in de zinnen ervoor met hetzelfde getal en geslacht','αὐτάς is vrouwelijk mv: dat kunnen alleen de Harpijen zijn.']].map(x=>[x[0],G(x[1]),x[2]])},
+ {id:'o32',hb:32,par:'hb9',nr:'32',name:'Opdracht 32: juist of onjuist',c:'--c4',sub:'HB p. 38 · eerste alinea (r. 1–12), beweringen A–F',
+  rules:[['Lees eerst de alinea globaal','Wie zijn er? Wat willen ze? Wat gebeurt er?',''],
+   ['Zoek bij elke bewering het stukje tekst','Noteer in je schrift waarom de bewering juist of onjuist is','Gebruik ook de inleiding van les 9 en de woordenlijst.']]},
+ {id:'o33',hb:33,par:'hb9',nr:'33',name:'Opdracht 33: het advies van Phineus',c:'--c5',sub:'HB p. 39 · tweede alinea (r. 13–19)',
+  rules:[['Het gevaar','Ἀεὶ γὰρ συγκροτοῦσι καὶ οὕτω διαφθείρουσι τὰ πλοῖα (r. 16–17)','ze klappen altijd tegen elkaar en vernietigen zo de schepen'],
+   ['Twee stappen','πρῶτον μέν … ἔπειτα δέ (r. 17–18)','eerst … daarna']].map(x=>[x[0],G(x[1]),x[2]])},
+ {id:'o35',hb:35,par:'hb9',nr:'35',name:'Opdracht 35: waar lagen de Symplegaden?',c:'--c6',sub:'HB p. 39 · kaart in het tekstboek p. 10–11',
+  rules:[['Volg de reis op de kaart','Iolkos → Lemnos → … → Kolchis (oostkant van de Zwarte Zee)',''],
+   ['Zoek een zeeëngte','πορθμός = zeeëngte (r. 16)','De Argo moet erdoor om bij Kolchis te komen.']].map(x=>[x[0],G(x[1]),x[2]])}
+];
+const HBQ=[];
+/* 31a: open */
+HBQ.push({id:'h31a',hb:31,o:'o31',nr:'Opdracht 31a',t:'open',q:'Noteer vier verschillende persoonlijk voornaamwoorden uit r. 1–12.',
+  k:['Vier verschillende vormen, bijvoorbeeld:',G('αὐτόν (r. 3)'),G('αὐτοῖς (r. 4)'),G('αὐτῷ (r. 5)'),G('αὐτοῦ (r. 7)'),G('αὐτάς (r. 10)')],
+  vb:['αὐτόν (r. 3), αὐτοῖς (r. 4), αὐτῷ (r. 5), αὐτοῦ (r. 7) en αὐτάς (r. 10). Vier daarvan is genoeg.'],
+  v:{q:'Welke vormen van het persoonlijk voornaamwoord staan er in r. 1–12? Noem er vier.'}});
+/* 31b en 31c per vorm: [id, vorm, regel, citaat, getal/geslacht/functie, uitleg, verwijst naar, fout-verwijzingen] */
+const HB31=[
+ ['a','αὐτόν','r. 3','Ἐπερωτᾶν γὰρ αὐτὸν ἐθέλουσι','ev, mnl, lijdend voorwerp','acc ev mnl: lijdend voorwerp bij ἐπερωτᾶν (hem raadplegen).','Phineus',['de Argonauten','Iason','de Harpijen']],
+ ['b','αὐτοῖς','r. 4','Ὁ δὲ Φινεὺς βοηθεῖν αὐτοῖς ἐθέλει','mv, mnl, meewerkend voorwerp','dat mv mnl. Bij βοηθέω hoort een dativus: "hen helpen". Je docent noemt dit misschien gewoon "voorwerp bij βοηθέω".','de Argonauten',['de goden','de Harpijen','de Boreaden']],
+ ['c','αὐτῷ','r. 5','οἱ ἥρωες βοηθεῖν ἐθέλουσιν αὐτῷ','ev, mnl, meewerkend voorwerp','dat ev mnl, weer bij βοηθεῖν: "hem helpen".','Phineus',['de helden','Iason','de straf']],
+ ['d','αὐτοῦ','r. 7','αἱ Ἅρπυιαι τὰ δεῖπνα αὐτοῦ ἀεὶ ἁρπάζουσιν','ev, mnl, bijvoeglijke bepaling','gen ev mnl bij τὰ δεῖπνα: "de maaltijden van hem" = zijn maaltijden.','Phineus',['de Harpijen','de Argonauten','Zeus']],
+ ['e','αὐτάς','r. 10','Οἱ γὰρ Βορεάδαι διώκουσιν αὐτάς','mv, vrl, lijdend voorwerp','acc mv vrl: lijdend voorwerp bij διώκουσιν.','de Harpijen',['de Boreaden','de Argonauten','de goden']]
+];
+const FUN=['ev, mnl, lijdend voorwerp','mv, mnl, meewerkend voorwerp','ev, mnl, meewerkend voorwerp','ev, mnl, bijvoeglijke bepaling','mv, vrl, lijdend voorwerp','ev, vrl, lijdend voorwerp','mv, mnl, onderwerp','ev, onz, lijdend voorwerp'];
+HB31.forEach(([k,f0,nr,zin,a,u,naar,fn])=>{
+  HBQ.push({id:'h31b'+k,hb:31,o:'o31',nr:'Opdracht 31b',q:`${G(zin)} (${nr})<br>Welk getal, welk geslacht en welke functie heeft ${G(f0)}?`,a,f:pick(FUN,3,a),u:`${G(f0)}: ${u}`,
+    tv:`${G(zin)} (${nr})<br>Noteer getal, geslacht en functie van ${G(f0)}.`,tvVrij:true,
+    v:{q:`${nr}: ${G(f0)} in ${G(zin)}. Getal, geslacht en functie?`}});
+  HBQ.push({id:'h31c'+k,hb:31,o:'o31',nr:'Opdracht 31c',q:`${G(zin)} (${nr})<br>Naar wie verwijst ${G(f0)}?`,a:naar.charAt(0).toUpperCase()+naar.slice(1),f:fn.map(x=>x.charAt(0).toUpperCase()+x.slice(1)),
+    u:`${G(f0)} verwijst naar ${naar}. ${u}`,v:{q:`Wie wordt bedoeld met ${G(f0)} in ${nr}?`}})});
+/* 32: juist of onjuist */
+const HB32=[
+ ['A','Phineus kan de Argonauten vertellen welke gevaren hen te wachten staan omdat hij de streek goed kent.','Onjuist','Hij is γέρων μάλα σοφός (r. 2) en heeft van Apollo de gave om de toekomst te zien (inleiding). Daarom weet hij welke gevaren komen, niet omdat hij de streek kent.'],
+ ['B','Phineus wil de Argonauten direct helpen.','Onjuist','εἰ πρῶτον οἱ ἥρωες βοηθεῖν ἐθέλουσιν αὐτῷ (r. 4–5): eerst moeten de helden hém helpen.'],
+ ['C','Phineus is een oude en wijze koning.','Juist','οὗ βασιλεύει Φινεύς, γέρων μάλα σοφός (r. 1–2): hij is koning, een zeer wijze oude man.'],
+ ['D','Phineus wordt door Zeus gestraft omdat hij bij Iason de toekomst heeft voorspeld.','Onjuist','Hij wordt gestraft (δίκη τῶν θεῶν, r. 6) omdat hij de toekomst aan de hele mensheid bekendmaakte (inleiding). Iason heeft hij nog niets voorspeld: het advies komt pas in r. 13.'],
+ ['E','Het lukt de Harpijen om de maaltijd die de Argonauten hebben neergezet te stelen.','Onjuist','τὸ δὲ δεῖπνον οὐχ ἁρπάζουσιν (r. 9): de maaltijd roven ze niet.'],
+ ['F','Het lukt de Boreaden om de Harpijen te verjagen.','Juist','Οἱ γὰρ Βορεάδαι διώκουσιν αὐτάς (r. 10) en de Harpijen vluchten uit het gebied (r. 11).']
+];
+HB32.forEach(([l,b,a,u])=>HBQ.push({id:'h32'+l,hb:32,o:'o32',nr:'Opdracht 32'+l,q:`Bewering ${l}: <i>${b}</i><br>Juist of onjuist?`,a,f:[a==='Juist'?'Onjuist':'Juist'],
+  u:u.replace(/([Ͱ-Ͽἀ-῿][Ͱ-Ͽἀ-῿’ ]*[Ͱ-Ͽἀ-῿])/g,m=>G(m))+' Schrijf in je schrift ook waarom.',
+  v:{q:`Klopt dit? <i>${b}</i>`}}));
+/* 33 */
+HBQ.push({id:'h33a',hb:33,o:'o33',nr:'Opdracht 33a',t:'open',q:'Beschrijf in eigen woorden wat het gevaar is van de Symplegaden.',
+  k:['Het zijn hoge rotsen aan weerszijden van een zeeëngte (r. 15–16)','Ze klappen steeds tegen elkaar (r. 16)','Zo vernietigen ze de schepen die ertussendoor willen (r. 16–17)'],
+  vb:['De Symplegaden zijn hoge rotsen aan weerszijden van een zeeëngte. Ze klappen steeds tegen elkaar en vernietigen zo de schepen die erdoorheen varen.'],
+  v:{q:'Waarom is het gevaarlijk om tussen de Symplegaden door te varen? Leg uit in eigen woorden.'}});
+HBQ.push({id:'h33b',hb:33,o:'o33',nr:'Opdracht 33b',q:'Het advies van Phineus bestaat uit twee stappen. Welke tekstelementen geven de volgorde aan?',a:G('πρῶτον μέν (r. 17) en ἔπειτα δέ (r. 18)'),
+  f:[G('ἀεὶ γάρ (r. 16) en οὕτω (r. 16)'),G('ὡς τάχιστα (r. 18) en ἐν ᾧ (r. 19)'),G('ἔπειτα δ’ (r. 13) en ἀεί (r. 16)')],
+  u:`${G('πρῶτον μέν')} = eerst, ${G('ἔπειτα δέ')} = daarna.`,tv:'Het advies van Phineus bestaat uit twee stappen. Noteer de tekstelementen die de volgorde aangeven.',tvVrij:true,
+  v:{q:'Met welke woorden geeft Phineus aan wat de Argonauten eerst en daarna moeten doen?'}});
+HBQ.push({id:'h33c',hb:33,o:'o33',nr:'Opdracht 33c',t:'open',q:'Beschrijf in eigen woorden hoe het advies van Phineus luidt.',
+  k:['Eerst een duif tussen de rotsen door sturen (r. 17–18)','Daarna zo snel mogelijk roeien (r. 18–19)','Terwijl de rotsen weer uit elkaar gaan (r. 19)'],
+  vb:['Eerst moeten ze een duif tussen de rotsen door laten vliegen. Daarna moeten ze zo snel mogelijk roeien, terwijl de rotsen weer uit elkaar gaan.'],
+  v:{q:'Wat moeten de Argonauten volgens Phineus doen bij de Symplegaden? Leg uit in eigen woorden.'}});
+/* 35 */
+HBQ.push({id:'h35',hb:35,o:'o35',nr:'Opdracht 35',t:'open',q:'Bekijk de reis van de Argo op de kaart op p. 10–11 van het tekstboek. Waar zouden de Symplegaden volgens de mythe kunnen liggen? Leg je antwoord uit.',
+  k:['Bij de Bosporus (bij het huidige Istanbul)','Daar is een smalle zeeëngte (πορθμός, r. 16) tussen de Zee van Marmara en de Zwarte Zee','De Argo moet erdoor om bij Kolchis aan de oostkant van de Zwarte Zee te komen'],
+  vb:['Bij de Bosporus. Dat is een smalle zeeëngte tussen de Zee van Marmara en de Zwarte Zee. De Argo moet daar doorheen om in Kolchis te komen, aan de oostkant van de Zwarte Zee. In de tekst staan de rotsen ook aan weerszijden van een zeeëngte.'],
+  v:{q:'Op de kaart: door welke zeeëngte moet de Argo om bij Kolchis te komen? Daar lagen volgens de mythe de Symplegaden. Leg uit.'}});
+/* alleen wat in een huiswerk staat */
+const HBOP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.par==='hb9'&&h.opg).flatMap(h=>h.opg.map(Number)));
+HBSECS.filter(x=>HBOP.has(x.hb)).forEach(x=>SECS.splice(SECS.length-1,0,x));
+HBQ.filter(q=>HBOP.has(q.hb)).forEach(q=>Q.push(q));
+
 return {woorden:{taal:'Grieks',lijst:WL.map(w=>[w[0],w[1]])},id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']),Q,snapHtml,
   leer:['9w','pv','9t'],reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
-  PN:{'9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','mix':'Door elkaar'}};
+  PN:{'9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','hb9':'Hulpboek les 9 · opdrachten','mix':'Door elkaar'}};
 })();
