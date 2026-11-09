@@ -203,7 +203,19 @@ window.Oefen=(()=>{
     R.cleared.add(q.id);return false}
   const laterTxt='<p class="why" style="margin-top:10px">Deze bewaren we voor een andere dag. Hij blijft bij Mijn foute vragen; jij gaat nu door.</p>';
   function foutIds(sec){return shuf(ST.wrong.filter(x=>QM[x]&&(!sec||QM[x].o===sec)))}
+  function tvIntro(verder){
+    el.innerHTML=`${top(V.naam,'Nieuw')}
+    <h2>Toetsen zoals op school</h2>
+    <div class="card stack">
+      <p><b>Geen antwoorden meer om uit te kiezen.</b> In de paragraaftoets en de proeftoets schrijf je alles zelf op, net als op de echte toets.</p>
+      <p>Woordjes, vormen en rijtjes kijkt de app zelf na. Zinnen en uitleg kijk je zelf na, en je ouder kijkt mee.</p>
+      <p><b>Je cijfers worden eerst lager dan je gewend bent.</b> Dat is normaal. Je weet niet minder: de toets is moeilijker geworden. Een 7 is nu meer waard dan een 9 vroeger.</p>
+      <p>Lukt het niet meteen? Je mag een paragraaftoets zo vaak overdoen als je wilt. Je beste cijfer telt.</p></div>
+    <div class="stack"><button class="btn" id="tvbegin">Begin de toets</button><button class="btn ghost" id="tvterug">Terug</button></div>`;
+    el.querySelector('#back').onclick=home;el.querySelector('#tvterug').onclick=home;
+    el.querySelector('#tvbegin').onclick=()=>{ST.tvIntro=1;save();verder()};scrollTo(0,0)}
   function start(mode,ids,title,sec,par,hw){
+    if((mode==='ptoets'||mode==='toets')&&V.toetsvorm&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
     if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
     const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='diag';
     R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
@@ -616,6 +628,18 @@ window.Oefen=(()=>{
     <div class="stack"><button class="btn ghost" id="hwterug">Terug naar je huiswerk</button></div>`;
     el.querySelector('#back').onclick=()=>hwHome(H);el.querySelector('#hwterug').onclick=()=>hwHome(H);scrollTo(0,0);
   }
+  /* bij de toetsvorm (talen, aardrijkskunde): laat zien hoe dichtbij een 7 ze zat, of ze vooruitgaat,
+     en dat een lager cijfer dan vroeger door de nieuwe toetsvorm komt */
+  function aanmoedig(good,tot,c){
+    if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets'))return '';
+    const nodig=Array.from({length:tot+1},(_,g)=>g).find(g=>cijfer(g,tot)>=7),r=[];
+    const vorig=R.mode==='ptoets'?(R._ptOud&&R._ptOud.laatst!=null?R._ptOud.laatst:null):(R._tOud?cijfer(R._tOud.g,R._tOud.t):null);
+    const best=R.mode==='ptoets'?(R._ptOud?R._ptOud.best:null):(R._vorigToets!=null?cijfer(R._vorigToets,100):null);
+    const nieuw=R.mode==='ptoets'?((ST.ptoets[R.par]||{}).rondes||[]).length<=3:((ST.toetsR||{}).rondes||[]).length<=3;
+    if(c<7&&nodig!=null){const n=nodig-good;r.push(`<p>${n<=2?'<b>Je zat er dichtbij!</b> ':''}Je had er ${good} goed. Voor een 7 heb je er ${nodig} nodig${n<=2?`, dus nog maar ${n} ${n===1?'antwoord':'antwoorden'}`:''}.</p>`)}
+    if(vorig!=null&&c>vorig)r.push(`<p>Vorige keer ${f1(vorig)}, nu ${f1(c)}: <b>je gaat vooruit.</b></p>`);
+    if(best!=null&&c<best&&nieuw)r.push(`<p class="sub">Lager dan je vorige cijfers? Dat komt door de nieuwe toetsvorm: je schrijft nu alles zelf op, net als op school. Een 7 is nu meer waard dan een 9 vroeger.</p>`);
+    return r.join('')}
   function end(){
     if(R.mode==='diag')return diagEnd();
     if(R.title==='Rekenregels van vandaag'&&Oefen.ctx.klaar)Oefen.ctx.klaar('rekenregels');
@@ -626,7 +650,8 @@ window.Oefen=(()=>{
       el.querySelector('#hm').onclick=()=>{done();Oefen.ctx.home()};scrollTo(0,0);return}
     const tot=R.ids.length,good=R.ids.filter(id=>R.first[id]).length,pct=Math.round(good/tot*100),c=cijfer(good,tot);
     const key=R.mode==='toets'?'toets':R.mode==='fout'||R.mode==='ptoets'?null:R.sec;
-    const vorigToets=ST.best.toets;
+    const vorigToets=ST.best.toets;R._vorigToets=vorigToets;R._ptOud=R.mode==='ptoets'&&ST.ptoets[R.par]?JSON.parse(JSON.stringify(ST.ptoets[R.par])):null;
+    R._tOud=R.mode==='toets'&&ST.toetsR&&ST.toetsR.rondes.length?ST.toetsR.rondes[ST.toetsR.rondes.length-1]:null;
     if(key&&(ST.best[key]==null||pct>ST.best[key]))ST.best[key]=pct;
     /* per ronde bewaren (laatste 10), zodat nakijken door de ouder het cijfer achteraf kan verlagen; 'oud' = het beste van daarvoor */
     if(R.mode==='ptoets'){const o=ST.ptoets[R.par]||{best:0},rs=(o.rondes||[]).concat([{rid:R.rid,g:good,t:tot,c}]),weg=rs.slice(0,-10);
@@ -639,7 +664,7 @@ window.Oefen=(()=>{
     const msg=R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
       :pct===100?'Alles in één keer goed!':pct>=80?'Heel goed gedaan!':pct>=55?'Goed bezig. Oefen je fouten nog even.':'Niet erg, zo leer je het. Oefen je fouten nog een keer.';
     el.innerHTML=`<span class="tag">${R.title}</span>
-    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${R.nk?`<p class="sub">${R.nk===1?'Eén antwoord heb':R.nk+' antwoorden heb'} je zelf goed gerekend. Je ouder kijkt ${R.nk===1?'het':'ze'} nog na, dus je cijfer kan nog veranderen.</p>`:''}${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}${R.mode==='fout'?`<p class="sub">${rest?`Er staan nog ${rest} foute vragen op je stapel. Die komen een volgende keer; je hoeft ze niet allemaal vandaag te doen.`:'Je stapel foute vragen is leeg!'}</p>`:''}</div>
+    <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${aanmoedig(good,tot,c)}${R.nk?`<p class="sub">${R.nk===1?'Eén antwoord heb':R.nk+' antwoorden heb'} je zelf goed gerekend. Je ouder kijkt ${R.nk===1?'het':'ze'} nog na, dus je cijfer kan nog veranderen.</p>`:''}${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}${R.mode==='fout'?`<p class="sub">${rest?`Er staan nog ${rest} foute vragen op je stapel. Die komen een volgende keer; je hoeft ze niet allemaal vandaag te doen.`:'Je stapel foute vragen is leeg!'}</p>`:''}</div>
     ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
     <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
       ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
