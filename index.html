@@ -375,6 +375,7 @@ input.tv-v{font:inherit;font-size:1.1rem;width:100%;max-width:340px;box-sizing:b
 input.tv-v.ok{border-color:var(--ok);background:var(--okbg)} input.tv-v.bad{border-color:var(--bad);background:var(--badbg)}
 .tv-c{display:block;color:var(--pen);margin-top:2px}
 @media (max-width:420px){.aw-r,.tv-r{grid-template-columns:1fr;gap:2px}}
+textarea.nk-opm{min-height:56px;height:56px}
 </style>
 
 </head>
@@ -396,7 +397,7 @@ input.tv-v.ok{border-color:var(--ok);background:var(--okbg)} input.tv-v.bad{bord
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="oefen/engine.js?v=202611090900"></script>
+<script src="oefen/engine.js?v=202611091030"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -409,8 +410,8 @@ input.tv-v.ok{border-color:var(--ok);background:var(--okbg)} input.tv-v.bad{bord
 <script src="vakken/gr.js?v=202611090900"></script>
 <script src="vakken/lv.js?v=202611042008"></script>
 <script src="vakken/lv-ko.js?v=202611051500"></script>
-<script src="vakken/du.js?v=202611090900"></script>
-<script src="vakken/la.js?v=202611090900"></script>
+<script src="vakken/du.js?v=202611091030"></script>
+<script src="vakken/la.js?v=202611091030"></script>
 <script src="huiswerk.js?v=202611061830"></script>
 <script>
 /* ---------- basis ---------- */
@@ -713,6 +714,8 @@ function rVandaag(){
     <div class="prog"><i style="width:${plan?Math.min(100,gedaan/plan*100):0}%"></i></div>
   </div>
   ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past binnen ${mins(SET.maxDagSchool)} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Je kunt bij Week → Instellingen het maximum per dag verhogen of op zaterdag leertijd toevoegen. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt.</span></div>`:''}
+  ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
+  ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
   ${vrijDag(dag)?`<div class="note"><b>${esc(vakantieVan(dag).naam)}</b><span>Vandaag staat er niets op het plan. Je reeks staat op pauze: hij gaat niet verloren en loopt na de vakantie gewoon door. Oefenen in de app mag altijd.</span></div>`:''}
@@ -754,6 +757,7 @@ function rVandaag(){
   document.querySelectorAll('[data-hwt]').forEach(b=>b.onclick=()=>{const id=b.dataset.hwt,e=hwLog(id);
     if(e)delLog(e.d,e.key);else addLog({d:dag<=today()?dag:today(),key:'hwt-'+id,vak:b.dataset.vak,soort:'huiswerk',min:+b.dataset.min,t:Date.now()})});
   document.querySelectorAll('[data-vraag]').forEach(b=>b.onclick=e=>{e.stopPropagation();addLog({d:dag,key:'vraag-'+b.dataset.vraag,vak:b.dataset.vak,soort:'vraag',min:0,t:Date.now()})});
+  const nkv=$('#nkv');if(nkv)nkv.onclick=openNakijk;
   document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.ok;const wid=weekId(dag);
     if(LOG[wid])LOG[wid].entries=LOG[wid].entries.filter(x=>!(x.d===dag&&x.key==='vraag-'+k));
     addLog({d:dag,key:'ok-'+k,vak:b.dataset.vak,soort:'goedgekeurd',min:+b.dataset.min,door:WIE,t:Date.now()})});
@@ -770,10 +774,60 @@ function rVandaag(){
 
 /* ---------- tab: oefenen ---------- */
 let OEF={},fromSprint=false;
+/* ---------- nakijken door de ouder ----------
+   Bij de paragraaftoets en proeftoets (talen, aardrijkskunde) kijkt ze open antwoorden zelf na. Wat ze zelf GOED rekent,
+   komt in de collectie 'nakijk' (één document per antwoord). Alleen de dochter maakt documenten aan; alleen de ouder zet het oordeel
+   (ok of fout, met een opmerking); alleen de dochter zet 'gezien'. Een 'fout' verwerkt het apparaat van de dochter zelf
+   (Oefen.corrigeer: naar Mijn foute vragen, cijfer van die ronde één goed minder), zodat de ouder nooit in haar oefenstand schrijft. */
+let NK={};const NK_DAGEN=3,NK_VERWERKT=new Set();
+const nkLijst=()=>Object.entries(NK).map(([id,x])=>Object.assign({id},x)).sort((a,b)=>(b.t||0)-(a.t||0));
+const nkOpen=()=>nkLijst().filter(x=>!x.oordeel);
+const nkFoutNieuw=()=>nkLijst().filter(x=>x.oordeel==='fout'&&!x.gezien);
+function nkPatch(id,p){NK[id]=Object.assign({},NK[id],p);const body=NK[id];write(()=>{const d=db.collection('nakijk').doc(id);return d.patch?d.patch(p):d.set(body)})}
+function verwerkNakijk(){if(isOuder()||!GELADEN.nakijk||!GELADEN.oefen)return;
+  Object.entries(NK).forEach(([id,x])=>{if(x.oordeel!=='fout'||!VAKDATA[x.vak]||Oefen.cur===x.vak||NK_VERWERKT.has(id))return;
+    const st=Oefen.ctx.state(x.vak);st.nkDone=st.nkDone||[];NK_VERWERKT.add(id);if(st.nkDone.includes(id))return;
+    Oefen.corrigeer(x.vak,x);st.nkDone=st.nkDone.concat([id]).slice(-300);Oefen.ctx.save(x.vak)})}
+function openNakijk(){show('oefenen');Oefen.cur='nakijk';rNakijk()}
+function rNakijk(){
+  const ouder=isOuder(),open=nkOpen(),fout=nkFoutNieuw(),gedaan=nkLijst().filter(x=>x.oordeel).slice(0,10);
+  const kaart=(x,stand)=>{const v=VAKDATA[x.vak];
+    return `<div class="card stack antw ${x.oordeel==='fout'?'aw-bad':x.oordeel==='ok'?'aw-ok':''}" data-nk="${esc(x.id)}">
+      <span class="tag">${esc(v?v.naam:x.vak)} · ${esc(x.toets||'')} · ${nice(x.d)}</span>
+      <div class="sub">${esc(x.vraag)}</div>
+      <div class="aw-r"><span class="aw-l">${ouder?'Zij schreef':'Jij schreef'}</span><div class="aw-jij">${esc(x.jij).replace(/\n/g,'<br>')}</div></div>
+      <div class="aw-r"><span class="aw-l">In de app</span><div class="aw-pen">${esc(x.goed).replace(/\n/g,'<br>')}</div></div>
+      ${stand==='open'?`<p class="sub" style="margin:0">Zij rekende dit zelf goed.</p>
+        <textarea class="ta nk-opm" placeholder="Opmerking voor haar (hoeft niet)" aria-label="Opmerking"></textarea>
+        <div class="row"><button class="btn" data-nko="ok">Akkoord</button><button class="btn ghost" data-nko="fout">Toch fout</button></div>`
+      :stand==='klaar'?`<p class="sub" style="margin:0">${x.oordeel==='ok'?'Akkoord':'Toch fout'}${x.opm?': '+esc(x.opm):''}${x.gezien?' · gezien':''} <button class="link" data-nko="terug">wijzigen</button></p>`
+      :x.opm?`<div class="note"><b>Opmerking</b><span>${esc(x.opm)}</span></div>`:''}</div>`};
+  $('#v-oefenen').innerHTML=`<div class="top"><button class="link" id="nkback">← Terug</button><span class="tag">Nakijken</span></div>
+  ${ouder?`<h2>Na te kijken</h2>
+    <div class="tip stack"><span>Bij de paragraaftoets en de proeftoets kijkt ze zinnen, vertalingen en aardrijkskunde zelf na. Hier staan de antwoorden die ze zelf <b>goed</b> rekende.</span>
+      <span>Het antwoord in de app is een voorbeeld: in andere woorden kan ook goed zijn. Is het toch fout, tik dan op <b>Toch fout</b>. De vraag komt dan bij haar foute vragen, het cijfer van die toets gaat omlaag, en ze ziet jouw opmerking.</span></div>
+    ${open.length?`<div class="stack">${open.map(x=>kaart(x,'open')).join('')}</div>`:'<div class="card">Er is niets om na te kijken.</div>'}
+    ${gedaan.length?`<span class="tag">Al nagekeken</span><div class="stack">${gedaan.map(x=>kaart(x,'klaar')).join('')}</div>`:''}`
+  :`<h2>Nagekeken door je ouder</h2>
+    ${fout.length?`<div class="tip stack"><span>Deze antwoorden had je zelf goed gerekend, maar ze waren toch fout. Ze staan nu bij <b>Mijn foute vragen</b>, en het cijfer van die toets is aangepast.</span></div>
+      <div class="stack">${fout.map(x=>kaart(x,'dochter')).join('')}</div><button class="btn" id="nkgezien">Gezien</button>`:'<div class="card">Niets nieuws.</div>'}
+    ${open.length?`<p class="sub">${open.length} ${open.length===1?'antwoord wacht':'antwoorden wachten'} nog op nakijken.</p>`:''}`}`;
+  $('#nkback').onclick=()=>{Oefen.cur=null;render()};
+  document.querySelectorAll('#v-oefenen [data-nko]').forEach(b=>b.onclick=()=>{const k=b.closest('[data-nk]'),id=k.dataset.nk,o=b.dataset.nko;
+    if(o==='terug')nkPatch(id,{oordeel:null,opm:'',door:null,tO:null});
+    else{const t=k.querySelector('.nk-opm');nkPatch(id,{oordeel:o,opm:t?t.value.trim().slice(0,500):'',door:window.WIE||null,tO:Date.now()})}
+    rNakijk()});
+  const gz=$('#nkgezien');if(gz)gz.onclick=()=>{fout.forEach(x=>nkPatch(x.id,{gezien:true}));rNakijk()};
+  scrollTo(0,0);
+}
 function rOefenen(){
   if(Oefen.cur)return; /* niet midden in een ronde opnieuw tekenen */
   const sp=OEF.sprints||{};
+  const nkO=nkOpen(),nkF=nkFoutNieuw();
   $('#v-oefenen').innerHTML=`
+  ${isOuder()&&nkO.length?`<button class="sec" id="nkgo"><span class="sq" style="background:var(--pen);color:var(--bg)">✎</span><span><b>Na te kijken (${nkO.length})</b><small>Antwoorden die ze bij een toets zelf goed rekende</small></span></button>`:''}
+  ${!isOuder()&&nkF.length?`<button class="sec" id="nkgo"><span class="sq" style="background:var(--bad);color:var(--bg)">${nkF.length}</span><span><b>Nagekeken door je ouder</b><small>${nkF.length===1?'Eén antwoord was':nkF.length+' antwoorden waren'} toch fout. Bekijk waarom.</small></span></button>`:''}
+  ${!isOuder()&&!nkF.length&&nkO.length?`<p class="sub" style="font-size:.9rem">${nkO.length} ${nkO.length===1?'antwoord wacht':'antwoorden wachten'} nog op nakijken door je ouder.</p>`:''}
   <span class="tag">Vakken in deze app</span>
   ${APPS().map(id=>{const V=VAKDATA[id],st=OEF[id]||{},ps=Oefen.pars(id),ok=ps.filter(p=>(st.ptoets||{})[p]&&st.ptoets[p].best>=7).length,v=vakOf(id);
     return `<button class="sec" data-vak="${id}"><span class="sq" style="background:var(${COL[(v?.volgorde??0)%COL.length]})">${esc(V.afk)}</span><span><b>${esc(V.naam)}</b><small>${esc(V.kop)} · ${ok} van ${ps.length} paragrafen gehaald${(st.wrong||[]).length?` · <span style="color:var(--bad)">${st.wrong.length} fout</span>`:''}</small></span></button>`}).join('')}
@@ -782,6 +836,7 @@ function rOefenen(){
   <p class="sub" style="font-size:.9rem">Record rekensprint: <b>${sp.reken||0}</b> · woordjessprint: <b>${sp.woord||0}</b></p>
   <p class="sub" style="font-size:.9rem">Andere vakken komen erbij zodra de leerstof binnen is.</p>`;
   document.querySelectorAll('#v-oefenen [data-vak]').forEach(b=>b.onclick=()=>openVak(b.dataset.vak));
+  const ng=$('#nkgo');if(ng)ng.onclick=openNakijk;
   document.querySelectorAll('#v-oefenen [data-sprint]').forEach(b=>b.onclick=()=>openSprint(b.dataset.sprint));
 }
 function show(t){tab=t;try{localStorage.setItem('tab',tab)}catch(e){};document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));['vandaag','oefenen','cijfers','week'].forEach(x=>$('#v-'+x).hidden=x!==tab)}
@@ -792,6 +847,9 @@ function oefenCtx(){return {
   state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{}};return OEF[id]},
   save:id=>{clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
   metToets:id=>heeftToets(id,today()),
+  nakijk:it=>{if(isOuder()||!db)return;const id=`${it.vak}-${it.rid}-${it.qid}`.replace(/[^\w-]/g,'_'),body=Object.assign({},it,{d:today(),t:Date.now(),oordeel:null});
+    NK[id]=body;write(()=>db.collection('nakijk').doc(id).set(body))},
+  wacht:vid=>nkOpen().filter(x=>x.vak===vid&&Date.now()-(x.t||0)<NK_DAGEN*864e5).map(x=>x.rid),
   klaar:k=>{const d=today();if(!isOuder()&&!logDag(d).some(e=>e.key==='klaar-'+k))addLog({d,key:'klaar-'+k,vak:'opwarm',soort:'opwarm',min:0,t:Date.now()},true)},
   sprintDone:(kind,score)=>{const sp=OEF.sprints=OEF.sprints||{},oud=sp[kind]||0;
     if(score>oud){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
@@ -802,7 +860,7 @@ function oefenCtx(){return {
 let lastAct=Date.now(),ACT={},flushT=0;
 ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{lastAct=Date.now()},{passive:true}));
 setInterval(()=>{
-  if(isOuder()||!Oefen.cur||Oefen.cur==='sprint'||tab!=='oefenen'||document.hidden||Date.now()-lastAct>120000)return;
+  if(isOuder()||!Oefen.cur||Oefen.cur==='sprint'||Oefen.cur==='nakijk'||tab!=='oefenen'||document.hidden||Date.now()-lastAct>120000)return;
   const d=today(),k=d+'|'+Oefen.cur;ACT[k]=(ACT[k]||0)+1;
   if(++flushT>=30){flushT=0;flushAct()}
 },1000);
@@ -946,6 +1004,7 @@ const GELADEN={};
 function render(){
   SCHED=null;SCHED_OUD=null;
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen)stempelBij();
+  verwerkNakijk();
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
   ['vandaag','oefenen','cijfers','week'].forEach(t=>$('#v-'+t).hidden=t!==tab);
   const foc=document.activeElement&&document.activeElement.id;
@@ -1022,6 +1081,8 @@ async function startDb(){
   },()=>{clearTimeout(timer);stateEl.textContent='De cijfers konden niet geladen worden.'});
   db.collection('instellingen').doc('plan').onSnapshot(s=>{const x=s.exists?s.data():{};SET=Object.assign({},DEF,x);GELADEN.set=1;SCHED=null;if((x.v||1)<2){SET.maxDagWeekend=0;SET.v=2}if((SET.v||1)<3){SET.maxDagSchool=150;SET.bijMin=20;SET.v=3}if(!busy())render()},()=>{});
   db.collection('oefen').onSnapshot(snap=>{GELADEN.oefen=1;snap.docs.forEach(d=>{if(Oefen.cur!==d.id)OEF[d.id]=JSON.parse(JSON.stringify(d.data()))});if(!busy())render()},()=>{});
+  db.collection('nakijk').onSnapshot(snap=>{const o={};snap.docs.forEach(d=>o[d.id]=JSON.parse(JSON.stringify(d.data())));NK=o;GELADEN.nakijk=1;
+    const a=document.activeElement;if(Oefen.cur==='nakijk'){if(!(a&&a.classList&&a.classList.contains('nk-opm')))rNakijk()}else if(!busy())render()},()=>{});
   db.collection('log').onSnapshot(snap=>{const L={};snap.docs.forEach(d=>L[d.id]=JSON.parse(JSON.stringify(d.data())));LOG=L;GELADEN.log=1;if(!busy())render()},()=>{});
 })();
 </script>
