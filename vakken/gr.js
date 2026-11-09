@@ -253,9 +253,7 @@ Z.forEach((z,i)=>Q.push({id:'vt'+i,o:secVan(z[0]),nr:`Vertalen r. ${z[0]}${z[1]>
   v:{q:`Vertaal nog een keer, nu met de kleurhulp:<br>${kleur(z[2])}`}}));
 
 /* ---------- Hulpboek les 9, opdrachten (HB p. 38–39) ----------
-   Alleen opdrachten die in een huiswerk staan (HUISWERK, app 'gr', par 'hb9', opg) worden zichtbaar.
-   Zo komt er niets in de app wat nog niet is opgegeven. huiswerk.js wordt daarom vóór de vakken geladen.
-   Opdracht 30 en 34 zijn (nog) niet opgegeven en daarom niet gebouwd; 28, 29 gaan over tekstboek p. 46. */
+   Wat nog niet in een huiswerk zat, ziet ze niet bij vrij oefenen (oefen/gate.js). Opdracht 28–30 en 34 staan in gr2.js. */
 const HBSECS=[
  {id:'o31',hb:31,par:'hb9',nr:'31',name:'Opdracht 31: persoonlijk voornaamwoord',c:'--c3',sub:'HB p. 38 · vormen uit r. 1–12: getal, geslacht, functie, naar wie',
   rules:[['Zoek in r. 1–12 de vormen van αὐτός','αὐτόν (r. 3, 6), αὐτοῖς (r. 4), αὐτῷ (r. 5), αὐτοῦ (r. 7), αὐτάς (r. 10)','Vier verschillende is genoeg voor 31a.'],
@@ -324,13 +322,10 @@ HBQ.push({id:'h35',hb:35,o:'o35',nr:'Opdracht 35',t:'open',q:'Bekijk de reis van
   k:['Bij de Bosporus (bij het huidige Istanbul)','Dat is een zeeëngte (πορθμός, r. 16): de rotsen staan aan weerszijden ervan','De Bosporus is de toegang tot de Zwarte Zee; daarna is de weg naar Kolchis vrij (r. 28–29). Niet de Hellespont: die ligt eerder op de route, vóór Phineus'],
   vb:['Bij de Bosporus. Op de kaart vaart de Argo daar de Zwarte Zee in, op weg naar Kolchis. Het is een smalle zeeëngte, en in de tekst staan de Symplegaden aan weerszijden van een zeeëngte. Na de Symplegaden is de weg naar Kolchis vrij, dus het moet de laatste zeeëngte vóór de Zwarte Zee zijn: de Bosporus, niet de Hellespont.'],
   v:{q:'Op de kaart: door welke zeeëngte moet de Argo om bij Kolchis te komen? Daar lagen volgens de mythe de Symplegaden. Leg uit.'}});
-/* alleen wat in een huiswerk staat */
-const HBOP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.par==='hb9'&&h.opg).flatMap(h=>h.opg.map(Number)));
-HBSECS.filter(x=>HBOP.has(x.hb)).forEach(x=>SECS.splice(SECS.length-1,0,x));
-HBQ.filter(q=>HBOP.has(q.hb)).forEach(q=>Q.push(q));
+HBSECS.forEach(x=>SECS.splice(SECS.length-1,0,x));
+HBQ.forEach(q=>Q.push(q));
 
-/* ---------- woorden les 8 (tekstboek p. 45; vet = leerwoord) ----------
-   Alleen zichtbaar als een Grieks-huiswerk ze opgeeft (leer met o:'w8l' of 'w8o'). */
+/* ---------- woorden les 8 (tekstboek p. 45; vet = leerwoord) ---------- */
 const W8=[
  ['ἡ Ἑλλάς, Ἑλλάδος','Griekenland',1],['συνάγω','bijeenbrengen',0],['σύν + dat','met',1],['αὐτοῦ, αὐτῆς, αὐτοῦ','(gen/dat/acc) hij, zij, het',1],
  ['ὁ στόλος','reis, expeditie',1],['ποιέω','maken, doen',1],['ὁ ναυπηγός','scheepsbouwer',0],['ὁ λιμήν, λιμένος','haven',1],
@@ -344,9 +339,7 @@ const W8=[
  ['ἡ θάλαττα','zee',1],['ἡ Κολχίς, Κολχίδος','Kolchis',0],['τὸ χρύσεον κῴδιον','het Gulden Vlies',0],['δεῖ ἡμᾶς + inf','we moeten …',0],
  ['μεγάλην','grote',0],['ἡ τιμή','eer, aanzien',1]
 ];
-const W8OP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.leer).flatMap(h=>h.leer.map(l=>l.o)).filter(o=>o==='w8l'||o==='w8o'));
-const W8AAN=W8OP.size>0;
-if(W8AAN){
+{
   SECS.unshift({id:'w8l',par:'8w',nr:'8',name:'Leerwoorden les 8',c:'--c5',sub:'Herhalen · de vetgedrukte woorden van tekstboek p. 45',rules:W8.filter(w=>w[2]).map(w=>[G(w[0]),w[1],''])},
     {id:'w8o',par:'8w',nr:'8+',name:'Overige woorden les 8',c:'--c6',sub:'Niet vet, wel in de tekst',rules:W8.filter(w=>!w[2]).map(w=>[G(w[0]),w[1],''])});
   W8.forEach((w,i)=>{const pool=W8.filter(x=>x!==w),o=w[2]?'w8l':'w8o';
@@ -354,7 +347,7 @@ if(W8AAN){
       v:{q:`Hoe zeg je in het Grieks: <b>${w[1]}</b>?`,a:G(w[0]),f:pick(pool.map(x=>G(x[0])),3,G(w[0]))}})});
 }
 
-return {woorden:{taal:'Grieks',lijst:WL.map(w=>[w[0],w[1]]).concat(W8AAN?W8.filter(w=>w[2]).map(w=>[w[0],w[1]]):[])},id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']),Q,snapHtml,
-  leer:(W8AAN?['8w']:[]).concat(['9w','pv','9t']),reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
+return {woorden:{taal:'Grieks',alle:W.map((w,i)=>[w[0],w[1],'w'+i]).filter((x,i)=>W[i][2]).concat(W8.map((w,i)=>[w[0],w[1],'l8w'+i]).filter((x,i)=>W8[i][2])),get lijst(){const b=window.Gate?Gate.beh('gr'):null;return this.alle.filter(x=>!b||b.has(x[2])).map(x=>[x[0],x[1]])}},gate:true,id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']).concat(W8.map(w=>[w[0],w[1],'8w'])),Q,snapHtml,
+  leer:['8w','9w','pv','9t','hb9'],reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
   PN:{'8w':'Les 8 · Woorden (herhalen)','9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','hb9':'Hulpboek les 9 · opdrachten','mix':'Door elkaar'}};
 })();

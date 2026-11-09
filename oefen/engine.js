@@ -21,10 +21,10 @@ function mth(x){
 function fmt(s){return String(s).replace(/\$([^$]+)\$/g,(_,x)=>'<span class="m">'+mth(x)+'</span>').replace(/(mm|cm|dm|m)\^([23])/g,'$1<sup>$2</sup>')}
 
 window.Oefen=(()=>{
-  let el,vid,V,ST,QM,R,K,S,focusPar=null,focusMode=null;
+  let el,vid,V,VF,ST,QM,R,K,S,focusPar=null,focusMode=null;
   const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
   const smooth=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
-  const secOf=id=>V.SECS.find(s=>s.id===id);
+  const secOf=id=>(VF||V).SECS.find(s=>s.id===id);
   const nrTag=q=>/^\d/.test(q.nr)?'Opgave '+q.nr:q.nr;
   const chip=s=>`<span class="sq" style="background:var(${s.c})">${s.nr}</span>`;
   const hasSt=q=>!!(q.st&&q.st.length);
@@ -46,8 +46,11 @@ window.Oefen=(()=>{
   const save=()=>Oefen.ctx.save(vid);
   const top=(back,label)=>`<div class="top"><button class="link" id="back">← ${back}</button><span class="tag">${label||''}</span></div>`;
 
-  function load(id){vid=id;V=VAKDATA[id];QM=Object.fromEntries(V.Q.map(q=>[q.id,q]));
-    ST=Oefen.ctx.state(id);ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};}
+  /* V = wat vrij oefenen mag zien (oefen/gate.js: alleen wat al in een huiswerk aan de beurt was), VF = het hele vak.
+     extra = het huiswerk dat nu open staat: dat is meteen aan de beurt. */
+  const vw=(id,extra)=>window.Gate?Gate.view(id,extra):VAKDATA[id];
+  function load(id,extra){vid=id;VF=VAKDATA[id];ST=Oefen.ctx.state(id);V=vw(id,extra);QM=Object.fromEntries(VF.Q.map(q=>[q.id,q]));
+    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};}
   function done(){Oefen.cur=null}
 
   /* ---------- startscherm van een vak ---------- */
@@ -81,6 +84,7 @@ window.Oefen=(()=>{
     <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
       ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
     ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)+(tvVak()&&tvParIds(p).length?`<button class="sec" data-tvp="${p}"><span class="sq" style="background:var(--line)">✎</span><span><b>Toetsvorm</b><small>5 vragen zonder opties en zonder hulp: zelf uitwerken op papier, dan nakijken</small></span></button>`:'')}</div>`).join('')}
+    ${V.dicht&&V.dicht.length?`<div class="card stack"><span class="tag">Komt nog</span><p class="sub" style="margin:0">Deze onderdelen staan al klaar. Ze gaan open zodra ze in je huiswerk zitten, eerder oefen je ze niet.</p><ul class="log">${[...new Set(V.dicht.map(x=>x.s.par))].map(p=>{const xs=V.dicht.filter(x=>x.s.par===p),ds=xs.map(x=>x.d).filter(Boolean).sort();return `<li><b>${V.PN[p]||p}</b> (${xs.length}) ${ds.length?'· vanaf het huiswerk voor '+new Date(ds[0]+'T12:00').toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'}):'· nog niet opgegeven'}</li>`}).join('')}</ul></div>`:''}
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
@@ -124,7 +128,7 @@ window.Oefen=(()=>{
     const ids=[...f,...z.slice(0,Math.max(0,n-1-f.length))];ids.push(...r.slice(0,n-ids.length));if(ids.length<n)ids.push(...z.filter(id=>!ids.includes(id)).slice(0,n-ids.length));
     return shuf(ids)}
   /* opwarmen: 3 vragen uit eerdere paragrafen van dit vak (vóór de paragraaf van het huiswerk), eerst je foute vragen; geen open vragen of eigen vraagsoorten */
-  function warmPool(vd,par){const v=VAKDATA[vd];if(!v)return [];const ps=v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))],i=ps.indexOf(par);
+  function warmPool(vd,par){const v=vw(vd);if(!v)return [];const ps=v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))],i=ps.indexOf(par);
     if(i<1)return [];const eerder=new Set(ps.slice(0,i)),sec=Object.fromEntries(v.SECS.map(s=>[s.id,s.par]));
     return v.Q.filter(q=>eerder.has(sec[q.o])&&q.t!=='open'&&!q.type).map(q=>q.id)}
   function warmIds(vd,par){const pool=warmPool(vd,par),st=Oefen.ctx.state(vd),f=shuf((st.wrong||[]).filter(id=>pool.includes(id))).slice(0,2);
@@ -764,7 +768,7 @@ window.Oefen=(()=>{
 
   return {ctx:null,cur:null,
     vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
-    huiswerk(target,id,H){el=target;load(id);focusPar=H.par||null;focusMode=null;hwHome(H)},
+    huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
     /* vanuit het dagplan: opwarmvragen voor een vak, en de rekenregels van vandaag (tijd telt niet mee voor het vak zelf) */
@@ -779,6 +783,6 @@ window.Oefen=(()=>{
         if(eenKeer(r)){r.g--;r.c=cijfer(r.g,r.t);o.best=Math.max(o.oud||0,...o.rondes.map(x=>x.c));if(o.rondes[o.rondes.length-1]===r)o.laatst=r.c}}
       if(it.mode==='toets'){const o=st.toetsR,r=o&&o.rondes.find(x=>x.rid===it.rid);
         if(eenKeer(r)){r.g--;r.p=Math.round(r.g/r.t*100);st.best=st.best||{};st.best.toets=Math.max(o.oud==null?0:o.oud,...o.rondes.map(x=>x.p))}}},
-    pars(id){const v=VAKDATA[id];return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
+    pars(id){const v=vw(id);return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
     stop(){Oefen.cur=null}};
 })();
