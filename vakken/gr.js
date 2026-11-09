@@ -269,8 +269,9 @@ const HBSECS=[
   rules:[['Het gevaar','Ἀεὶ γὰρ συγκροτοῦσι καὶ οὕτω διαφθείρουσι τὰ πλοῖα (r. 16–17)','ze klappen altijd tegen elkaar en vernietigen zo de schepen'],
    ['Twee stappen','πρῶτον μέν … ἔπειτα δέ (r. 17–18)','eerst … daarna']].map(x=>[x[0],G(x[1]),x[2]])},
  {id:'o35',hb:35,par:'hb9',nr:'35',name:'Opdracht 35: waar lagen de Symplegaden?',c:'--c6',sub:'HB p. 39 · kaart in het tekstboek p. 10–11',
-  rules:[['Volg de reis op de kaart','Iolkos → Lemnos → … → Kolchis (oostkant van de Zwarte Zee)',''],
-   ['Zoek een zeeëngte','πορθμός = zeeëngte (r. 16)','De Argo moet erdoor om bij Kolchis te komen.']].map(x=>[x[0],G(x[1]),x[2]])}
+  rules:[['Volg de rode stippellijn op de kaart','Iolkos → Lemnos → Hellespont → Bosporus → Zwarte Zee → Kolchis',''],
+   ['Zoek een zeeëngte','πορθμός = zeeëngte (r. 16)','Op de route zijn er twee: de Hellespont en de Bosporus.'],
+   ['Welke van de twee?','Na Phineus (Thrakië) en vlak vóór de Zwarte Zee','De Symplegaden zijn de laatste hindernis: daarna is de weg naar Kolchis vrij (r. 28–29).']].map(x=>[x[0],G(x[1]),x[2]])}
 ];
 const HBQ=[];
 /* 31a: open */
@@ -320,8 +321,8 @@ HBQ.push({id:'h33c',hb:33,o:'o33',nr:'Opdracht 33c',t:'open',q:'Beschrijf in eig
   v:{q:'Wat moeten de Argonauten volgens Phineus doen bij de Symplegaden? Leg uit in eigen woorden.'}});
 /* 35 */
 HBQ.push({id:'h35',hb:35,o:'o35',nr:'Opdracht 35',t:'open',q:'Bekijk de reis van de Argo op de kaart op p. 10–11 van het tekstboek. Waar zouden de Symplegaden volgens de mythe kunnen liggen? Leg je antwoord uit.',
-  k:['Bij de Bosporus (bij het huidige Istanbul)','Daar is een smalle zeeëngte (πορθμός, r. 16) tussen de Zee van Marmara en de Zwarte Zee','De Argo moet erdoor om bij Kolchis aan de oostkant van de Zwarte Zee te komen'],
-  vb:['Bij de Bosporus. Dat is een smalle zeeëngte tussen de Zee van Marmara en de Zwarte Zee. De Argo moet daar doorheen om in Kolchis te komen, aan de oostkant van de Zwarte Zee. In de tekst staan de rotsen ook aan weerszijden van een zeeëngte.'],
+  k:['Bij de Bosporus (bij het huidige Istanbul)','Dat is een zeeëngte (πορθμός, r. 16): de rotsen staan aan weerszijden ervan','De Bosporus is de toegang tot de Zwarte Zee; daarna is de weg naar Kolchis vrij (r. 28–29). Niet de Hellespont: die ligt eerder op de route, vóór Phineus'],
+  vb:['Bij de Bosporus. Op de kaart vaart de Argo daar de Zwarte Zee in, op weg naar Kolchis. Het is een smalle zeeëngte, en in de tekst staan de Symplegaden aan weerszijden van een zeeëngte. Na de Symplegaden is de weg naar Kolchis vrij, dus het moet de laatste zeeëngte vóór de Zwarte Zee zijn: de Bosporus, niet de Hellespont.'],
   v:{q:'Op de kaart: door welke zeeëngte moet de Argo om bij Kolchis te komen? Daar lagen volgens de mythe de Symplegaden. Leg uit.'}});
 /* alleen wat in een huiswerk staat */
 const HBOP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.par==='hb9'&&h.opg).flatMap(h=>h.opg.map(Number)));
