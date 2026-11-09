@@ -328,7 +328,32 @@ const HBOP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.par==='hb9'&&
 HBSECS.filter(x=>HBOP.has(x.hb)).forEach(x=>SECS.splice(SECS.length-1,0,x));
 HBQ.filter(q=>HBOP.has(q.hb)).forEach(q=>Q.push(q));
 
-return {woorden:{taal:'Grieks',lijst:WL.map(w=>[w[0],w[1]])},id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']),Q,snapHtml,
-  leer:['9w','pv','9t'],reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
-  PN:{'9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','hb9':'Hulpboek les 9 · opdrachten','mix':'Door elkaar'}};
+/* ---------- woorden les 8 (tekstboek p. 45; vet = leerwoord) ----------
+   Alleen zichtbaar als een Grieks-huiswerk ze opgeeft (leer met o:'w8l' of 'w8o'). */
+const W8=[
+ ['ἡ Ἑλλάς, Ἑλλάδος','Griekenland',1],['συνάγω','bijeenbrengen',0],['σύν + dat','met',1],['αὐτοῦ, αὐτῆς, αὐτοῦ','(gen/dat/acc) hij, zij, het',1],
+ ['ὁ στόλος','reis, expeditie',1],['ποιέω','maken, doen',1],['ὁ ναυπηγός','scheepsbouwer',0],['ὁ λιμήν, λιμένος','haven',1],
+ ['τὸ πλοῖον','vaartuig, schip',1],['θαυμάζω','bewonderen',1],['ἐγώ / ἐμοῦ / ἐμοί / ἐμέ','ik, mij',1],['ἀρέσκω + dat','in de smaak vallen bij',0],
+ ['σύ / σοῦ / σοί / σέ','jij, jou, u',1],['πρέπει + inf','het is passend om',0],['πάρεστι / πάρεισι','is / zijn aanwezig',0],['ὦ','o (aanhef, meestal niet vertalen)',1],
+ ['ὁ φίλος','vriend',1],['ὁ κίνδυνος','gevaar',1],['πολλοί','vele',0],['ἡμεῖς / ἡμῶν / ἡμῖν / ἡμᾶς','wij, ons',1],
+ ['μένω + acc','te wachten staan',0],['οὐδείς (nom)','niemand',0],['ὑμεῖς / ὑμῶν / ὑμῖν / ὑμᾶς','jullie',1],['ἄπεστιν','(hij/zij) is afwezig',0],
+ ['ὑπόπτεροι','gevleugelde',0],['ὅτι','omdat',1],['ἡ ᾠδή','lied, gezang',0],['θέλγω','betoveren',0],
+ ['συνοδεύω (+ dat)','meereizen (met)',0],['τὸ τόξον','(pijl en) boog',0],['ὑπερβάλλω','overtreffen',0],['ἀσπάσιοι ἔστε','wees welkom',0],
+ ['πάντες ἄλλοι','alle andere',0],['ἐπί, ἐπ’, ἐφ’ + dat','aan, bij',1],['ἡ σοφία','(vak)kennis, wijsheid',1],['οἴσει','(hij/zij) zal brengen',0],
+ ['ἡ θάλαττα','zee',1],['ἡ Κολχίς, Κολχίδος','Kolchis',0],['τὸ χρύσεον κῴδιον','het Gulden Vlies',0],['δεῖ ἡμᾶς + inf','we moeten …',0],
+ ['μεγάλην','grote',0],['ἡ τιμή','eer, aanzien',1]
+];
+const W8OP=new Set((window.HUISWERK||[]).filter(h=>h.app==='gr'&&h.leer).flatMap(h=>h.leer.map(l=>l.o)).filter(o=>o==='w8l'||o==='w8o'));
+const W8AAN=W8OP.size>0;
+if(W8AAN){
+  SECS.unshift({id:'w8l',par:'8w',nr:'8',name:'Leerwoorden les 8',c:'--c5',sub:'Herhalen · de vetgedrukte woorden van tekstboek p. 45',rules:W8.filter(w=>w[2]).map(w=>[G(w[0]),w[1],''])},
+    {id:'w8o',par:'8w',nr:'8+',name:'Overige woorden les 8',c:'--c6',sub:'Niet vet, wel in de tekst',rules:W8.filter(w=>!w[2]).map(w=>[G(w[0]),w[1],''])});
+  W8.forEach((w,i)=>{const pool=W8.filter(x=>x!==w),o=w[2]?'w8l':'w8o';
+    Q.push({id:'l8w'+i,o,nr:w[2]?'Leerwoord les 8':'Woord les 8',q:`Wat betekent ${G(w[0])}?`,a:w[1],f:pick(pool.map(x=>x[1]),3,w[1]),u:`${G(w[0])} = ${w[1]}.`,
+      v:{q:`Hoe zeg je in het Grieks: <b>${w[1]}</b>?`,a:G(w[0]),f:pick(pool.map(x=>G(x[0])),3,G(w[0]))}})});
+}
+
+return {woorden:{taal:'Grieks',lijst:WL.map(w=>[w[0],w[1]]).concat(W8AAN?W8.filter(w=>w[2]).map(w=>[w[0],w[1]]):[])},id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']),Q,snapHtml,
+  leer:(W8AAN?['8w']:[]).concat(['9w','pv','9t']),reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
+  PN:{'8w':'Les 8 · Woorden (herhalen)','9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','hb9':'Hulpboek les 9 · opdrachten','mix':'Door elkaar'}};
 })();
