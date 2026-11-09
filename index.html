@@ -400,7 +400,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611091700"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611091700"></script>
+<script src="oefen/engine.js?v=202611091730"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -611,7 +611,7 @@ function blokken(s){
     B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
     const b=BH.find(x=>x.h===h);
     if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
-      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: kaartjes, vragen en de paragraaftoets van deze paragraaf. Zo blijft het hangen. De tijd telt vanzelf mee.'})}});
+      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, na de ${b.h.min} minuten van je huiswerk in de app. Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
   const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
@@ -634,9 +634,17 @@ function blokken(s){
 const NEGEER={'2026-11-06':['auto-gr']};
 const logDag=s=>((LOG[weekId(s)]||{}).entries||[]).filter(e=>e.d===s&&!(NEGEER[s]||[]).includes(e.key));
 const autoMin=(s,vid)=>logDag(s).filter(e=>e.soort==='oefenen'&&e.vak===vid).reduce((a,e)=>a+(e.sec||e.min*60||0),0)/60;
+/* huiswerk dat ze in de app maakt, telt ook als oefentijd van dat vak. Afspraak 9 nov: die tijd gaat eerst naar het huiswerk
+   (de minuten die erbij staan, naar verhouding van hoeveel ze in de app deed). Pas wat daarboven zit telt voor bijhouden,
+   oefenen of toetsvoorbereiding van dat vak. Was ze langer bezig dan gepland, dan telt die extra tijd dus wel. Geldt vanaf 10 nov. */
+const HWRES_VAN='2026-11-10';
+function hwReserve(s,B){const R={};if(s<HWRES_VAN)return R;
+  B.forEach(b=>{const h=b.hwt;if(!h||!h.app||!window.VAKDATA||!VAKDATA[h.app]||h.klaar)return;const n=Oefen.hwStand(h.app,h.id);if(!n)return;
+    const e=hwLog(h.id);if(e&&e.d!==s)return;const tot=Oefen.hwTotaal(h.app,h)||n;R[h.app]=(R[h.app]||0)+Math.round((h.min||0)*Math.min(1,n/tot))});
+  return R}
 /* status van elk blok: zelf afgevinkt, of vanzelf gehaald met oefentijd */
 function blokStatus(s){
-  const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need={},sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
+  const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need=hwReserve(s,B),sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
   /* was de dag al af, dan staat in de stempel welke blokken toen op het plan stonden. Wat daarna bijkomt (nieuwe toetsdatum,
      nieuw huiswerk, een ander vak dat schuift) telt die dag niet meer mee: het staat apart als 'bijgekomen' */
   const stE=L.find(e=>e.key==='dag-gehaald'),vast=stE&&Array.isArray(stE.keys)?new Set(stE.keys):null;

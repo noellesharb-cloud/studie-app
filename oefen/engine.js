@@ -76,6 +76,8 @@ window.Oefen=(()=>{
     <h2>${V.naam}</h2>
     ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
       <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
+      <button class="btn" id="bh-her">Herhaalronde (10 vragen)</button>
+      <p class="sub" style="font-size:.9rem;margin:0">Niet de vragen die je net als huiswerk maakte, maar eerst wat je daarin fout had en dan andere vragen uit deze paragraaf. Elke keer een nieuwe mix. Of kies zelf:</p>
       <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">paragraaftoets</button>. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
@@ -102,6 +104,7 @@ window.Oefen=(()=>{
     const q=x=>el.querySelector(x);
     if(q('#bh-beg'))q('#bh-beg').onclick=()=>kStart(shuf(begVan(focusPar)),false);
     if(q('#bh-pt'))q('#bh-pt').onclick=()=>ptoets(focusPar);
+    if(q('#bh-her'))q('#bh-her').onclick=()=>start('oefen',herhaalIds(focusPar),'Herhaalronde · '+(V.PN[focusPar]||focusPar));
     if(q('#bh-x'))q('#bh-x').onclick=()=>{const al=V.Q.filter(x=>secOf(x.o).par===X.par&&x.t!=='open').map(x=>x.id),fout=shuf(al.filter(id=>ST.wrong.includes(id)));
       start('oefen',[...fout,...shuf(al.filter(id=>!fout.includes(id)))].slice(0,X.n),X.titel)};
     if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
@@ -133,6 +136,20 @@ window.Oefen=(()=>{
     return v.Q.filter(q=>eerder.has(sec[q.o])&&q.t!=='open'&&!q.type).map(q=>q.id)}
   function warmIds(vd,par){const pool=warmPool(vd,par),st=Oefen.ctx.state(vd),f=shuf((st.wrong||[]).filter(id=>pool.includes(id))).slice(0,2);
     return shuf([...f,...shuf(pool.filter(id=>!f.includes(id))).slice(0,3-f.length)])}
+  /* herhaalronde bij bijhouden (afspraak 9 nov): niet de vragen die ze net als huiswerk deed, maar eerst wat daarin fout ging,
+     dan andere vragen uit deze paragraaf, en als die op zijn eerdere stof van dit vak. Elke keer een nieuwe mix. */
+  function recentHw(){const d=new Date(),t=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const ks=new Set([...Object.keys(ST.hw||{}),...Object.keys(ST.hwAns||{})].filter(k=>k.slice(0,10)>=t)),ids=new Set(),fout=new Set();
+    ks.forEach(k=>{((ST.hw||{})[k]||[]).forEach(x=>ids.add(x));Object.entries((ST.hwAns||{})[k]||{}).forEach(([x,a])=>{ids.add(x);if(!a.ok)fout.add(x)})});
+    return {ids,fout}}
+  function herhaalIds(p,n=10){const {ids,fout}=recentHw(),inV=new Set(V.Q.map(q=>q.id)),R=[];
+    const add=xs=>xs.forEach(x=>{if(R.length<n&&inV.has(x)&&!R.includes(x))R.push(x)});
+    add(shuf([...fout]).slice(0,4));
+    const vers=q=>!ids.has(q.id),inP=V.Q.filter(q=>secOf(q.o).par===p);
+    add(shuf(ST.wrong.filter(x=>inP.some(q=>q.id===x)&&!ids.has(x))).slice(0,3));
+    add(shuf(inP.filter(vers).map(q=>q.id)));
+    const eerder=leerPars().filter(x=>x!==p);add(shuf(V.Q.filter(q=>eerder.includes(secOf(q.o).par)&&vers(q)).map(q=>q.id)));
+    add(shuf(inP.map(q=>q.id)));return shuf(R)}
   function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
   function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
   function ptoets(p){const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
@@ -769,6 +786,9 @@ window.Oefen=(()=>{
   return {ctx:null,cur:null,
     vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
     huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
+    hwTotaal(id,H){const D=VAKDATA[id];if(!D)return 0;const so=x=>D.SECS.find(s=>s.id===x)||{},want=(H.opg||[]).map(Number),ids=new Set();
+      D.Q.forEach(q=>{const n=nrNum(q);if(n&&want.includes(n[0])&&(!H.par||so(q.o).par===H.par))ids.add(q.id)});
+      (H.leer||[]).forEach(L=>(L.ids||D.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).forEach(x=>ids.add(x)));return ids.size},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
     /* vanuit het dagplan: opwarmvragen voor een vak, en de rekenregels van vandaag (tijd telt niet mee voor het vak zelf) */
