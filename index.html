@@ -398,13 +398,13 @@ textarea.nk-opm{min-height:56px;height:56px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="huiswerk.js?v=202611100745"></script>
+<script src="huiswerk.js?v=202611100800"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
 <script src="oefen/engine.js?v=202611091815"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
-<script src="vakken/wi.js?v=202611061430"></script>
+<script src="vakken/wi.js?v=202611100800"></script>
 <script src="vakken/wi-var.js?v=202611042008"></script>
 <script src="vakken/wi-basis.js?v=202611042008"></script>
 <script src="vakken/ak-kaart.js?v=202611061945"></script>
@@ -492,7 +492,7 @@ const hwDone=h=>!!(h.klaar||hwLog(h.id));
 function hwRow(h,b,kort){const v=hwVak(h.vak),done=hwDone(h),naam=v?v.naam:h.vak.charAt(0).toUpperCase()+h.vak.slice(1);
   const chip=v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:'';
   const wat=(h.wat||[]).length?`<details class="hwd"><summary>Wat moet je doen?</summary><ul>${h.wat.map(l=>l.startsWith('# ')?`<li class="kop">${esc(l.slice(2))}</li>`:`<li>${esc(l)}</li>`).join('')}</ul></details>`:'';
-  const app=h.app&&LOSSE[h.app]?`<a class="link" href="${LOSSE[h.app].url}" target="_blank" rel="noopener">Open ${esc(LOSSE[h.app].naam)}</a>`:h.app&&window.VAKDATA&&VAKDATA[h.app]?`${hwKnop(h)}${heeftToets(h.app,today())?`<button class="link" data-go="${h.app}" data-par="${esc(h.par||'')}" data-mode="bijhouden">Oefen in de app</button>`:''}`:'';
+  const app=h.app&&LOSSE[h.app]?`<a class="link" href="${LOSSE[h.app].url}" target="_blank" rel="noopener">Open ${esc(LOSSE[h.app].naam)}</a>`:h.app&&window.VAKDATA&&VAKDATA[h.app]?`${hwKnop(h)}${h.lpar&&h.lpar.length?`<span class="row" style="flex-wrap:wrap;gap:4px 12px">${h.lpar.map(p=>`<button class="link" data-go="${h.app}" data-par="${esc(p)}">Leren: ${esc((VAKDATA[h.app].PN||{})[p]||'§'+p)} in de app</button>`).join('')}</span>`:heeftToets(h.app,today())?`<button class="link" data-go="${h.app}" data-par="${esc(h.par||'')}" data-mode="bijhouden">Oefen in de app</button>`:''}`:'';
   return `<div class="blk${done?' done':''}"><button class="ck" data-hwt="${esc(h.id)}" data-min="${h.min}" data-vak="${v?v.id:'hw'}" aria-pressed="${done}" aria-label="${done?'Afgevinkt':'Afvinken'}: ${esc(naam)}, ${esc(h.t)}" ${canWrite&&!h.klaar?'':'disabled'}>${done?'✓':''}</button>${chip}
     <span class="tx"><b class="hn">${esc(naam)}</b>${esc(h.t)}<small>${kort?nice(h.d)+' · ':'Voor '+nice(h.d)+' · '}${h.klaar?'al afgevinkt in SOMtoday':done?'gedaan':'tik het vakje af als het af is'}</small>${!done&&hwAfgewezen(h.id)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}${wat}${app}${afwKnop(hwLog(h.id),h.klaar)}</span><span class="mn">${h.min} min</span></div>`}
 /* huiswerk dat in de app staat: knop die precies die opgaven opent, stap voor stap */
@@ -538,8 +538,9 @@ function warmVakken(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchoo
     seen.add(v.id);R.push({vid:v.id,par,h})});return R}
 const opwarmMin=s=>vrijZa(s)||vrijDag(s)?0:opwarmRekenMin()+WARM_MIN*warmVakken(s).length;
 /* bijhouden: direct na het huiswerk van een vak met een oefenapp en een komende toets, 20 minuten dezelfde paragraaf in de app */
+/* geenBij:true bij een huiswerk = die dag geen bijhouden voor dat vak: het leerwerk (leer, lpar) komt ervoor in de plaats (afspraak 10 nov) */
 function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchooldag(s),seen=new Set(),R=[];
-  hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||!APPS().includes(v.id)||!heeftToets(v.id,s)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
+  hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||h.geenBij||!APPS().includes(v.id)||!heeftToets(v.id,s)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
     R.push({vid:v.id,par:h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id),h})});
   /* past het niet binnen het maximum, dan wordt elk bijhoudblok even korter (niet korter dan 10 min). Is er daarvoor geen ruimte,
      dan vallen de vakken met de verste toets af; is het huiswerk alleen al te veel, dan is er die dag geen bijhouden (afspraak 9 nov) */

@@ -46,7 +46,8 @@ const LOG=[
  ['Dag 2','di 27 okt','Voorkennis uit H6 van vorig jaar, alleen wat nodig is voor H3. De tekenopgaven van H3 zijn nu aantikoefeningen'],
  ['Dag 3','ma 2 nov','§3.3 huiswerk voor dinsdag: opgave 37, 38, 39, 40, 41, 42 en 43 erbij (45 en 46 stonden er al in)'],
  ['Dag 4','ma 2 nov','§3.4 opgave 50 t/m 61 (huiswerk voor woensdag 4 en donderdag 5 november)'],
- ['Dag 5','vr 6 nov','Opdracht T1 (wortelformules, bij §3.5) en opdracht R1 (lijn door twee punten, bij §3.1) van Teams']
+ ['Dag 5','vr 6 nov','Opdracht T1 (wortelformules, bij §3.5) en opdracht R1 (lijn door twee punten, bij §3.1) van Teams'],
+ ['Dag 6','di 10 nov','Extra opdrachten H3 van Teams: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (huiswerk voor donderdag 12 november)']
 ];
 
 /* ---------- onderdelen ---------- */
@@ -219,6 +220,10 @@ const G46=plot({x:[-4,6],y:[-4,6],u:20,fns:[{f:x=>(x+2)*(x-4)/3}],label:'dalpara
 const G41=(f,l)=>plot({x:[-10,6],y:[-120,20],ux:17,uy:1.5,sx:2,sy:20,gx:1,gy:10,fns:[{f}],label:l||'parabool'});
 const GR=(f,from,pts)=>plot({x:[-1,10],y:[-1,7],u:16,fns:[{f,from}],pts,label:'wortelgrafiek'});
 const G66=plot({x:[-3,10],y:[-1,5],u:18,fns:[{f:x=>Math.sqrt(x+2)+1,from:-2}],label:'grafiek van y = wortel(x + 2) + 1'});
+/* Extra opdrachten E1, E4 (vier genummerde lijnen) en E8 */
+const GE1=plot({x:[-4,4],y:[-5,5],u:22,fns:[{f:x=>-2*x-2,lab:[-3.0,4.5,'1']},{f:x=>-2*x+2,lab:[-0.9,4.5,'2']},{f:x=>5*x-2,lab:[1.5,4.5,'3']},{f:x=>2*x-2,lab:[3.4,4.5,'4']}],label:'vier lijnen, genummerd 1 tot en met 4'});
+const GE4=plot({x:[-4,4],y:[-4,4],u:22,fns:[{f:x=>-x,lab:[-3.8,3.3,'1']},{f:x=>-8*x,lab:[-0.75,3.6,'2']},{f:x=>3*x,lab:[1.4,3.6,'3']},{f:x=>0.5*x,lab:[3.3,2.2,'4']}],label:'vier lijnen door de oorsprong, genummerd 1 tot en met 4'});
+const GE8=(f,pts)=>plot({x:[-4,3],y:[-12,8],ux:22,uy:8,sy:4,gy:2,fns:[{f}],pts,label:'parabool'});
 const GT1=(f,dir,pts)=>plot({x:[-4,4],y:[-10,1],u:20,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const GR68=(f,from,pts)=>plot({x:[-3,12],y:[-1,8],u:14,fns:[{f,from}],pts,label:'wortelgrafiek'});
 const GR70=(f,dir,pts)=>plot({x:[-8,6],y:[-1,9],u:14,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
@@ -1229,6 +1234,65 @@ const Q=[
  denk:'Vul $x = 121$ in.',
  st:[S('Vul in.','$z = -[[24|19]]·121 + [[231|19]]$'),S('Reken uit.','$-[[2904|19]] + [[231|19]] = -[[2673|19]]$'),S('Als gemengd getal.','$2673 : 19 = 140$ rest 13, dus $z = -140[[13|19]]$ (≈ $-140,68$)')],
  a:'$z = -140[[13|19]]$',f:[['$z = 140[[13|19]]$','$-[[2904|19]] + [[231|19]]$ is negatief: $z = -140[[13|19]]$.'],['$z = -152[[16|19]]$','Je hebt $[[231|19]]$ afgetrokken in plaats van opgeteld.']]},
+/* ===== Extra opdrachten H3 (Teams, huiswerk do 12 nov): E1, E2, E3cd, E4, E5, E6, E7bd, E8.
+   In de antwoorden van de docent staan bij E3a, E3c en E5b getallen die niet kloppen met de opdracht; hier staat wat uit de opdracht volgt. ===== */
+{id:'e1',o:'ab',nr:'Extra opdracht E1',q:'Hier zie je vier grafieken van lineaire verbanden. Welke grafiek hoort bij welke formule?<br>A $y = 2x - 2$ &nbsp; B $y = -2x - 2$ &nbsp; C $y = 5x - 2$ &nbsp; D $y = -2x + 2$'+GE1,
+ denk:'Kijk eerst naar b: waar snijdt de lijn de y-as? Dan naar a: stijgt of daalt hij, en hoe steil?',
+ st:[S('Startgetal b = snijpunt met de y-as.','A, B en C gaan door $(0, -2)$; D gaat door $(0, 2)$, dat is lijn 2'),S('B daalt ($a = -2$) en gaat door $(0, -2)$.','lijn 1 (evenwijdig aan lijn 2, want ook $a = -2$)'),S('A en C stijgen. C is het steilst ($a = 5$).','C = lijn 3, A = lijn 4')],
+ a:'A–4, B–1, C–3, D–2',f:[['A–3, B–1, C–4, D–2','De steilste stijgende lijn is lijn 3. Die hoort bij $a = 5$, dus C.'],['A–4, B–2, C–3, D–1','Lijn 2 snijdt de y-as boven de oorsprong, bij $(0, 2)$. Dat is D: $+ 2$.'],['A–4, B–1, C–2, D–3','Lijn 2 daalt, dus a is negatief. C ($a = 5$) stijgt.']]},
+{id:'e2',o:'tab',nr:'Extra opdracht E2',q:'Bij deze tabel is er sprake van een lineair verband. Stel een formule op.'+tbl([0,1,2,3],[9,7,5,3]),
+ denk:'Eerst b: wat is y bij $x = 0$? Dan a: hoeveel verandert y als x 1 groter wordt?',
+ st:[S('Bij $x = 0$ is $y = 9$.','$b = 9$'),S('x wordt 1 groter, y wordt 2 kleiner.','$a = -2$'),S('Formule. Controle: $x = 3$ geeft $-6 + 9 = 3$ ✓','$y = -2x + 9$')],
+ a:'$y = -2x + 9$',f:[['$y = 2x + 9$','y wordt kleiner (9, 7, 5, 3), dus a is negatief.'],['$y = 9x - 2$','a en b zijn omgewisseld. b = de y bij $x = 0$ = 9.'],['$y = -2x + 3$','3 is de y bij $x = 3$. Het startgetal is de y bij $x = 0$.']]},
+{id:'e3c',o:'rev',nr:'Extra opdracht E3c',q:'Is er bij deze tabel sprake van een recht evenredig verband? Zo ja, wat is de evenredigheidsconstante?'+tbl([1,2,3,5],[-3,-6,-12,-15]),
+ denk:'Reken bij elke kolom $y : x$ uit. Bij recht evenredig is dat overal hetzelfde getal.',
+ st:[S('$y : x$ per kolom.','$-3 : 1 = -3$, $-6 : 2 = -3$, $-12 : 3 = -4$, $-15 : 5 = -3$'),S('Niet overal hetzelfde.','bij $x = 3$ zou $y = -9$ moeten staan'),S('Let op.','In de antwoorden van de docent staat −3. Misschien is $-12$ een typfout voor $-9$. Schrijf je berekening op en vraag het je docent.')],
+ a:'Nee, want $-12 : 3 = -4$ en bij de andere kolommen is $y : x = -3$',f:[['Ja, de evenredigheidsconstante is $-3$','Reken ook $-12 : 3$ uit. Dat is $-4$, niet $-3$. (In de antwoorden van de docent staat wel $-3$: vraag het na.)'],['Ja, de evenredigheidsconstante is 3','Alle y-waarden zijn negatief, dus de constante zou negatief zijn. En $-12 : 3 = -4$ past niet.'],['Nee, want $(0, 0)$ staat niet in de tabel','$x = 0$ hoeft niet in de tabel te staan. Kijk naar $y : x$ in elke kolom.']]},
+{id:'e3d',o:'rev',nr:'Extra opdracht E3d',q:'Is er bij deze tabel sprake van een recht evenredig verband? Zo ja, wat is de evenredigheidsconstante?'+tbl([0,10,16,26],[0,5,8,13]),
+ denk:'Reken $y : x$ uit (sla $x = 0$ over).',
+ st:[S('$y : x$ per kolom.','$5 : 10 = [[1|2]]$, $8 : 16 = [[1|2]]$, $13 : 26 = [[1|2]]$'),S('En $(0, 0)$ ✓','Ja, recht evenredig: $y = [[1|2]]x$')],
+ a:'Ja, de evenredigheidsconstante is $[[1|2]]$',f:[['Ja, de evenredigheidsconstante is 2','Dat is $x : y$. De constante is $y : x = 5 : 10 = [[1|2]]$.'],['Nee, want x gaat niet in gelijke stappen','De stappen hoeven niet gelijk te zijn. $y : x$ is overal $[[1|2]]$.']]},
+{id:'e4',o:'rev',nr:'Extra opdracht E4',q:'Hier zie je vier grafieken van recht evenredige verbanden. Welke grafiek hoort bij welke formule?<br>A $y = [[1|2]]x$ &nbsp; B $y = -x$ &nbsp; C $y = -8x$ &nbsp; D $y = 3x$'+GE4,
+ denk:'Allemaal door $(0, 0)$. Stijgt of daalt de lijn? Hoe steil?',
+ st:[S('Stijgend: A ($[[1|2]]$) en D (3). D is steiler.','D = lijn 3, A = lijn 4 (de flauwe)'),S('Dalend: B ($-1$) en C ($-8$). C is heel steil.','C = lijn 2, B = lijn 1')],
+ a:'A–4, B–1, C–2, D–3',f:[['A–3, B–1, C–2, D–4','$y = 3x$ is steiler dan $y = [[1|2]]x$. Lijn 3 is de steile, dus D.'],['A–4, B–2, C–1, D–3','$-8x$ is heel steil. Lijn 2 is de steilste dalende lijn.'],['A–1, B–4, C–2, D–3','Lijn 1 daalt, dus a is negatief. $[[1|2]]x$ stijgt.']]},
+{id:'e5a',o:'verh',nr:'Extra opdracht E5a',q:'Welke regels gelden voor het rekenen met verhoudingstabellen?',
+ denk:'Wat mag je met een kolom doen zonder dat de verhouding verandert?',
+ st:[S('Boven en onder hetzelfde doen.','vermenigvuldigen of delen met hetzelfde getal'),S('Twee kolommen samen.','kolommen optellen of van elkaar aftrekken')],
+ a:'Boven en onder met hetzelfde getal vermenigvuldigen of delen, en kolommen optellen of aftrekken',f:[['Boven en onder hetzelfde getal optellen of aftrekken','$2 : 4$ wordt met $+1$ $3 : 5$. Dat is een andere verhouding. Optellen mag alleen met hele kolommen.'],['Alleen vermenigvuldigen; delen mag niet','Delen mag ook: dat is vermenigvuldigen met een breuk. Juist naar 1 delen is vaak handig.']]},
+{id:'e5b1',o:'verh',nr:'Extra opdracht E5b (links)',q:'Vul de verhoudingstabel verder in.'+tbl(['?',4,5,'?',12],[0,'?',1,2,'?']),
+ denk:'Bij $x = 5$ hoort $y = 1$. Dus y is steeds $x : 5$.',
+ st:[S('$y = 0$:','$x = 0$'),S('$x = 4$:','$4 : 5 = [[4|5]]$'),S('$y = 2$ (2 keer zo veel als 1):','$x = 10$'),S('$x = 12$:','$12 : 5 = 2[[2|5]]$')],
+ a:tbl([0,4,5,10,12],[0,'$[[4|5]]$',1,2,'$2[[2|5]]$']),f:[[tbl([0,4,5,10,12],[0,'$[[5|4]]$',1,2,'$2[[2|5]]$']),'$5 → 1$ is delen door 5. Dus $4 : 5 = [[4|5]]$, niet $[[5|4]]$.'],[tbl([0,4,5,7,12],[0,'$[[4|5]]$',1,2,'$2[[2|5]]$']),'Je hebt bij $y = 2$ opgeteld (+1, +2). In een verhoudingstabel vermenigvuldig je: $y$ 2 keer zo groot, dus $x = 10$.']]},
+{id:'e5b2',o:'verh',nr:'Extra opdracht E5b (rechts)',q:'Vul de verhoudingstabel verder in.'+tbl([-3,1,'?',10,12],['?','?',-4,'?',-8]),
+ denk:'Bij $x = 12$ hoort $y = -8$. Dus $y = -[[8|12]]x = -[[2|3]]x$.',
+ st:[S('Constante.','$-8 : 12 = -[[2|3]]$'),S('$x = -3$:','$-[[2|3]]·-3 = 2$'),S('$x = 1$:','$-[[2|3]]$'),S('$y = -4$:','$x = -4 : -[[2|3]] = 6$ (de helft van 12)'),S('$x = 10$:','$-[[2|3]]·10 = -6[[2|3]]$'),S('Let op.','In de antwoorden van de docent staat bij $x = -3$: $-2$, en bij $y = -4$: $-[[3|5]]$. Controleer zelf: $6 · -[[2|3]] = -4$ ✓. Vraag het na als je twijfelt.')],
+ a:tbl([-3,1,6,10,12],[2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),f:[[tbl([-3,1,6,10,12],[-2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),'Min keer min is plus: $-[[2|3]]·-3 = +2$.'],[tbl([-3,1,'$-[[3|5]]$',10,12],[2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),'Controle: $-[[3|5]]·-[[2|3]]$ is positief, geen $-4$. $-4$ is de helft van $-8$, dus $x$ is de helft van 12.'],[tbl([-3,1,6,10,12],['$4[[1|2]]$','$-1[[1|2]]$',-4,'$-15$',-8]),'Dat is $x : y$ in plaats van $y : x$. De constante is $-8 : 12 = -[[2|3]]$.']]},
+{id:'e6a',o:'rev',nr:'Extra opdracht E6a',q:'y is recht evenredig met x. De evenredigheidsconstante is $1[[1|2]]$. Maak een tabel voor x = 0 t/m 6.',
+ denk:'$y = 1[[1|2]]x$. Elke stap in x komt er $1[[1|2]]$ bij.',
+ st:[S('Formule.','$y = 1[[1|2]]x$'),S('Invullen.',tbl([0,1,2,3,4,5,6],[0,'$1[[1|2]]$',3,'$4[[1|2]]$',6,'$7[[1|2]]$',9]))],
+ a:tbl([0,1,2,3,4,5,6],[0,'$1[[1|2]]$',3,'$4[[1|2]]$',6,'$7[[1|2]]$',9]),f:[[tbl([0,1,2,3,4,5,6],['$1[[1|2]]$',3,'$4[[1|2]]$',6,'$7[[1|2]]$',9,'$10[[1|2]]$']),'Recht evenredig gaat door $(0, 0)$: bij $x = 0$ is $y = 0$.'],[tbl([0,1,2,3,4,5,6],[0,'$1[[1|2]]$','$2[[1|2]]$','$3[[1|2]]$','$4[[1|2]]$','$5[[1|2]]$','$6[[1|2]]$']),'Je telt er steeds 1 bij. Het moet $1[[1|2]]$ per stap zijn: $1[[1|2]]·2 = 3$.']]},
+{id:'e6b',o:'rev',nr:'Extra opdracht E6b',q:'y is recht evenredig met x, met evenredigheidsconstante $1[[1|2]]$. Welke x hoort bij $y = 45$?',
+ denk:'$45 = 1[[1|2]]x$. Delen door $1[[1|2]]$.',
+ st:[S('Vergelijking.','$1[[1|2]]x = 45$'),S('Delen.','$x = 45 : 1[[1|2]] = 30$'),S('Controle.','$1[[1|2]]·30 = 45$ ✓')],
+ a:'$x = 30$',f:[['$x = 67[[1|2]]$','Dat is $45 · 1[[1|2]]$. Je zoekt x, dus delen: $45 : 1[[1|2]]$.'],['$x = 43[[1|2]]$','Je hebt $1[[1|2]]$ afgetrokken. Het is keer, dus terug is delen.']]},
+{id:'e7b',o:'kw',nr:'Extra opdracht E7b',q:'Wat zijn a, b en c bij $y = -2x^2 + 4x + 5$?',
+ denk:'Algemene vorm $y = ax^2 + bx + c$. Neem het teken mee.',
+ st:[S('Voor $x^2$.','$a = -2$'),S('Voor x.','$b = 4$'),S('Los getal.','$c = 5$')],
+ a:'$a = -2$, $b = 4$, $c = 5$',f:[['$a = 2$, $b = 4$, $c = 5$','Het minteken hoort bij a: $a = -2$.'],['$a = -2$, $b = 5$, $c = 4$','b staat voor x, c is het losse getal.']]},
+{id:'e7d',o:'kw',nr:'Extra opdracht E7d',q:'Wat zijn a, b en c bij $y = 7x^2 + 10[[1|2]]x$?',
+ denk:'Er staat geen los getal. Wat is c dan?',
+ st:[S('Voor $x^2$.','$a = 7$'),S('Voor x.','$b = 10[[1|2]]$'),S('Geen los getal.','$c = 0$')],
+ a:'$a = 7$, $b = 10[[1|2]]$, $c = 0$',f:[['$a = 7$, $b = 0$, $c = 10[[1|2]]$','$10[[1|2]]$ staat voor x, dus dat is b. Er is geen los getal: $c = 0$.'],['$a = 7$, $b = 10[[1|2]]$, c bestaat niet','Als het losse getal ontbreekt, is $c = 0$.']]},
+{id:'e8a',o:'kw',nr:'Extra opdracht E8a',q:'Gegeven is $y = 2x^2 + x - 10$. Vul de tabel verder in.'+tbl([0,1,2,3,4],['?','?','?','?','?']),
+ denk:'Eerst $x^2$, dan keer 2, dan $+ x$, dan $- 10$.',
+ st:[S('$x = 0$:','$0 + 0 - 10 = -10$'),S('$x = 1$:','$2 + 1 - 10 = -7$'),S('$x = 2$:','$2·4 + 2 - 10 = 0$'),S('$x = 3$:','$2·9 + 3 - 10 = 11$'),S('$x = 4$:','$2·16 + 4 - 10 = 26$')],
+ a:tbl([0,1,2,3,4],[-10,-7,0,11,26]),f:[[tbl([0,1,2,3,4],[-10,-7,6,20,38]),'Eerst kwadrateren, dan keer 2: $2·2^2 = 2·4 = 8$, niet $(2·2)^2 = 16$.'],[tbl([0,1,2,3,4],[-10,-9,-4,5,18]),'Je bent $+ x$ vergeten. Bij $x = 2$: $8 + 2 - 10 = 0$.']]},
+{id:'e8b',o:'kw',nr:'Extra opdracht E8b',q:'Teken in je schrift de grafiek van $y = 2x^2 + x - 10$. Gebruik je tabel en reken ook een paar negatieve x uit (bijv. $x = -1$, $-2$, $-3$).<br>Welke grafiek lijkt op die van jou?',
+ denk:'$a = 2$ is positief: een dalparabool. Bij $x = 0$ is $y = -10$.',
+ st:[S('Negatieve x erbij.',tbl([-3,-2,-1,0,1,2],[5,-4,-9,-10,-7,0])),S('Zet de punten uit en trek een vloeiende boog.',GE8(x=>2*x*x+x-10,[[-3,5],[-2,-4],[-1,-9],[0,-10],[1,-7],[2,0]]))],
+ a:GE8(x=>2*x*x+x-10),f:[[GE8(x=>-2*x*x-x+10),'$a = 2$ is positief, dus een dalparabool, geen bergparabool.'],[GE8(x=>2*x*x-x-10),'Deze gaat bij $x = 2$ door $y = -4$. Bij jouw formule is $y = 0$ bij $x = 2$.']]},
+
 
 /* ===== Toetsvoorbereiding ===== */
 {id:'tv1',o:'tv',nr:'75a',q:'Een vliegtuig zet op 1200 m de motoren uit en glijdt tot 300 m hoogte. Het glijgetal is 30.<br>Welke horizontale afstand legt het af?',
