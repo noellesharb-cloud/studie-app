@@ -423,7 +423,7 @@ const stateEl=$('#state');
 const COL=['--c1','--c2','--c3','--c4','--c5','--c6','--c7'];
 const DAGEN=['zo','ma','di','wo','do','vr','za'],DAGL=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-const DEF={v:3,doel:7,basis:20,blok:25,start:'16:00',totD:90,totNormaal:150,totZwaar:360,maxDagSchool:150,maxDagWeekend:0,sprintMin:3,oefenMin:20,bijMin:20,record:0,streakStart:'2026-11-02',
+const DEF={v:3,doel:7,basis:20,blok:25,start:'16:00',totD:90,totNormaal:150,totZwaar:360,maxDagSchool:150,rekMin:30,maxDagWeekend:0,sprintMin:3,oefenMin:20,bijMin:20,record:0,streakStart:'2026-11-02',
   /* schoolvakanties regio Midden (Rotterdam) 2026-2027 en vaste vrije dagen; aan te passen bij Instellingen */
   vakanties:[{van:'2026-10-17',tot:'2026-10-25',naam:'Herfstvakantie'},{van:'2026-12-19',tot:'2027-01-03',naam:'Kerstvakantie'},
    {van:'2027-02-20',tot:'2027-02-28',naam:'Voorjaarsvakantie'},{van:'2027-03-29',tot:'2027-03-29',naam:'Tweede Paasdag'},
@@ -578,7 +578,7 @@ function schedule(){
   return SCHED=maakSchedule(F,credit);
 }
 function maakSchedule(van,credit){
-  const A={},used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -591,7 +591,16 @@ function maakSchedule(van,credit){
       const room=Math.min(z?60:45,cap,tot);
       if(room>=15){(A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});tot-=room}
       d=addDays(d,-1);k++}
-    if(tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot});});
+    if(tot>0)over.push({v,t,z,tot});});
+  /* tweede ronde (afspraak 10 nov): wat niet binnen het maximum past, mag op een schooldag tot rekMin minuten over het maximum heen
+     (150 + 30 = 3 uur). Eerst de rustigste dagen, eerste toets eerst. Pas wat dan nog overblijft, geeft de melding 'Niet alles past'. */
+  const rek=SET.rekMin??DEF.rekMin;
+  over.forEach(o=>{const{v,t,z}=o,lim=z?60:45;
+    const D=[];for(let d=addDays(t.datum,-1),k=0;d>=van&&k<70;d=addDays(d,-1),k++)if(!vrijDag(d)&&!vrijZa(d))D.push(d);
+    D.sort((a,b)=>used(a)-used(b)||(a<b?1:-1));
+    for(const d of D){if(o.tot<=0)break;const e=(A[d]||[]).find(x=>x.t===t),room=Math.min(lim-(e?e.min:0),SET.maxDagSchool+rek-used(d),o.tot);
+      if(room<10||!e&&room<15)continue;if(e)e.min+=room;else (A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});o.tot-=room}
+    if(o.tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot:o.tot});});
   return A;
 }
 /* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
@@ -730,10 +739,10 @@ function rVandaag(){
     <div class="prog"><i style="width:${plan?Math.min(100,gedaan/plan*100):0}%"></i></div>
   </div>
   ${(()=>{if(!isToday||vrijDag(dag))return '';const m=addDays(dag,1);if(vrijDag(m))return '';
-    const BM=blokStatus(m).filter(b=>!b.later),open=BM.filter(b=>!b.done).reduce((a,b)=>a+b.min,0),max=vrijZa(m)?SET.maxDagWeekend:SET.maxDagSchool;
+    const BM=blokStatus(m).filter(b=>!b.later),open=BM.filter(b=>!b.done).reduce((a,b)=>a+b.min,0),max=vrijZa(m)?SET.maxDagWeekend:SET.maxDagSchool+(SET.rekMin??DEF.rekMin);
     if(!(open>max&&open>=60))return '';const kan=BM.filter(b=>b.hwt&&!b.done&&!b.hwt.klaar).sort((a,b)=>a.min-b.min);if(!kan.length)return '';
     return `<div class="note warn"><b>Morgen wordt een lange dag: ${mins(open)}</b><span>Wil je iets vooruitwerken? Dan wordt morgen korter. Dit kan al: ${kan.map(b=>`${esc(hwVak(b.hwt.vak)?.naam||b.hwt.vak)} (${b.min} min)`).join(', ')}. Je vindt het onderaan bij Huiswerk dat eraan komt. Wat je afvinkt, valt morgen weg.</span></div>`})()}
-  ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past binnen ${mins(SET.maxDagSchool)} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Je kunt bij Week → Instellingen het maximum per dag verhogen of op zaterdag leertijd toevoegen. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt.</span></div>`:''}
+  ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past, ook niet met ${mins(SET.maxDagSchool+(SET.rekMin??DEF.rekMin))} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt. Of zet bij Week → Instellingen de leertijd per toets lager, of geef vrijdag en zaterdag meer leertijd.</span></div>`:''}
   ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
   ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
@@ -971,6 +980,7 @@ function rWeek(){
       <label for="s-tn">Leertijd afsluitende toets (min)</label><input class="in" id="s-tn" data-s="totNormaal" inputmode="numeric" value="${SET.totNormaal}" ${dis}>
       <label for="s-tz">Leertijd zware afsluitende toets (min)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
       <label for="s-ms">Maximaal per schooldag, alles samen (min)</label><input class="in" id="s-ms" data-s="maxDagSchool" inputmode="numeric" value="${SET.maxDagSchool}" ${dis}>
+      <label for="s-rk">Extra als toetsvoorbereiding anders niet past (min)</label><input class="in" id="s-rk" data-s="rekMin" inputmode="numeric" value="${SET.rekMin??DEF.rekMin}" ${dis}>
       <label for="s-mw">Leren op vrijdag en zaterdag (min)</label><input class="in" id="s-mw" data-s="maxDagWeekend" inputmode="numeric" value="${SET.maxDagWeekend}" ${dis}>
       <label for="s-bm">Bijhouden na huiswerk, per vak (min)</label><input class="in" id="s-bm" data-s="bijMin" inputmode="numeric" value="${SET.bijMin}" ${dis}>
       <label for="s-om">Dagelijks oefenen in de app (min)</label><input class="in" id="s-om" data-s="oefenMin" inputmode="numeric" value="${SET.oefenMin}" ${dis}>
