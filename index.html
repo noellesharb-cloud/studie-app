@@ -402,7 +402,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611101700"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611101800"></script>
+<script src="oefen/engine.js?v=202611101830"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611042008"></script>
@@ -879,14 +879,16 @@ function openSprint(kind){fromSprint=true;show('oefenen');Oefen.sprint($('#v-oef
 const saveT={};
 function oefenCtx(){return {
   state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{}};return OEF[id]},
-  save:id=>{clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
+  /* de ouder kijkt alleen mee: niets van wat de ouder in het oefenen doet, komt in haar oefenstand (fout 10 nov: 'Alles opnieuw' wiste haar huiswerk) */
+  ouder:()=>isOuder(),
+  save:id=>{if(isOuder())return;clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
   metToets:id=>heeftToets(id,today()),
   nakijk:it=>{if(isOuder()||!db)return;const id=`${it.vak}-${it.rid}-${it.qid}`.replace(/[^\w-]/g,'_'),body=Object.assign({},it,{d:today(),t:Date.now(),oordeel:null});
     NK[id]=body;write(()=>db.collection('nakijk').doc(id).set(body))},
   wacht:vid=>nkOpen().filter(x=>x.vak===vid&&Date.now()-(x.t||0)<NK_DAGEN*864e5).map(x=>x.rid),
   klaar:k=>{const d=today();if(!isOuder()&&!logDag(d).some(e=>e.key==='klaar-'+k))addLog({d,key:'klaar-'+k,vak:'opwarm',soort:'opwarm',min:0,t:Date.now()},true)},
   sprintDone:(kind,score)=>{const sp=OEF.sprints=OEF.sprints||{},oud=sp[kind]||0;
-    if(score>oud){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
+    if(score>oud&&!isOuder()){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
     if(!isOuder())addLog({d:today(),key:'sprint-'+kind+'-'+Date.now().toString(36),vak:'sprint',soort:'sprint',min:SET.sprintMin,score,t:Date.now()},true);
     return {oud}},
   home:()=>{Oefen.stop();if(fromSprint){fromSprint=false;tab='vandaag'}render()}}}

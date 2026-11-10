@@ -632,12 +632,12 @@ window.Oefen=(()=>{
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
     <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
-      ${opgIds.length&&opgIds.every(id=>gedaan.includes(id)||antw[id])?'<button class="btn'+(rest.length?' ghost':'')+'" id="hwantw">Antwoorden voor je schrift</button>':''}
-      ${gedaan.length?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
+      ${(opgIds.length?opgIds:ids).every(id=>gedaan.includes(id)||antw[id])?'<button class="btn'+(rest.length?' ghost':'')+'" id="hwantw">Antwoorden voor je schrift</button>':''}
+      ${gedaan.length&&!(Oefen.ctx.ouder&&Oefen.ctx.ouder())?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
       <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
     el.querySelectorAll('[data-hwm]').forEach(b=>b.onclick=()=>{const m=b.dataset.hwm;if(kies){ST.hwVorm=m;save()}start(m,rest,titel+(m==='tvorm'?' · zelf op papier':''),null,null,H.key)});
-    const aw=el.querySelector('#hwantw');if(aw)aw.onclick=()=>hwAntw(H,opgIds);
+    const aw=el.querySelector('#hwantw');if(aw)aw.onclick=()=>hwAntw(H,delen.filter(d=>d.ids.length));
     const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
     el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
     Oefen._hw=H;scrollTo(0,0);
@@ -646,7 +646,8 @@ window.Oefen=(()=>{
      Ze schrijft eerst haar eigen antwoord over en zet de verbetering in een andere kleur erachter,
      zodat de docent kan zien waar ze moeite mee had. ---------- */
   const goedTxt=q=>q.model||(q.t==='open'?(q.vb&&q.vb.length?q.vb[0]:(q.k||[]).join(' ')):q.a);
-  function hwAntw(H,ids){
+  /* alle delen van het huiswerk: de opgaven en daarna het leerwerk (zoals opdracht T1), elk onder een eigen kopje (fout 10 nov: alleen de opgaven) */
+  function hwAntw(H,delen){const ids=delen.flatMap(d=>d.ids);
     const m=(ST.hwAns||{})[H.key]||{},geen=!ids.some(id=>m[id]);
     const vraag=q=>fmt(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,''));
     /* de hele uitwerking (de stappen van 'Help mij stap voor stap'): open bij een fout, ingeklapt bij goed */
@@ -665,7 +666,7 @@ window.Oefen=(()=>{
       ${ids.some(id=>hasSt(QM[id]))?'<span>Bij een som die fout ging, staat de uitwerking eronder. Leg die naast jouw uitwerking in je schrift: bij welke stap ging het mis? Schrijf vanaf die stap de verbetering in je andere kleur.</span>':''}
       <span>${fout?`Je had ${fout} van de ${ids.length} in één keer fout.`:'Je had alles in één keer goed!'}</span>`}
       <span class="sub" style="font-size:.88rem">De antwoorden in de app zijn niet van je docent. Twijfel je of je docent iets anders bedoelt? Vraag het in de les.</span></div>
-    <div class="wl stack">${ids.map(kaart).join('')}</div>
+    ${delen.map(d=>`${delen.length>1?`<h3 style="margin:14px 0 6px">${esc(d.titel||'Opgaven '+H.nrs.join(', '))}</h3>`:''}<div class="wl stack">${d.ids.map(kaart).join('')}</div>`).join('')}
     <div class="stack"><button class="btn ghost" id="hwterug">Terug naar je huiswerk</button></div>`;
     el.querySelector('#back').onclick=()=>hwHome(H);el.querySelector('#hwterug').onclick=()=>hwHome(H);scrollTo(0,0);
   }
