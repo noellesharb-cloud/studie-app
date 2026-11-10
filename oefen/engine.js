@@ -435,7 +435,8 @@ window.Oefen=(()=>{
      dan is het fout, zoals op de toets. Anders zet de app haar antwoord naast het goede en kijkt ze zelf na.
      Extra goede antwoorden staan in q.tvAlt, een eigen opdrachttekst in q.tv. Een eigen vraagsoort doet mee met vakjes (q.tvIn met
      de antwoorden in q.tvA) of als het vak hem in tvCustom noemt (dan één antwoord: q.a). Vragen met maar één fout antwoord
-     (richtig/falsch, ja/nee) en plaatjes blijven meerkeuze. ---------- */
+     (richtig/falsch, ja/nee) en plaatjes blijven meerkeuze, net als vragen met q.mc (de keuzes horen bij de vraag: 'welke uitspraak',
+     'welke is GEEN', een volgorde kiezen). ---------- */
   const NV_AF={nominativus:'nom',genitivus:'gen',dativus:'dat',accusativus:'acc',ablativus:'abl',vocativus:'voc',enkelvoud:'ev',meervoud:'mv'};
   const tvNorm=(x,hl)=>{let t=schoon(x).replace(/\b(nom|gen|dat|acc|abl|voc|ev|mv)\./gi,'$1').replace(/\b(nominativus|genitivus|dativus|accusativus|ablativus|vocativus|enkelvoud|meervoud)\b/gi,w=>NV_AF[w.toLowerCase()]).replace(/-$/,'').replace(/[’‘`´]/g,"'").replace(/[“”„]/g,'"').replace(/\s*([,;:])\s*/g,'$1 ').replace(/\s+/g,' ').replace(/[\s.!]+$/,'').trim();return hl?t:t.toLowerCase()};
   const tvKaal=x=>tvNorm(x).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9Ͱ-Ͽ ]/g,'').replace(/\s+/g,' ').trim();
@@ -457,7 +458,7 @@ window.Oefen=(()=>{
   function schrijfVorm(q,it){if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets')||it.retry)return false;
     if(q.type)return !!q.tvIn||(V.tvCustom||[]).includes(q.type);
     const svg=x=>String(Array.isArray(x)?x[0]:x).includes('<svg');
-    return q.t!=='open'&&!q.in&&!q.open&&Array.isArray(q.f)&&q.f.length>=2&&!svg(q.a)&&!q.f.some(svg)}
+    return q.t!=='open'&&!q.in&&!q.open&&!q.mc&&Array.isArray(q.f)&&q.f.length>=2&&!svg(q.a)&&!q.f.some(svg)}
   function askSchrijf(q,it,s){
     const vak=q.tvIn,ga=schoon(goedTxt(q)),kort=!vak&&ga.length<=45&&!/[.!?;]\s/.test(ga);
     el.innerHTML=`${kop(it,Object.assign({},q,{q:String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,'')}),s,false)}
