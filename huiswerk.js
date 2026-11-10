@@ -59,7 +59,7 @@ window.HUISWERK=[
   /* vrijdag 13 november: D-toets Latijn (woorden 7A + 7B, zelfstandige naamwoorden groep 3, bijvoeglijke naamwoorden groep 3). Toetsdatum staat in Cijfers, niet hier. */
   /* vrijdag 13 november */
   {id:'2026-11-13-gr',d:'2026-11-13',vak:'grieks',t:'Opdr. 31-35 en herhalen',wat:['# Leerwerk','Herhalen: woorden les 8','Herhalen: alle rijtjes van het persoonlijk voornaamwoord (HB p. 106)','# Maakwerk','Opdr. 31, 32, 33 en 35 (HB pp. 38-39)','# Meenemen','Argo Tekstboek en Argo Hulpboek','Schrift en schrijfmateriaal'],min:35,app:'gr',par:'hb9',opg:[31,32,33,35],leer:[{titel:'Herhalen: leerwoorden les 8',o:'w8l'},{titel:'Persoonlijk voornaamwoord 1e en 2e persoon',o:'pv12'},{titel:'Persoonlijk voornaamwoord 3e persoon',o:'pv3'}]},
-  {id:'2026-11-13-fa',d:'2026-11-13',vak:'frans',t:'Exercices digitaal via Noordhoff',wat:['Maak digitaal via Noordhoff:','Exercice 12a','Exercice 12b','Exercice 10c'],min:20},
+  {id:'2026-11-13-fa',d:'2026-11-13',vak:'frans',t:'Exercices digitaal via Noordhoff',wat:['Maak digitaal via Noordhoff:','Exercice 12a','Exercice 12b','Exercice 10c','# In de app','Ook in de app (werkboek blz. 66–67), met 11a, 11b, 11c en het rollenspel 12c/12d als extra. Voor 10c heb je de tekst over Ken Amante nodig.'],min:20,app:'fa',par:'2',opg:[10,12]},
   /* dinsdag 17 november */
   {id:'2026-11-17-na',d:'2026-11-17',vak:'natuurkunde',t:'L5.06',wat:['Kijk in SOMtoday bij L5.06 wat je moet maken (de omschrijving staat nog niet in de app)'],min:30},
   /* donderdag 19 november: toets USO leesvaardigheid Nederlands (vaardighedentoets, geen stof). Toetsdatum hoort in Cijfers. */
