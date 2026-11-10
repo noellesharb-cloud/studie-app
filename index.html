@@ -509,12 +509,21 @@ function hwAfgewezen(id){for(const w of Object.values(LOG))for(const e of (w.ent
 /* knop voor de ouder bij iets wat ze zelf heeft afgevinkt */
 function afwKnop(e,klaar){if(!isOuder()||!e||klaar||!canWrite)return '';
   return `<span class="row" style="margin-top:6px"><span class="sub" style="font-size:.85rem">Zelf afgevinkt${e.t?' om '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):''}.</span><button class="btn ghost sm" data-afw="${esc(e.key)}" data-afwd="${e.d}" data-stop>Afwijzen</button></span>`}
+/* schatting voor dagen waarvan het huiswerk nog niet bekend is (afspraak 10 nov): de mediaan van wat ze de afgelopen 4 weken
+   echt kreeg (dagen die helemaal zijn ingevoerd, geen toetsweek of vakantie). Pas bij minder dan 5 van zulke dagen geldt
+   lesuren × 'Huiswerk per lesuur'. Die schatting was te hoog (ongeveer 2 uur per dag) en drukte de toetsvoorbereiding weg. */
+let HWS=null;
+function hwSchat(){const t=today();if(HWS&&HWS.t===t)return HWS.v;const S={},van=addDays(t,-28);
+  HW().forEach(h=>{if(hwCompleet(h.d)&&h.d>=van&&!vrijDag(h.d)&&pd(h.d).getDay()%6!==0&&!inToetsweek(h.d))S[h.d]=(S[h.d]||0)+(h.min||0)});
+  const m=Object.values(S).filter(x=>x>0).sort((a,b)=>a-b);let v=null;
+  if(m.length>=5){const k=m.length>>1;v=Math.round((m.length%2?m[k]:(m[k-1]+m[k])/2)/5)*5}
+  HWS={t,v};return v}
 function huiswerkMin(s){if(vrijZa(s)||vrijDag(s))return 0;const g=pd(s).getDay();const nd=volgendeSchooldag(s),T=hwVoor(nd);
   /* staat al het huiswerk voor die dag in de app, dan telt alleen dat (ook als het 0 is): geen schatting en geen leeg 'kijk in SOMtoday'-blok.
      De vrije tijd gaat dan naar toetsvoorbereiding, bijhouden of oefenen in de app. */
   if(hwCompleet(nd))return T.reduce((a,h)=>a+(h.min||0),0);
   if(inToetsweek(volgendeSchooldag(s))||inToetsweek(s)&&g!==0)return 0;
-  const lu=VAK.reduce((a,v)=>a+(num(v.lesuren)??0),0),gen=Math.round(lu*SET.basis/5/5)*5;
+  const lu=VAK.reduce((a,v)=>a+(num(v.lesuren)??0),0),gen=hwSchat()??Math.round(lu*SET.basis/5/5)*5;
   return T.length?Math.max(gen,T.reduce((a,h)=>a+(h.min||0),0)):gen}
 /* leertijd per toets terug in de tijd verdelen, eerste toets eerst, met een maximum per dag.
    Vrijdag en zaterdag: alleen een sprint. */
