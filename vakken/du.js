@@ -1,4 +1,4 @@
-/* Duits, Kapitel 6 Haustiere: werkblad blz. 32, opdracht 6, 7 en 8a, plus Akkusativ en woordjes.
+/* Duits, Kapitel 4 Mein Tag (AB blz. 32 en 39, onderaan toegevoegd) en Kapitel 6 Haustiere: werkblad blz. 32, opdracht 6, 7 en 8a, plus Akkusativ en woordjes.
    Overgenomen uit de losse app "Duits Kapitel 6". Alleen vragen en uitleg; de manier van oefenen staat in oefen/engine.js.
    Eigen vraagsoorten (zie custom onderaan): rij = werkwoordrijtje bouwen, zin = vraag bouwen in twee stappen.
    Akkusativ (lijdend voorwerp) in haar blauwe markeerkleur, achter de knop Kleurhulp.
@@ -355,10 +355,165 @@ function drawZin(q,it,box,api){
       cap(S.built.map(c=>c.w).join(' '))+'?'+(S.vk===0?'':` (werkwoord gekozen: ${q.vopts[S.vk][0]})`))};
 }
 
-const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)']];
-const LIJST=[];[...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
-return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Arbeitsbuch blz. 19, 24, 26 en 27 · Kapitel 6 Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
-  leer:['ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
-  custom:{rij:drawRij,zin:drawZin},
-  PN:{ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
+
+/* ================= Kapitel 4 Mein Tag: Arbeitsbuch blz. 32 (opdracht 1a, 1b, 2a) en blz. 39 (Deine Wörter 4) =================
+   Vertalingen door Claude. In haar boek staat bij 'So ein Mist!' een eigen vertaling; hier staat een nette. */
+/* ---------- klok ---------- */
+const GETAL=['zwölf','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf'];
+const uur=h=>GETAL[((h%12)+12)%12||12];
+function TIJD(h,m){const n=uur(h),v=uur(h+1);
+  return m===0?(h%12===1?'ein':n)+' Uhr':m===5?'fünf nach '+n:m===10?'zehn nach '+n:m===15?'Viertel nach '+n:m===20?'zwanzig nach '+n:
+    m===25?'fünf vor halb '+v:m===30?'halb '+v:m===35?'fünf nach halb '+v:m===40?'zwanzig vor '+v:m===45?'Viertel vor '+v:m===50?'zehn vor '+v:'fünf vor '+v}
+const dig=(h,m)=>`${((h%12)+12)%12||12}:${String(m).padStart(2,'0')}`;
+function KLOK(h,m){
+  const p=(a,r)=>[(Math.sin(a*Math.PI/180)*r).toFixed(1),(-Math.cos(a*Math.PI/180)*r).toFixed(1)];
+  let t='';for(let i=0;i<60;i++){const [x1,y1]=p(i*6,i%5?80:75),[x2,y2]=p(i*6,84);t+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${i%5?1:2.2}" opacity=".6"/>`}
+  let g='';for(let i=1;i<=12;i++){const [x,y]=p(i*30,64);g+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="17" fill="currentColor">${i}</text>`}
+  const [hx,hy]=p((h%12)*30+m/2,40),[mx,my]=p(m*6,70);
+  return `<svg class="klok" viewBox="-100 -100 200 200" width="170" height="170" role="img" aria-label="klok" style="display:block;margin:10px auto;color:var(--ink)">
+   <circle r="93" fill="var(--card)" stroke="#E8743B" stroke-width="12"/>${t}${g}
+   <line x1="0" y1="0" x2="${hx}" y2="${hy}" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+   <line x1="0" y1="0" x2="${mx}" y2="${my}" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle r="6" fill="currentColor"/></svg>`}
+/* foute antwoorden: tijden die er net naast zitten (nach/vor omgedraaid, uur ernaast, halb verkeerd) */
+function tijdFout(h,m){
+  const c=[];if(m&&m!==30)c.push(m<30?[h-1,60-m]:[h+1,60-m]);   /* Viertel nach ↔ Viertel vor */
+  c.push([h-1,m],[h+1,m],[h,m===30?0:30]);
+  const zien=new Set([TIJD(h,m)]),uit=[];
+  c.forEach(([H,M])=>{const w=TIJD(H,M);if(zien.has(w))return;zien.add(w);
+    uit.push(['Es ist '+w+'.',`${w} is ${dig(H,M)}.${/^halb/.test(w)?' Let op: halb hoort bij het uur erna, net als half in het Nederlands.':''}`])});
+  return uit.slice(0,3)}
+const TIJDREGEL='nach = over · vor = voor · halb neun = half negen (8:30) · Let op: 8:20 is <b>zwanzig nach acht</b>, 8:40 is <b>zwanzig vor neun</b> (in het Nederlands: tien voor half negen en tien over half negen).';
+
+SECS.push(
+ {id:'k1a',par:'k4',nr:'1a',name:'Timo, aufstehen!',c:'--c1',sub:'Arbeitsbuch blz. 32 · opdracht 1a · dialoog aanvullen',
+  rules:[['Lees eerst het hele gesprek','Timo is moe, maar het is al halb sieben',''],
+   ['müde zijn = müde sein','Ich bin so müde.','Niet: Ich habe so müde.'],
+   ['Hoe laat is het?','Wie viel Uhr ist es?','viel, niet viele'],
+   ['Dagen met hoofdletter','Mittwoch, Donnerstag','Donnerstag, niet Donderstag']]},
+ {id:'k1b',par:'k4',nr:'1b',name:'Kira: Dialog ordnen',c:'--c2',sub:'Arbeitsbuch blz. 32 · opdracht 1b · zinnen in de goede volgorde',
+  rules:[['Begin met de groet','Guten Morgen, Kira.',''],['Vraag en antwoord horen bij elkaar','Wie viel Uhr ist es? → Es ist …',''],
+   ['Herhaal wat de ander zei, met een vraagteken','Viertel nach sechs? Ich habe heute erst …','erst = pas']]},
+ {id:'k2a',par:'k4',nr:'2a',name:'Wie viel Uhr ist es?',c:'--c3',sub:'Arbeitsbuch blz. 32 · opdracht 2a · uhrzeiten noteren',
+  rules:[['De lange wijzer: de minuten','Kijk eerst naar de lange wijzer: over (nach) of voor (vor)?',''],
+   ['nach en vor','5 nach · 10 nach · Viertel nach · 20 nach','20 vor · Viertel vor · 10 vor · 5 vor'],
+   ['halb = half, net als in het Nederlands','halb neun = 8:30','fünf vor halb neun = 8:25 · fünf nach halb neun = 8:35'],
+   ['Anders dan in het Nederlands','8:20 = zwanzig nach acht','8:40 = zwanzig vor neun'],['Hele uren','Es ist elf Uhr.','1:00 = ein Uhr']]},
+ {id:'uz',par:'k4',nr:'U',name:'Uhrzeit: extra klokken',c:'--c4',sub:'Extra · alle tijden van "Die Uhrzeit" (blz. 39)',
+  rules:[['Zo staat het op blz. 39','12 Uhr · 5 nach 12 · 10 nach 12 · Viertel nach 12 · 20 nach 12 · 5 vor halb 1 · halb 1','5 nach halb 1 · 20 vor 1 · Viertel vor 1 · 10 vor 1 · 5 vor 1']]});
+
+/* ---------- woorden blz. 39 (Deine Wörter 4) ---------- */
+const W4A=[ /* Seite 35 en 36: t/m 'zu Hause sein' (huiswerk woensdag 11 november) */
+ ['der Wecker','de wekker','die Wecker'],['klingeln','afgaan (van een wekker of bel), rinkelen',''],['die Mittagspause','de middagpauze','die Mittagspausen'],
+ ['Mittagspause haben','middagpauze hebben',''],['zur Schule fahren','naar school gaan (met fiets, bus of auto)',''],['die Hausaufgabe','de huiswerkopdracht','die Hausaufgaben'],
+ ['Hausaufgaben machen','huiswerk maken',''],['der Unterricht','de les, het onderwijs',''],['Unterricht haben','les hebben',''],['die Freizeit','de vrije tijd',''],
+ ['Freizeit haben','vrije tijd hebben',''],['aufstehen','opstaan',''],['Es ist schon halb sieben.','Het is al half zeven.',''],['schon','al',''],['müde','moe',''],
+ ['Wie viel Uhr ist es?','Hoe laat is het?',''],['erst','pas (niet eerder dan)',''],['So ein Mist!','Wat balen! Verdorie!',''],['zu spät','te laat',''],
+ ['Ich bin viel zu spät.','Ik ben veel te laat.',''],['zu Hause sein','thuis zijn','']];
+const W4B=[ /* Seite 38 t/m 41, de week en de schoolvakken */
+ ['die Familie','het gezin, de familie','die Familien'],['der Bruder','de broer','die Brüder'],['die Schwester','de zus','die Schwestern'],['die Stunde','het uur, het lesuur','die Stunden'],
+ ['der Tag','de dag','die Tage'],['der Morgen','de ochtend',''],['am Morgen','in de ochtend',''],['der Vormittag','de voormiddag (de ochtend tot 12 uur)','die Vormittage'],
+ ['der Nachmittag','de middag (na 12 uur)','die Nachmittage'],['morgens','\'s ochtends, elke ochtend',''],['vormittags','\'s ochtends (voor 12 uur)',''],
+ ['die Unterrichtsstunde','het lesuur','die Unterrichtsstunden'],['beginnen','beginnen',''],['das Ende','het einde',''],['zu Ende sein','afgelopen zijn',''],
+ ['von … bis','van … tot',''],['gegen','tegen, rond (gegen acht Uhr = rond acht uur)',''],['aus dem Haus gehen','de deur uit gaan',''],['fleißig','ijverig, vlijtig',''],
+ ['Du Armer!','Jij arme!',''],['befreundet','bevriend',''],['die Minute','de minuut','die Minuten'],['wann','wanneer',''],['wie viele','hoeveel',''],
+ ['frei haben','vrij hebben',''],['der Sport','de sport, gym',''],['das Lieblingsfach','het lievelingsvak','die Lieblingsfächer'],['toll','geweldig, gaaf',''],
+ ['nicht so toll','niet zo leuk',''],['Wie lange?','Hoe lang?',''],['interessant','interessant',''],['das Wochenende','het weekend','die Wochenenden'],['Zeit haben','tijd hebben',''],
+ ['bleiben','blijven',''],['zu Hause bleiben','thuisblijven',''],['Mama','mama',''],['Papa','papa',''],
+ ['der Montag','maandag','die Montage'],['der Dienstag','dinsdag','die Dienstage'],['der Mittwoch','woensdag','die Mittwoche'],['der Donnerstag','donderdag','die Donnerstage'],
+ ['der Freitag','vrijdag','die Freitage'],['der Samstag','zaterdag','die Samstage'],['der Sonntag','zondag','die Sonntage'],['montags','op maandag, elke maandag',''],
+ ['dienstags','op dinsdag, elke dinsdag',''],['mittwochs','op woensdag, elke woensdag',''],
+ ['Kunst','tekenen, beeldende vorming',''],['Physik','natuurkunde',''],['Ethik','ethiek, levensbeschouwing',''],['Mathematik / Mathe','wiskunde',''],['Deutsch','Duits',''],
+ ['Erdkunde','aardrijkskunde',''],['Religion','godsdienst',''],['Sport','gym, lo (schoolvak)',''],['Englisch','Engels',''],['Naturwissenschaft','natuurwetenschappen (zoals NaSk)',''],
+ ['Französisch','Frans',''],['Geschichte','geschiedenis','']];
+SECS.push(
+ {id:'w4a',par:'k4',nr:'39a',name:'Woorden blz. 39 t/m „zu Hause sein”',c:'--c5',sub:'Deine Wörter 4 · Seite 35 en 36 · Duits-Nederlands en Nederlands-Duits',
+  rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Wecker, die Freizeit','']].concat(W4A.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
+ {id:'w4b',par:'k4',nr:'39b',name:'Woorden blz. 39: de rest',c:'--c6',sub:'Deine Wörter 4 · Seite 38–41, de week en de schoolvakken',
+  rules:[['Dagen zijn der-woorden','der Montag … der Sonntag','montags = op maandag, elke maandag']].concat(W4B.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))});
+[['w4a','k',W4A,'blz. 39'],['w4b','m',W4B,'blz. 39']].forEach(([o,p,L,bl])=>{
+  L.forEach((v,i)=>{
+    const pool=shuf(L.filter(w=>w!==v&&soort(w)===soort(v)&&w[1]!==v[1]&&w[0]!==v[0])).slice(0,3);
+    Q.push({id:p+i,o,nr:'Woorden '+bl,q:`Wat is het Duits voor <b>${v[1]}</b>?`,a:v[0],
+      f:pool.map(w=>[w[0],`${w[0]} betekent ${w[1]}.`]),u:`${v[1]} = <b>${v[0]}</b>${v[2]?` (meervoud: ${v[2]})`:''}`,
+      v:{q:`Wat betekent <b>${v[0]}</b>?`,a:v[1],f:pool.map(w=>[w[1],`Dat is ${w[0]}.`])}})});
+  L.filter(isN).forEach((v,i)=>{
+    const [art,...rest]=v[0].split(' '),n=rest.join(' '),andere=['der','die','das'].filter(a=>a!==art);
+    Q.push({id:p+'l'+i,o,nr:'Woorden '+bl+' · lidwoord',q:`der, die of das?${DE('___ '+n)}<div class="nl">(${v[1]})</div>`,a:art,
+      f:andere.map(a=>[a,`Het is ${art} ${n}. Leer het lidwoord altijd mee met het woord.`]),u:`<b>${v[0]}</b> = ${v[1]}${v[2]?` (meervoud: ${v[2]})`:''}.`,
+      v:{q:`Hoe zeg je <b>${v[1]}</b> in het Duits, met het goede lidwoord?`,a:v[0],f:andere.map(a=>[a+' '+n,`Het is ${art} ${n}.`])}})})});
+
+/* ---------- opdracht 1a: het gesprek van Timo, per beurt ---------- */
+[
+ ['• Timo, a______n!','Timo, aufstehen!','Timo, sta op!',[['Timo, aufstehst!','Mama roept het als bevel, met de hele werkwoordsvorm: aufstehen!'],['Timo, aufstand!','aufstand bestaat niet. Het is aufstehen.'],['Timo, aufgestehen!','Hier hoort geen ge- bij: aufstehen.']]],
+ ['■ Ich b___ so m___e. Wie v___ U___ ist es?','Ich bin so müde. Wie viel Uhr ist es?','Ik ben zo moe. Hoe laat is het?',[['Ich habe so müde. Wie viel Uhr ist es?','Moe zijn is müde sein: ich bin müde.'],['Ich bin so müde. Wie viele Uhr ist es?','Hoe laat is het? = Wie viel Uhr ist es? (viel, niet viele).'],['Ich bin so mude. Wie viel Uhr ist es?','müde schrijf je met ü.']]],
+ ['• E___ ist schon h___ sieben. A______!','Es ist schon halb sieben. Aufstehen!','Het is al half zeven. Opstaan!',[['Er ist schon halb sieben. Aufstehen!','Bij de tijd zeg je es: Es ist …'],['Es ist schon half sieben. Aufstehen!','half is Nederlands. In het Duits: halb.'],['Es ist schon halb siebt. Aufstehen!','Zeven is sieben.']]],
+ ['■ H___ sieben? Ich habe am M______ um h___ neun Schule.','Halb sieben? Ich habe am Mittwoch um halb neun Schule.','Half zeven? Ik heb op woensdag om half negen school.',[['Halb sieben? Ich habe am Mitwoch um halb neun Schule.','Mittwoch schrijf je met tt.'],['Halb sieben? Ich habe am Mittwoch um half neun Schule.','half is Nederlands. In het Duits: halb.'],['Halb sieben? Ich habe am Mittwoch um halb neun Schulen.','Eén school: Schule.']]],
+ ['• Timo, heute ist Do______, nicht M______!','Timo, heute ist Donnerstag, nicht Mittwoch!','Timo, vandaag is het donderdag, geen woensdag!',[['Timo, heute ist Donderstag, nicht Mittwoch!','Donderstag is half Nederlands. In het Duits: Donnerstag.'],['Timo, heute ist Donnerstag, nicht Mitwoch!','Mittwoch schrijf je met tt.'],['Timo, heute ist Dienstag, nicht Mittwoch!','Er staat Do… op de puntjes: Donnerstag. Dienstag is dinsdag.']]],
+ ['■ Was? Ich b___ zu s___. Ich habe heute um V______ vor acht Schule.','Was? Ich bin zu spät. Ich habe heute um Viertel vor acht Schule.','Wat? Ik ben te laat. Ik heb vandaag om kwart voor acht school.',[['Was? Ich bin zu spat. Ich habe heute um Viertel vor acht Schule.','spät schrijf je met ä.'],['Was? Ich habe zu spät. Ich habe heute um Viertel vor acht Schule.','Te laat zijn is zu spät sein: ich bin zu spät.'],['Was? Ich bin zu spät. Ich habe heute um Fiertel vor acht Schule.','Viertel schrijf je met een V.']]],
+].forEach(([gat,a,nl,f],i)=>Q.push({id:'t1-'+(i+1),o:'k1a',nr:'Opdracht 1a · beurt '+(i+1),
+  q:`Welke zin is helemaal goed?${DE(gat)}`,a,f,tv:`Schrijf de hele zin op, met de stukjes op de puntjes ingevuld.${DE(gat)}`,
+  u:`${DE(a)}<span class="nl">${nl}</span>`,v:{q:`<span class="nl">${nl}</span> Welke Duitse zin is goed?`}}));
+
+/* ---------- opdracht 1b: het gesprek van Kira in de goede volgorde ---------- */
+const KIRA=[['•','Guten Morgen, Kira.'],['■','Guten Morgen, Mama. Wie viel Uhr ist es?'],['•','Es ist Viertel nach sechs.'],
+ ['■','Viertel nach sechs? Ich habe heute erst um Viertel nach neun Schule.'],['•','Am Mittwoch hast du immer um Viertel vor acht Schule.'],['■','Ja, aber heute haben wir kein Mathe.']];
+const KIRA_NL=['Goedemorgen, Kira.','Goedemorgen, mam. Hoe laat is het?','Het is kwart over zes.','Kwart over zes? Ik heb vandaag pas om kwart over negen school.','Op woensdag heb je altijd om kwart voor acht school.','Ja, maar vandaag hebben we geen wiskunde.'];
+Q.push({id:'t1b',o:'k1b',nr:'Opdracht 1b · hele gesprek',type:'volg',lines:KIRA,a:KIRA.map(x=>x[1]).join(' / '),
+  q:'Zet het gesprek tussen Kira en haar moeder in de goede volgorde. • = Mama, ■ = Kira.',
+  uitleg:`Mama groet, Kira vraagt hoe laat het is, Mama zegt de tijd. Kira herhaalt die tijd verbaasd, want ze heeft pas om Viertel nach neun school. Mama zegt dat ze op woensdag altijd vroeg begint, en Kira antwoordt: ja, maar vandaag geen wiskunde.`});
+[[2,'Guten Morgen, Kira.','Guten Morgen, Mama. Wie viel Uhr ist es?','Na de groet groet Kira terug en vraagt hoe laat het is.'],
+ [3,'Guten Morgen, Mama. Wie viel Uhr ist es?','Es ist Viertel nach sechs.','Op „Wie viel Uhr ist es?” volgt de tijd.'],
+ [4,'Es ist Viertel nach sechs.','Viertel nach sechs? Ich habe heute erst um Viertel nach neun Schule.','Kira herhaalt de tijd verbaasd: zo vroeg?'],
+ [5,'Viertel nach sechs? Ich habe heute erst um Viertel nach neun Schule.','Am Mittwoch hast du immer um Viertel vor acht Schule.','Mama spreekt haar tegen: op woensdag begin je altijd om Viertel vor acht.'],
+ [6,'Am Mittwoch hast du immer um Viertel vor acht Schule.','Ja, aber heute haben wir kein Mathe.','Kira legt uit waarom ze vandaag later begint: geen wiskunde.']
+].forEach(([n,voor,a,uit])=>{const andere=KIRA.map(x=>x[1]).filter(z=>z!==a&&z!==voor&&z!==KIRA[0][1]).slice(0,3);
+  Q.push({id:'t1b-'+n,o:'k1b',nr:'Extra bij 1b · zin '+n,q:`Welke zin komt hierna?${DE(voor)}`,a,
+    f:andere.map(z=>[z,`Die zin past hier niet. ${uit}`]),u:`${DE(voor)}${DE('→ '+a)}${uit}`,tv:`Welke zin komt na deze zin? Schrijf hem op.${DE(voor)}`,
+    v:{q:`In het gesprek van Kira: wat zegt de ander na deze zin?${DE(voor)}`}})});
+
+/* ---------- opdracht 2a: acht klokken ---------- */
+[[8,15],[8,30],[9,45],[1,10],[3,15],[11,0],[4,40],[11,55]].forEach(([h,m],i)=>{const w=TIJD(h,m);
+  Q.push({id:'k2-'+(i+1),o:'k2a',nr:'Opdracht 2a · klok '+(i+1),q:`Wie viel Uhr ist es? Kies wat je opschrijft.${KLOK(h,m)}`,a:'Es ist '+w+'.',
+    f:tijdFout(h,m),tv:`Wie viel Uhr ist es? Schrijf het op zoals in je boek: Es ist …${KLOK(h,m)}`,tvAlt:[cap(w)+'.'],
+    u:`${dig(h,m)} = <b>Es ist ${w}.</b><div class="why">${TIJDREGEL}</div>`,v:{q:`Klok ${i+1} uit je boek. Hoe laat is het?${KLOK(h,m)}`}})});
+
+/* ---------- extra: alle tijden van 'Die Uhrzeit' ---------- */
+[[7,5],[6,10],[2,15],[6,20],[9,25],[12,30],[5,35],[7,40],[10,45],[12,50],[3,55],[4,0],[2,20],[10,40],[1,30],[8,25]].forEach(([h,m],i)=>{const w=TIJD(h,m);
+  const fo=tijdFout(h,m);
+  Q.push({id:'uz'+(i+1),o:'uz',nr:'Extra · klok',q:`Wie viel Uhr ist es?${KLOK(h,m)}`,a:'Es ist '+w+'.',f:fo,tv:`Wie viel Uhr ist es? Schrijf: Es ist …${KLOK(h,m)}`,tvAlt:[cap(w)+'.'],
+    u:`${dig(h,m)} = <b>Es ist ${w}.</b><div class="why">${TIJDREGEL}</div>`,
+    v:{q:`Hoe zeg je <b>${dig(h,m)}</b> in het Duits?`}})});
+/* de valkuil: 20 over en 20 voor */
+[[3,20,'tien voor half vier'],[3,40,'tien over half vier'],[9,20,'tien voor half tien'],[11,40,'tien over half twaalf']].forEach(([h,m,nlw],i)=>{const w=TIJD(h,m);
+  Q.push({id:'uzv'+(i+1),o:'uz',nr:'Extra · valkuil',q:`In het Nederlands zeg je <b>${nlw}</b> (${dig(h,m)}). Hoe zeg je het in het Duits?`,a:'Es ist '+w+'.',
+    f:[[`Es ist zehn ${m===20?'vor':'nach'} halb ${uur(h+1)}.`,`Zo zeg je het in het Nederlands (en in een deel van Duitsland). Je boek leert ${w}: schrijf het op de toets zoals in je boek.`],...tijdFout(h,m).slice(0,2)],
+    tv:`Schrijf in het Duits: ${dig(h,m)} <span class="nl">(${nlw})</span>`,tvAlt:[cap(w)+'.'],
+    u:`${dig(h,m)} = <b>Es ist ${w}.</b> In het Duits tel je bij 20 minuten vanaf het hele uur.`,
+    v:{q:`Hoe zeg je <b>${dig(h,m)}</b> in het Duits?${KLOK(h,m)}`}})});
+SNAP.k2a=[['Waarom zwanzig nach acht en niet zehn vor halb neun?','In het Nederlands zeg je tien voor half negen. Je boek (blz. 39) leert <b>zwanzig nach acht</b>: tot en met 20 minuten tel je vanaf het hele uur. Pas vanaf 25 minuten gebruik je halb: <b>fünf vor halb neun</b> (8:25).'],
+ ['Is halb neun 8:30 of 9:30?','<b>8:30</b>, precies zoals half negen in het Nederlands. (In het Engels is het anders, daar komt de verwarring vandaan.)']];
+SNAP.uz=SNAP.k2a;
+
+/* volg: tik de zinnen in de goede volgorde */
+function drawVolg(q,it,box,api){
+  const S=it._v=it._v||{pool:shuf(q.lines.map((l,i)=>({l,i}))),gekozen:[],done:false};
+  const vol=S.gekozen.length===q.lines.length;
+  box.innerHTML=`<div class="card stack"><ol class="volg">${S.gekozen.length?S.gekozen.map((c,j)=>`<li><button class="chip volgk ${S.done?(c.i===j?'ok':'bad'):''}" data-r="${j}" ${S.done?'disabled':''}>${c.l[0]} ${c.l[1]}</button>${S.done&&c.i!==j?`<small class="sub">→ ${q.lines[j][0]} ${q.lines[j][1]}</small>`:''}</li>`).join(''):'<li class="leeg sub">Tik hieronder op de zin die als eerste komt</li>'}</ol></div>
+   ${S.done?'':`<div class="pool">${S.pool.map((c,k)=>c.used?'':`<button class="chip volgk" data-k="${k}">${c.l[0]} ${c.l[1]}</button>`).join('')}</div>
+   <p class="sub" style="font-size:.9rem">Tik op een ingevulde zin om hem terug te zetten.</p><button class="btn" id="volgok" ${vol?'':'disabled'}>Controleer</button>`}`;
+  if(S.done)return;
+  box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const c=S.pool[+b.dataset.k];c.used=true;S.gekozen.push(c);api.redraw()});
+  box.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const c=S.gekozen.splice(+b.dataset.r,1)[0];c.used=false;api.redraw()});
+  box.querySelector('#volgok').onclick=()=>{S.done=true;const ok=S.gekozen.every((c,j)=>c.i===j);api.redraw();
+    const model=q.lines.map((l,j)=>`${l[0]} ${l[1]}<br><span class="nl">${KIRA_NL[j]||''}</span>`).join('<br>');
+    api.finish(ok,`<div class="fb ${ok?'ok':'bad'}"><div class="head">${ok?'Goed!':'Niet goed'}</div>${ok?'':'<div class="mistake">De rode zinnen staan op de verkeerde plek. De goede zin staat eronder.</div>'}<div class="why">${q.uitleg}</div><p><b>Zo schrijf je het gesprek in je schrift:</b></p>${DE(model)}</div>`,
+      S.gekozen.map((c,j)=>`${j+1}. ${c.l[1]}`).join('\n'))};
+}
+
+const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)'],['di 10 nov','Kapitel 4 Mein Tag: Arbeitsbuch blz. 32 en 39','opdracht 1a, 1b en 2a (blz. 32), woorden Deine Wörter 4 (blz. 39), extra klokken']];
+const LIJST=[];[...W4A,...W4B,...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
+return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Kapitel 4 Mein Tag (AB blz. 32 en 39) · Arbeitsbuch blz. 19, 24, 26 en 27 · Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
+  leer:['k4','ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
+  custom:{rij:drawRij,zin:drawZin,volg:drawVolg},
+  PN:{k4:'Kapitel 4 Mein Tag · AB blz. 32 en woorden blz. 39',ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
 })();
