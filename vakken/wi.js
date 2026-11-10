@@ -47,6 +47,7 @@ const LOG=[
  ['Dag 3','ma 2 nov','§3.3 huiswerk voor dinsdag: opgave 37, 38, 39, 40, 41, 42 en 43 erbij (45 en 46 stonden er al in)'],
  ['Dag 4','ma 2 nov','§3.4 opgave 50 t/m 61 (huiswerk voor woensdag 4 en donderdag 5 november)'],
  ['Dag 5','vr 6 nov','Opdracht T1 (wortelformules, bij §3.5) en opdracht R1 (lijn door twee punten, bij §3.1) van Teams'],
+ ['Dag 6','di 10 nov','Stappenplan lijn door twee punten (zoals in de uitwerking van de beginopdracht) en beginopdracht versie A en B'],
  ['Dag 6','di 10 nov','Extra opdrachten H3 van Teams: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (huiswerk voor donderdag 12 november)']
 ];
 
@@ -223,6 +224,8 @@ const G66=plot({x:[-3,10],y:[-1,5],u:18,fns:[{f:x=>Math.sqrt(x+2)+1,from:-2}],la
 /* Extra opdrachten E1, E4 (vier genummerde lijnen) en E8 */
 const GE1=plot({x:[-4,4],y:[-5,5],u:22,fns:[{f:x=>-2*x-2,lab:[-3.0,4.5,'1']},{f:x=>-2*x+2,lab:[-0.9,4.5,'2']},{f:x=>5*x-2,lab:[1.5,4.5,'3']},{f:x=>2*x-2,lab:[3.4,4.5,'4']}],label:'vier lijnen, genummerd 1 tot en met 4'});
 const GE4=plot({x:[-4,4],y:[-4,4],u:22,fns:[{f:x=>-x,lab:[-3.8,3.3,'1']},{f:x=>-8*x,lab:[-0.75,3.6,'2']},{f:x=>3*x,lab:[1.4,3.6,'3']},{f:x=>0.5*x,lab:[3.3,2.2,'4']}],label:'vier lijnen door de oorsprong, genummerd 1 tot en met 4'});
+const GBL=(a,b,pts)=>plot({x:[-4,4],y:[-6,6],u:16,lines:[{a,b}],pts,label:'lijn'});
+const GBP=(f,pts)=>plot({x:[-4,4],y:[-10,4],ux:22,uy:11,sy:2,fns:[{f}],pts,label:'parabool'});
 const GE8=(f,pts)=>plot({x:[-4,3],y:[-12,8],ux:22,uy:8,sy:4,gy:2,fns:[{f}],pts,label:'parabool'});
 const GT1=(f,dir,pts)=>plot({x:[-4,4],y:[-10,1],u:20,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const GR68=(f,from,pts)=>plot({x:[-3,12],y:[-1,8],u:14,fns:[{f,from}],pts,label:'wortelgrafiek'});
@@ -1234,6 +1237,44 @@ const Q=[
  denk:'Vul $x = 121$ in.',
  st:[S('Vul in.','$z = -[[24|19]]·121 + [[231|19]]$'),S('Reken uit.','$-[[2904|19]] + [[231|19]] = -[[2673|19]]$'),S('Als gemengd getal.','$2673 : 19 = 140$ rest 13, dus $z = -140[[13|19]]$ (≈ $-140,68$)')],
  a:'$z = -140[[13|19]]$',f:[['$z = 140[[13|19]]$','$-[[2904|19]] + [[231|19]]$ is negatief: $z = -140[[13|19]]$.'],['$z = -152[[16|19]]$','Je hebt $[[231|19]]$ afgetrokken in plaats van opgeteld.']]},
+/* ===== Lijn door twee punten: het stappenplan zoals in de uitwerking van de beginopdracht (Van Neck, eind okt). Versie A en B. ===== */
+{id:'lp0',o:'ab',nr:'Stappenplan',q:'Je stelt de formule op van de lijn door twee punten. Wat is de goede volgorde?',
+ denk:'Je kunt b pas uitrekenen als je a al weet.',
+ st:[S('1 Schrijf op: $a = [[Δy|Δx]]$ (B min A).',''),S('2 Schrijf op: $y = ax + b$.',''),S('3 Reken a uit.',''),S('4 Vul a in de formule in.',''),S('5 Vul één punt in (A of B, allebei goed).',''),S('6 Reken b uit.',''),S('7 Schrijf de hele formule op: Dus gevraagde lijn: $y = … x + …$','')],
+ a:'a uitrekenen → a invullen → een punt invullen → b uitrekenen → formule opschrijven',f:[['een punt invullen → b uitrekenen → a uitrekenen → formule opschrijven','Met één punt heb je twee onbekenden (a en b). Eerst a uit de twee punten.'],['a uitrekenen → b aflezen bij een van de punten → formule opschrijven','b is alleen af te lezen als het punt op de y-as ligt ($x = 0$). Meestal moet je een punt invullen en b uitrekenen.']]},
+{id:'lpa',o:'ab',nr:'Beginopdracht A2',q:'Stel de formule op van de lijn door $A(3, 8)$ en $B(8, 6)$.<br><span class="sub">Schrijf alle stappen onder elkaar in je schrift, net als bij de docent.</span>',
+ denk:'Stap 1: $a = [[Δy|Δx]]$, B min A.',
+ st:[S('$a = [[Δy|Δx]]$ (B min A) en $y = ax + b$.','$a = [[6 - 8|8 - 3]] = [[-2|5]] = -[[2|5]]$'),S('a invullen.','$y = -[[2|5]]x + b$'),S('Een punt invullen. Kies A(3, 8).','$8 = -[[2|5]] · 3 + b$'),S('Uitrekenen.','$8 = -[[6|5]] + b$, dus $8 = -1[[1|5]] + b$'),S('b uitrekenen.','$b = 8 + 1[[1|5]] = 9[[1|5]]$'),S('Dus gevraagde lijn. (In de uitwerking van de docent staat tussendoor $b = 8[[1|5]]$; dat is een typfout, de formule eronder klopt.)','$y = -[[2|5]]x + 9[[1|5]]$')],
+ a:'$y = -[[2|5]]x + 9[[1|5]]$',f:[['$y = -[[2|5]]x + 8[[1|5]]$','$8 = -1[[1|5]] + b$: dan is $b = 8 + 1[[1|5]] = 9[[1|5]]$. Controle met B: $-[[2|5]]·8 + 9[[1|5]] = -3[[1|5]] + 9[[1|5]] = 6$ ✓'],['$y = -[[5|2]]x + 15[[1|2]]$','a = y-verschil gedeeld door x-verschil: $-2 : 5$, niet $5 : -2$.'],['$y = [[2|5]]x + 6[[4|5]]$','De lijn daalt (van 8 naar 6), dus a is negatief.']]},
+{id:'lpb',o:'ab',nr:'Beginopdracht B2',q:'Stel de formule op van de lijn door $A(4, 9)$ en $B(9, 7)$.<br><span class="sub">Schrijf alle stappen onder elkaar in je schrift.</span>',
+ denk:'Stap 1: $a = [[Δy|Δx]]$, B min A.',
+ st:[S('$a = [[Δy|Δx]]$ (B min A).','$a = [[7 - 9|9 - 4]] = [[-2|5]] = -[[2|5]]$'),S('a invullen.','$y = -[[2|5]]x + b$'),S('Punt A(4, 9) invullen.','$9 = -[[2|5]] · 4 + b$'),S('Uitrekenen.','$9 = -[[8|5]] + b$, dus $9 = -1[[3|5]] + b$'),S('b uitrekenen.','$b = 10[[3|5]]$'),S('Dus gevraagde lijn.','$y = -[[2|5]]x + 10[[3|5]]$')],
+ a:'$y = -[[2|5]]x + 10[[3|5]]$',f:[['$y = -[[2|5]]x + 7[[2|5]]$','$9 = -1[[3|5]] + b$: b is groter dan 9, je telt $1[[3|5]]$ erbij op.'],['$y = -2x + 17$','$Δx = 9 - 4 = 5$. Je moet delen: $a = -[[2|5]]$.']]},
+{id:'lp1',o:'ab',nr:'Extra stappenplan',q:'Stel de formule op van de lijn door $A(2, 5)$ en $B(6, 13)$.',
+ denk:'Stap 1: $a = [[Δy|Δx]]$, B min A.',
+ st:[S('$a = [[13 - 5|6 - 2]]$','$a = [[8|4]] = 2$'),S('a invullen.','$y = 2x + b$'),S('Punt A invullen.','$5 = 2 · 2 + b$'),S('b uitrekenen.','$5 = 4 + b$, dus $b = 1$'),S('Dus gevraagde lijn.','$y = 2x + 1$')],
+ a:'$y = 2x + 1$',f:[['$y = [[1|2]]x + 4$','Je hebt $Δx : Δy$ gedaan. Het is $Δy : Δx = 8 : 4 = 2$.'],['$y = 2x + 5$','5 is de y van A, maar A ligt niet op de y-as. Vul A in: $5 = 4 + b$.']]},
+{id:'lp2',o:'ab',nr:'Extra stappenplan',q:'Stel de formule op van de lijn door $A(-4, 3)$ en $B(2, -6)$.',
+ denk:'Pas op met de mintekens: $2 - (-4) = 6$.',
+ st:[S('$a = [[-6 - 3|2 - (-4)]]$','$a = [[-9|6]] = -1[[1|2]]$'),S('a invullen.','$y = -1[[1|2]]x + b$'),S('Punt B(2, −6) invullen.','$-6 = -1[[1|2]] · 2 + b$'),S('Uitrekenen.','$-6 = -3 + b$'),S('b uitrekenen.','$b = -3$'),S('Dus gevraagde lijn.','$y = -1[[1|2]]x - 3$')],
+ a:'$y = -1[[1|2]]x - 3$',f:[['$y = -4[[1|2]]x + 3$','$2 - (-4) = 2 + 4 = 6$, niet $-2$. Dus $a = -9 : 6$.'],['$y = -1[[1|2]]x - 9$','$-6 = -3 + b$: dan is $b = -6 + 3 = -3$.']]},
+{id:'boa1',o:'graf',nr:'Beginopdracht A1',q:'Teken in je schrift lijn $l: y = -2x + 3$.<br>Welke lijn lijkt op die van jou?',
+ denk:'Begin bij $(0, 3)$. Dan 1 naar rechts, 2 omlaag.',
+ st:[S('Snijpunt met de y-as.','$(0, 3)$'),S('Richtingscoëfficiënt $-2$: 1 naar rechts, 2 omlaag.','$(1, 1)$, $(2, -1)$'),S('Lijn door de punten.',GBL(-2,3,[[0,3],[1,1],[2,-1]]))],
+ a:GBL(-2,3),f:[[GBL(2,3),'Deze stijgt. Bij $-2x$ gaat de lijn omlaag.'],[GBL(-2,-3),'Deze snijdt de y-as bij $-3$. Het startgetal is $+3$.'],[GBL(-0.5,3),'Deze is te flauw: 1 naar rechts is 2 omlaag, niet een halve.']]},
+{id:'bob1',o:'graf',nr:'Beginopdracht B1',q:'Teken in je schrift lijn $l: y = 3x - 4$.<br>Welke lijn lijkt op die van jou?',
+ denk:'Begin bij $(0, -4)$. Dan 1 naar rechts, 3 omhoog.',
+ st:[S('Snijpunt met de y-as.','$(0, -4)$'),S('1 naar rechts, 3 omhoog.','$(1, -1)$, $(2, 2)$'),S('Lijn door de punten.',GBL(3,-4,[[0,-4],[1,-1],[2,2]]))],
+ a:GBL(3,-4),f:[[GBL(-3,-4),'Deze daalt. Bij $+3x$ gaat de lijn omhoog.'],[GBL(3,4),'Deze snijdt de y-as bij $+4$. Het startgetal is $-4$.']]},
+{id:'boa3',o:'top',nr:'Beginopdracht A3',q:'Teken in je schrift parabool $m: y = -x^2 + 2x + 1$. Maak eerst een tabel voor x = −3 t/m 3.<br>Welke grafiek lijkt op die van jou?',
+ denk:'Let op: $-x^2$ bij $x = -3$ is $-9$ (eerst kwadrateren, dan het min).',
+ st:[S('Tabel.',tbl([-3,-2,-1,0,1,2,3],[-14,-7,-2,1,2,1,-2])),S('Punten uitzetten en een vloeiende boog. Top $(1, 2)$.',GBP(x=>-x*x+2*x+1,[[-2,-7],[-1,-2],[0,1],[1,2],[2,1],[3,-2]]))],
+ a:GBP(x=>-x*x+2*x+1),f:[[GBP(x=>x*x+2*x+1),'$-x^2$: een bergparabool, die gaat aan beide kanten omlaag.'],[GBP(x=>-x*x-2*x+1),'Deze heeft de top bij $x = -1$. Bij $+2x$ ligt de top bij $x = 1$: controleer $y(1) = -1 + 2 + 1 = 2$.']]},
+{id:'bob3',o:'top',nr:'Beginopdracht B3',q:'Teken in je schrift parabool $m: y = -x^2 - 2x - 1$. Maak eerst een tabel, bijvoorbeeld voor x = −3 t/m 2.<br>Welke grafiek lijkt op die van jou?',
+ denk:'Bij $x = -3$: $-9 + 6 - 1 = -4$.',
+ st:[S('Tabel.',tbl([-3,-2,-1,0,1,2],[-4,-1,0,-1,-4,-9])),S('Punten uitzetten en een vloeiende boog. Top $(-1, 0)$: hij raakt de x-as.',GBP(x=>-x*x-2*x-1,[[-3,-4],[-2,-1],[-1,0],[0,-1],[1,-4],[2,-9]]))],
+ a:GBP(x=>-x*x-2*x-1),f:[[GBP(x=>-x*x+2*x-1),'Deze heeft de top bij $x = 1$. Bij jouw formule is $y(-1) = -1 + 2 - 1 = 0$: top $(-1, 0)$.'],[GBP(x=>x*x+2*x+1),'$-x^2$ geeft een bergparabool.']]},
+
 /* ===== Extra opdrachten H3 (Teams, huiswerk do 12 nov): E1, E2, E3cd, E4, E5, E6, E7bd, E8.
    In de antwoorden van de docent staan bij E3a, E3c en E5b getallen die niet kloppen met de opdracht; hier staat wat uit de opdracht volgt. ===== */
 {id:'e1',o:'ab',nr:'Extra opdracht E1',q:'Hier zie je vier grafieken van lineaire verbanden. Welke grafiek hoort bij welke formule?<br>A $y = 2x - 2$ &nbsp; B $y = -2x - 2$ &nbsp; C $y = 5x - 2$ &nbsp; D $y = -2x + 2$'+GE1,
