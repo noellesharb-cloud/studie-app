@@ -393,33 +393,84 @@ window.Oefen=(()=>{
   function tvorm(q,it){if(!tvVak()||!hasSt(q)||q.type||q.t==='open'||q.in||it.retry)return false;
     if(R.mode==='tvorm'||R.mode==='ptoets'||R.mode==='toets')return true;
     return !R.exam&&!['stap','opwarm','diag','fout'].includes(R.mode)&&(ST.ok||[]).includes(q.id)}
+  /* formules nakijken (afspraak 12 nov): 'y = -2x + 5', 'a = -2 en b = 5', 'y = 3/4x + 2' of '12 3/19'. Beide kanten worden
+     uitgerekend voor een paar waarden van de letters. Uitkomst: true (klopt), false (klopt niet), null (kan de app niet beoordelen,
+     bijvoorbeeld een afgerond kommagetal of een schrijfwijze die de app niet kent: dan kijkt ze zelf na en ziet de ouder het antwoord). */
+  const FM=(()=>{
+    const prep=t=>String(t??'').replace(/\$/g,'').replace(/<[^>]+>/g,'').replace(/[−–‐]/g,'-').replace(/[·×]/g,'*').replace(/:/g,'/')
+      .replace(/(\d+)\[\[([^|\]]+)\|([^\]]+)\]\]/g,'($1+($2)/($3))').replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,'(($1)/($2))')
+      .replace(/(\d)\s+(?=\d{3}(?!\d))/g,'$1').replace(/(\d+)\s+(\d+)\s*\/\s*(\d+)/g,'($1+$2/$3)').replace(/(\d),(\d)/g,'$1.$2')
+      .replace(/²/g,'^2').replace(/³/g,'^3').trim();
+    function tok(t){const T=[],re=/\s*(\d+(?:\.\d+)?|[a-zA-Z]|[-+*/^()])/y;let m;re.lastIndex=0;
+      while(re.lastIndex<t.length){const at=re.lastIndex;m=re.exec(t);if(!m){if(/^\s*$/.test(t.slice(at)))break;return null}T.push(m[1])}
+      const U=[];T.forEach((x,i)=>{const p=U[U.length-1];if(p!=null&&(/^[\d.]+$|^[a-zA-Z]$|^\)$/.test(p))&&(/^[a-zA-Z(]$/.test(x)||(/^[a-zA-Z)]$/.test(p)&&/^\d/.test(x))))U.push('*');U.push(x)});return U}
+    function parse(T){let i=0;const pk=()=>T[i],nx=()=>T[i++];
+      const atom=()=>{const x=nx();if(x==null)throw 0;if(/^\d/.test(x))return ()=>+x;if(/^[a-zA-Z]$/.test(x))return E=>E[x];
+        if(x==='('){const e=expr();if(nx()!==')')throw 0;return e}throw 0};
+      const power=()=>{const b=atom();if(pk()==='^'){nx();const e=unary();return E=>Math.pow(b(E),e(E))}return b};
+      const unary=()=>{if(pk()==='-'){nx();const u=unary();return E=>-u(E)}if(pk()==='+'){nx();return unary()}return power()};
+      const term=()=>{let a=unary();while(pk()==='*'||pk()==='/'){const o=nx(),b=unary(),l=a;a=o==='*'?E=>l(E)*b(E):E=>l(E)/b(E)}return a};
+      function expr(){let a=term();while(pk()==='+'||pk()==='-'){const o=nx(),b=term(),l=a;a=o==='+'?E=>l(E)+b(E):E=>l(E)-b(E)}return a}
+      const e=expr();if(i<T.length)throw 0;return e}
+    const fn=t=>{const T=tok(prep(t));if(!T||!T.length)return null;try{return {f:parse(T),v:T.filter(x=>/^[a-zA-Z]$/.test(x))}}catch(e){return null}};
+    /* 'a = -2 en b = 5' → [['a','-2'],['b','5']]; zonder '=' één deel met lege letter */
+    const delen=t=>{const s=prep(t).replace(/\s+(en|of)\s+/g,' ; ').replace(/,\s+(?=[a-zA-Z]\s*=)/g,' ; ');
+      if(!s.includes('='))return s?[['',s]]:[];
+      return s.split(/;/).map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^([a-zA-Z])\s*=\s*(.+)$/);return m?[m[1],m[2].replace(/[\s.;,]+$/,'')]:null})};
+    /* gelijk: true (klopt), false (klopt niet), null (afgerond of niet uit te rekenen) */
+    function gelijk(a,b){const A=fn(a),B=fn(b);if(!A||!B)return null;const vs=[...new Set([...A.v,...B.v])],P=[1.37,-0.83,2.91,-2.29,0.61,3.7];let n=0,afw=0;
+      for(let k=0;k<P.length;k++){const E={};vs.forEach((v,j)=>E[v]=P[(k+j)%P.length]+j*0.17);const x=A.f(E),y=B.f(E);if(!isFinite(x))continue;if(!isFinite(y))return false;n++;
+        const d=Math.abs(x-y),sc=Math.max(1,Math.abs(x));if(d>0.006*sc)return false;if(d>1e-6*sc)afw++}
+      return n<2?null:afw?null:true}
+    /* kan de app dit antwoord nakijken? Alleen als elk deel van het goede antwoord 'letter = …' is en uit te rekenen */
+    function kan(a){const ds=String(a??'').split(/\s+of\s+|\(of\s+/)[0],D=delen(ds);return D.length>0&&D.every(d=>d&&d[0]&&fn(d[1]))}
+    function check(a,t){const alts=String(a??'').split(/\s+of\s+|\(of\s+/).map(x=>x.replace(/\)\s*$/,'')),T=delen(t);if(!T.length||T.some(x=>!x))return null;
+      let best=false;for(const alt of alts){const D=delen(alt);if(!D.length||D.some(d=>!d||!d[0]))continue;
+        let r=true;for(const d of D){const x=T.find(y=>y[0]===d[0])||T.find(y=>y[0].toLowerCase()===d[0].toLowerCase())||(D.length===1&&T.length===1?T[0]:null);
+          if(!x){r=false;break}const g=gelijk(d[1],x[1]);if(g===false){r=false;break}if(g===null)r=r&&null}
+        if(r===true)return true;if(r===null)best=null}
+      return best}
+    return {kan,check}})();
   function askToets(q,it,s){
-    const g=eindGetal(q.a);
+    /* soort antwoord: een getal (de app kijkt na), een formule (de app kijkt na), of iets anders (zelf nakijken).
+       Afspraak 12 nov: ze typt altijd eerst haar eindantwoord, ook als de app het niet kan nakijken. Zo kan ze niet doorklikken
+       en ziet de ouder in het overzicht wat ze opschreef. */
+    const g=eindGetal(q.a),fm=g==null&&FM.kan(q.a),soort=g!=null?'getal':fm?'formule':'tekst';
     el.innerHTML=`${kop(it,q,s,false)}
-    <div class="card stack"><span class="tag">Toetsvorm</span><p>${g!=null?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':R.exam?' Zo gaat het ook op de echte toets.':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
-      ${g!=null?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`:''}
+    <div class="card stack"><span class="tag">Toetsvorm</span><p>${soort!=='tekst'?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':R.exam?' Zo gaat het ook op de echte toets.':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
+      ${soort==='getal'?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`
+        :soort==='formule'?`<label class="sub" for="ta">Je eindantwoord, zoals in je schrift (bijvoorbeeld y = -2x + 5; een breuk typ je als 3/4, een kommagetal met een komma):</label><input id="ta" class="cell" style="width:100%;max-width:320px;font-size:1.1rem;text-align:left" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Eindantwoord">`
+        :`<label class="sub" for="ta">Je antwoord in het kort (wat je onderaan in je schrift hebt staan):</label><textarea id="ta" class="ta" rows="2" spellcheck="false" aria-label="Je antwoord"></textarea>`}
+      <p class="ko-err" id="taerr" role="alert"></p>
       <button class="btn" id="see">Klaar: laat de uitwerking zien</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelectorAll('details.denk').forEach(d=>d.remove());
     el.querySelector('#stop').onclick=stopRonde;
-    const ti=el.querySelector('#ta');if(ti)ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};
-    el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();
-      const typed=ti?ti.value.trim():'',tn=eindGetal(typed),tl=lees(typed),goed=g==null?null:typed!==''&&(isFinite(tl)?zelfde(tl,g):tn!=null&&zelfde(tn,g));
-      if(ti){ti.disabled=true;ti.classList.add(goed?'ok':'bad')}
+    const ti=el.querySelector('#ta');if(ti){if(ti.tagName==='INPUT')ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};ti.focus()}
+    el.querySelector('#see').onclick=()=>{
+      const typed=ti?ti.value.trim():'';
+      if(!typed){el.querySelector('#taerr').textContent='Typ eerst je eindantwoord. Daarna zie je de uitwerking en kun je kijken of het klopte.';ti.focus();return}
+      R.tRev=R.tRev||Date.now();
+      let goed=null;
+      if(soort==='getal'){const tn=eindGetal(typed),tl=lees(typed);goed=isFinite(tl)?zelfde(tl,g):tn!=null?zelfde(tn,g):FM.check(q.a,typed)===true}
+      else if(soort==='formule')goed=FM.check(q.a,typed);
+      ti.readOnly=true;if(goed!=null)ti.classList.add(goed?'ok':'bad');el.querySelector('#taerr').textContent='';
       el.querySelector('#see').remove();
       const box=el.querySelector('#kp');
-      box.innerHTML=`${g!=null?(goed?'<div class="fb ok"><div class="head">Je eindantwoord klopt.</div>Kijk nu of je uitwerking ook klopt.</div>':`<div class="fb bad"><div class="head">${typed?'Je eindantwoord klopt niet.':'Je hebt geen eindantwoord ingevuld.'}</div>Het antwoord is ${fmt(q.a)}. Zoek in de uitwerking waar het misging.</div>`):''}
-        <div class="tip stack"><b>${g!=null?'De uitwerking: vink aan welke stappen jij ook goed op papier had':'Het antwoord: vink aan welke punten jij ook had'}</b>
+      box.innerHTML=`${goed===true?'<div class="fb ok"><div class="head">Je eindantwoord klopt.</div>Kijk nu of je uitwerking ook klopt.</div>'
+          :goed===false?`<div class="fb bad"><div class="head">Je eindantwoord klopt niet.</div>Het antwoord is ${fmt(q.a)}. Zoek in de uitwerking waar het misging.</div>`
+          :soort==='formule'?`<div class="fb"><div class="head">Vergelijk je antwoord zelf</div>De app kan je schrijfwijze niet precies nakijken (bijvoorbeeld een afgerond getal). Het antwoord is ${fmt(q.a)}.</div>`:''}
+        <div class="tip stack"><b>${soort!=='tekst'?'De uitwerking: vink aan welke stappen jij ook goed op papier had':'Het antwoord: vink aan welke punten jij ook had'}</b>
         <ul class="kp">${q.st.map((x,i)=>`<li><label><input type="checkbox" data-i="${i}"><span><span class="why">${fmt(x.t)}</span>${x.s?`<br><b>${fmt(x.s)}</b>`:''}</span></label></li>`).join('')}</ul>
-        ${g==null?`<div><b>Antwoord:</b> ${fmt(q.a)}</div>`:''}</div>
+        ${soort==='tekst'?`<div><b>Antwoord:</b> ${fmt(q.a)}</div>`:''}</div>
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles goed</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
       const upd=()=>{okb.disabled=goed===false||!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
-      /* in een toets: wat ze zelf goed rekent zonder dat de app het eindgetal heeft kunnen controleren, gaat naar de ouder om na te kijken */
-      const naarOuder=ok=>ok&&R.exam&&R.rid&&Oefen.ctx.nakijk&&!(g!=null&&goed);
+      /* in een toets: wat ze zelf goed rekent zonder dat de app het eindantwoord heeft kunnen controleren, gaat naar de ouder om na te kijken */
+      const naarOuder=ok=>ok&&R.exam&&R.rid&&Oefen.ctx.nakijk&&goed!==true;
       const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
         if(naarOuder(ok)){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
-          vraag:schoon(q.q).slice(0,600),jij:(typed?typed+' · ':'')+'uitwerking op papier: kijk in haar schrift',goed:schoon([fmt(q.a),...q.st.map(x=>x.t+(x.s?' '+x.s:''))].join('\n')).slice(0,800)})}
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.'+(naarOuder(ok)?' Je ouder kijkt je uitwerking nog na: bewaar je papier.':'')+'</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed||'(op papier)')};
+          vraag:schoon(q.q).slice(0,600),jij:typed+' · uitwerking op papier: kijk in haar schrift',goed:schoon([fmt(q.a),...q.st.map(x=>x.t+(x.s?' '+x.s:''))].join('\n')).slice(0,800)})}
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.'+(naarOuder(ok)?' Je ouder kijkt je uitwerking nog na: bewaar je papier.':'')+'</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed)};
       okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
@@ -859,7 +910,7 @@ window.Oefen=(()=>{
     <h2>Zo werkte ze · ${esc(o.titel||dag)}</h2>
     <details class="tip"><summary style="cursor:pointer"><b>Hoe lees je dit?</b></summary><div class="stack" style="margin-top:8px"><span>Per vak elke ronde in de app, met haar antwoorden en hoe lang ze over elke vraag deed. Bij meerkeuze moet ze altijd iets kiezen; een vraag overslaan kan niet. Wel kan ze snel gokken: dat zie je aan de tijd.</span>
       <span><b class="iz-snel">Snel</b> betekent: sneller dan je nodig hebt om de vraag echt te maken (een som binnen 12 seconden; met stap-voor-stap-hulp minder dan 3 seconden per stap; op papier de uitwerking al binnen 30 seconden geopend; een andere vraag binnen 3 seconden). Dat hoeft niet fout te zijn: een vraag die ze goed kent, gaat ook snel.</span>
-      <span>Bij <b>zelf op papier</b> ziet de app haar uitwerking niet. Rekende ze iets goed zonder een eindantwoord in te typen, dan staat dat erbij: dat kun je alleen in haar schrift nakijken.</span>
+      <span>Bij <b>zelf op papier</b> ziet de app haar uitwerking niet. Sinds 12 november moet ze daar altijd eerst haar eindantwoord intypen; een getal of formule kijkt de app dan zelf na. Bij een antwoord in woorden kijkt ze zelf na: wat ze typte, staat hier. Oudere antwoorden zonder iets ingetypt staan erbij met 'kijk in haar schrift'.</span>
       <span>Rondes met iets opvallends staan open. Een oranje streep markeert de vraag.</span></div></details>
     ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}</p></div>`:''}
     ${V2.map(v=>`<h3 style="margin:16px 0 6px">${esc(v.D.naam)}</h3>
