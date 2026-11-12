@@ -379,6 +379,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 .aw-uw{margin-top:2px} .aw-uw summary{cursor:pointer;font-weight:600;font-size:.95rem} .aw-uw .uitw{margin-top:6px}
 .volg{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:6px}.volg .volgk,.pool .volgk{text-align:left;white-space:normal}
 .volg .volgk:disabled{opacity:1}.volg .volgk.ok{border-color:var(--ok);background:var(--okbg)}.volg .volgk.bad{border-color:var(--bad);background:var(--badbg)}
+.iz-snel{color:var(--warn);font-weight:700} .iz-let{box-shadow:inset 4px 0 0 var(--warn)} .iz-t{font-size:.85rem;color:var(--soft)} .iz-r>summary{cursor:pointer;list-style-position:outside}
 </style>
 
 </head>
@@ -402,7 +403,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611111930"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611101830"></script>
+<script src="oefen/engine.js?v=202611120930"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611111930"></script>
@@ -759,6 +760,7 @@ function rVandaag(){
   ${isOuder()&&rest.length&&dag===today()?`<div class="note warn"><b>Niet alles past, ook niet met ${mins(SET.maxDagSchool+(SET.rekMin??DEF.rekMin))} per avond</b><span>${rest.map(r=>`${esc(r.v.naam)} (${esc(r.t.naam)}): nog ${mins(r.tot)}`).join(' · ')} kon nergens meer worden ingepland. Hoe meer paragrafen ze in de app haalt, hoe korter de toetsvoorbereiding wordt. Of zet bij Week → Instellingen de leertijd per toets lager, of geef vrijdag en zaterdag meer leertijd.</span></div>`:''}
   ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
   ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}
+  ${isOuder()&&dag<=today()?inzetKaart(dag):''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
   ${vrijDag(dag)?`<div class="note"><b>${esc(vakantieVan(dag).naam)}</b><span>Vandaag staat er niets op het plan. Je reeks staat op pauze: hij gaat niet verloren en loopt na de vakantie gewoon door. Oefenen in de app mag altijd.</span></div>`:''}
@@ -801,6 +803,7 @@ function rVandaag(){
     if(e)delLog(e.d,e.key);else addLog({d:dag<=today()?dag:today(),key:'hwt-'+id,vak:b.dataset.vak,soort:'huiswerk',min:+b.dataset.min,t:Date.now()})});
   document.querySelectorAll('[data-vraag]').forEach(b=>b.onclick=e=>{e.stopPropagation();addLog({d:dag,key:'vraag-'+b.dataset.vraag,vak:b.dataset.vak,soort:'vraag',min:0,t:Date.now()})});
   const nkv=$('#nkv');if(nkv)nkv.onclick=openNakijk;
+  const izv=$('#izv');if(izv)izv.onclick=()=>openInzet(dag);
   document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.ok;const wid=weekId(dag);
     if(LOG[wid])LOG[wid].entries=LOG[wid].entries.filter(x=>!(x.d===dag&&x.key==='vraag-'+k));
     addLog({d:dag,key:'ok-'+k,vak:b.dataset.vak,soort:'goedgekeurd',min:+b.dataset.min,door:WIE,t:Date.now()})});
@@ -831,6 +834,13 @@ function verwerkNakijk(){if(isOuder()||!GELADEN.nakijk||!GELADEN.oefen)return;
   Object.entries(NK).forEach(([id,x])=>{if(x.oordeel!=='fout'||!VAKDATA[x.vak]||Oefen.cur===x.vak||NK_VERWERKT.has(id))return;
     const st=Oefen.ctx.state(x.vak);st.nkDone=st.nkDone||[];NK_VERWERKT.add(id);if(st.nkDone.includes(id))return;
     Oefen.corrigeer(x.vak,x);st.nkDone=st.nkDone.concat([id]).slice(-300);Oefen.ctx.save(x.vak)})}
+/* ---------- inzet (alleen de ouder, afspraak 12 nov): hoe werkte ze op een dag? Antwoorden, tijd per vraag, hulp, snel geklikt ---------- */
+function inzetHw(d){const nd=volgendeSchooldag(d);return HW().filter(h=>h.app&&window.VAKDATA&&VAKDATA[h.app]&&((hwLog(h.id)||{}).d===d||h.d===nd))}
+function inzetKaart(d){if(!window.Oefen||!Oefen.inzetSamen)return '';const z=Oefen.inzetSamen(d),oud=inzetHw(d).some(h=>{const st=OEF[h.app]||{};return st.hwAns&&st.hwAns[h.id]&&Object.keys(st.hwAns[h.id]).length});
+  if(!z.n&&!oud)return '';
+  return `<div class="note"><b>Zo werkte ze${d===today()?' vandaag':''}</b><span>${z.n?`${z.n} ${z.n===1?'vraag':'vragen'} in de app (${z.vakken.map(v=>esc(v.naam)).join(', ')}), ${z.goed} in één keer goed.${z.snel?` <b>${z.snel} snel beantwoord.</b>`:' Niets opvallend snel.'}${z.zelf?` ${z.zelf} zelf goed gerekend zonder iets in te typen.`:''}`:'Haar antwoorden op het huiswerk (tijden bewaart de app pas sinds 12 november).'}</span><button class="btn ghost" id="izv">Bekijk haar antwoorden</button></div>`}
+function openInzet(d){show('oefenen');const min={};VAK.forEach(v=>{const m=autoMin(d,v.id);if(m)min[v.id]=m});
+  Oefen.inzet($('#v-oefenen'),d,{titel:nice(d),min,hw:inzetHw(d),terug:()=>{tab='vandaag';try{localStorage.setItem('tab',tab)}catch(e){};render()}})}
 function openNakijk(){show('oefenen');Oefen.cur='nakijk';rNakijk()}
 function rNakijk(){
   const ouder=isOuder(),open=nkOpen(),fout=nkFoutNieuw(),gedaan=nkLijst().filter(x=>x.oordeel).slice(0,10);

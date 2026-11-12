@@ -251,7 +251,7 @@ window.Oefen=(()=>{
     if((mode==='ptoets'||mode==='toets')&&(V.toetsvorm||tvVak())&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
     if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
     const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='ttoets'||mode==='diag';
-    R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw};
+    R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw,tStart:Date.now()};
     ask();
   }
   function kop(it,q,s,guided){
@@ -265,6 +265,7 @@ window.Oefen=(()=>{
   function stopRonde(){if(R&&R.van){done();return Oefen.ctx.home()}if(R&&R.hw&&Oefen._hw)return hwHome(Oefen._hw);R&&R.sec?section(R.sec):home()}
   function ask(){
     if(R.i>=R.queue.length)return end();
+    R.t0=Date.now();R.tRev=null;R.zelf=0;
     const it=R.queue[R.i],q=form(QM[it.id],it.alt),s=secOf(q.o);
     if(schrijfVorm(q,it))return askSchrijf(q,it,s);
     if(q.type&&V.custom&&V.custom[q.type])return askCustom(q,it,s);
@@ -314,6 +315,7 @@ window.Oefen=(()=>{
       ins.forEach((i,j)=>{i.readOnly=true;i.classList.add(goed[j]?'ok':'bad')});
       el.querySelector('#tok').remove();
       const ok=goed.every(Boolean),hb2=el.querySelector('#help');if(hb2)hb2.remove();
+      inzetRec(q,it,ok,ins.map(i=>i.value.trim()).join(', '));
       if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,ins.map((i,j)=>(q.in.length>1?q.in[j].lab+' = ':'')+i.value.trim()).join(', '),ok);if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);if(ok&&R.was.has(q.id)&&!R.stepErr[q.id])ST.wrong=ST.wrong.filter(x=>x!==q.id);save()}
       if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
       else R.terug=nogEens(q,it)
@@ -338,7 +340,7 @@ window.Oefen=(()=>{
       nb.onclick=()=>{nb.remove();d.className='done-step';guide(q,n+1)};d.appendChild(nb);nb.focus()};
     if(x.mc)d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const sw=d.querySelector('.sw');
       if(b.dataset.ok==='1'){b.classList.add('ok');d.querySelectorAll('.opt').forEach(o=>o.disabled=true);sw.innerHTML='<div class="fb ok"><div class="head">Goed zo!</div></div>';finish()}
-      else{b.classList.add('bad');b.disabled=true;R.stepErr[q.id]=1;if(!ST.wrong.includes(q.id)){ST.wrong.push(q.id);save()}
+      else{b.classList.add('bad');b.disabled=true;R.stepErr[q.id]=(R.stepErr[q.id]||0)+1;if(!ST.wrong.includes(q.id)){ST.wrong.push(q.id);save()}
         sw.innerHTML=`<div class="fb bad"><div class="head">Nog niet.</div>${fmt(decodeURIComponent(b.dataset.why))} Probeer het nog een keer.</div>`}});
     else d.querySelector('.sh').onclick=e=>{e.target.remove();finish()};
     d.scrollIntoView({behavior:smooth,block:'nearest'});
@@ -347,6 +349,7 @@ window.Oefen=(()=>{
     const ok=opts[k][1]===1;
     el.querySelectorAll('.opt[data-k]').forEach((b,j)=>{b.disabled=true;if(opts[j][1]===1)b.classList.add('ok');else if(j===k)b.classList.add('bad');else b.classList.add('dim')});
     const hb=el.querySelector('#help');if(hb)hb.remove();
+    inzetRec(q,it,ok,opts[k][0]);
     if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,opts[k][0],ok);
       if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
       /* pas uit de stapel als hij in een LATERE ronde in één keer goed gaat */
@@ -367,6 +370,7 @@ window.Oefen=(()=>{
   }
   /* afronden van een vraag die niet meerkeuze is (open vraag of eigen vraagsoort van een vak) */
   function finishCustom(q,it,ok,html,jij){
+    inzetRec(q,it,ok,jij);
     if(!(q.id in R.first)){R.first[q.id]=ok;hwRec(q,it,jij,ok);
       if(!ok&&!ST.wrong.includes(q.id))ST.wrong.push(q.id);
       if(ok&&R.was.has(q.id))ST.wrong=ST.wrong.filter(x=>x!==q.id);
@@ -398,7 +402,7 @@ window.Oefen=(()=>{
     el.querySelectorAll('details.denk').forEach(d=>d.remove());
     el.querySelector('#stop').onclick=stopRonde;
     const ti=el.querySelector('#ta');if(ti)ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};
-    el.querySelector('#see').onclick=()=>{
+    el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();
       const typed=ti?ti.value.trim():'',tn=eindGetal(typed),tl=lees(typed),goed=g==null?null:typed!==''&&(isFinite(tl)?zelfde(tl,g):tn!=null&&zelfde(tn,g));
       if(ti){ti.disabled=true;ti.classList.add(goed?'ok':'bad')}
       el.querySelector('#see').remove();
@@ -412,7 +416,7 @@ window.Oefen=(()=>{
       const upd=()=>{okb.disabled=goed===false||!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
       /* in een toets: wat ze zelf goed rekent zonder dat de app het eindgetal heeft kunnen controleren, gaat naar de ouder om na te kijken */
       const naarOuder=ok=>ok&&R.exam&&R.rid&&Oefen.ctx.nakijk&&!(g!=null&&goed);
-      const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
+      const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);if(!ok)ST.ok=(ST.ok||[]).filter(x=>x!==q.id);
         if(naarOuder(ok)){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
           vraag:schoon(q.q).slice(0,600),jij:(typed?typed+' · ':'')+'uitwerking op papier: kijk in haar schrift',goed:schoon([fmt(q.a),...q.st.map(x=>x.t+(x.s?' '+x.s:''))].join('\n')).slice(0,800)})}
         finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Helemaal zelf uitgewerkt, zoals op de toets.'+(naarOuder(ok)?' Je ouder kijkt je uitwerking nog na: bewaar je papier.':'')+'</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Schrijf de stappen die je miste over in je schrift. Deze komt terug, eerst weer met hulp.</div>',typed||'(op papier)')};
@@ -473,7 +477,7 @@ window.Oefen=(()=>{
     const ins=[...el.querySelectorAll('.tv-v')];
     ins.forEach((x,j)=>{if(x.tagName==='INPUT')x.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();if(ins[j+1])ins[j+1].focus();else el.querySelector('#see').click()}}});
     const hard=streng(q);
-    el.querySelector('#see').onclick=()=>{
+    el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();
       if(hard){const leeg=ins.findIndex(x=>!x.value.trim());if(leeg>=0){el.querySelector('#tverr').textContent=vak?'Vul eerst alle vakjes in.':'Typ eerst je antwoord.';ins[leeg].focus();return}}
       const er=el.querySelector('#tverr');if(er)er.remove();
       el.querySelector('#see').remove();ins.forEach(x=>x.readOnly=true);
@@ -487,7 +491,7 @@ window.Oefen=(()=>{
           <div class="row" id="kb"><button class="btn ghost" id="okb">Mijn antwoord is goed</button><button class="btn ghost" id="nob">Mijn antwoord is fout</button></div>`;
         box.querySelector('#okb').onclick=()=>klaar(true,jij);box.querySelector('#nob').onclick=()=>klaar(false,jij);
         box.scrollIntoView({behavior:smooth,block:'start'})};
-      const klaar=(ok,jij)=>{const kb=box.querySelector('#kb');if(kb)kb.remove();
+      const klaar=(ok,jij)=>{R.zelf=1;const kb=box.querySelector('#kb');if(kb)kb.remove();
         if(ok&&Oefen.ctx.nakijk&&R.rid){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
           vraag:schoon(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,'')).slice(0,600),jij:String(jij||'(op papier)').slice(0,800),goed:schoon(goedHtml.replace(/<br>/g,'\n')).slice(0,800)})}
         finishCustom(q,it,ok,ok?`<div class="fb ok"><div class="head">Goed!</div>Zelf opgeschreven, zoals op de toets.${Oefen.ctx.nakijk&&R.rid?' Je ouder kijkt dit antwoord nog na.':''}</div>`:`<div class="fb bad"><div class="head">Fout</div>${box.innerHTML?'':`<div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>`}${uitleg}</div>`,jij||'(op papier)')};
@@ -537,7 +541,7 @@ window.Oefen=(()=>{
     el.querySelector('#stop').onclick=stopRonde;
     const tas=[...el.querySelectorAll('.ko-ta')],err=el.querySelector('#koerr');
     tas.forEach(t=>t.oninput=()=>{err.textContent='';t.classList.remove('ko-mist')});
-    el.querySelector('#see').onclick=()=>{
+    el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();
       for(let i=0;i<ko.length;i++){const v=tas[i].value.trim();
         if(v.length<3){err.textContent=`Vul eerst vak ${i+1} in.`;tas[i].classList.add('ko-mist');tas[i].focus();return}
         if(ko[i][2]&&!KO_REDEN.test(koNorm(v))){err.textContent=`Bij vak ${i+1} ontbreekt de reden. Schrijf erbij waaróm: omdat, doordat, want, dus …`;tas[i].classList.add('ko-mist');tas[i].focus();return}}
@@ -568,7 +572,7 @@ window.Oefen=(()=>{
               <div class="row"><button class="btn ghost sm" data-c="2">Ja, in andere woorden</button><button class="btn ghost sm" data-c="1">Nee, dan is het half</button></div></div>`;
             chk.querySelectorAll('[data-c]').forEach(c=>c.onclick=()=>{zet(+c.dataset.c);chk.innerHTML=+c.dataset.c===2?'<p class="sub" style="margin:0">Oké: in andere woorden, maar wel met dezelfde betekenis.</p>':''});return}
           zet(v)})});
-      box.querySelector('#koklaar').onclick=()=>{
+      box.querySelector('#koklaar').onclick=()=>{R.zelf=1;
         const open=keus.findIndex(v=>v===null);if(open>=0){err2.textContent=`Kies eerst bij onderdeel ${open+1}: goed, half of mis.`;box.querySelector(`.ko-k[data-i="${open}"]`).scrollIntoView({behavior:smooth,block:'center'});return}
         const ok=keus.every(v=>v===2),fout=keus.map((v,i)=>v<2?i:-1).filter(i=>i>=0);
         if(ok)delete ST.koMis[q.id];else ST.koMis[q.id]=fout;save();
@@ -586,7 +590,7 @@ window.Oefen=(()=>{
       <textarea id="ans" class="ta" placeholder="Mijn antwoord…"></textarea>
       <button class="btn" id="see">Bekijk het modelantwoord</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelector('#stop').onclick=stopRonde;
-    el.querySelector('#see').onclick=()=>{el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
+    el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
       const box=el.querySelector('#kp');
       box.innerHTML=`<div class="tip stack"><b>Modelantwoord: vink aan wat jij ook had</b>
         <ul class="kp">${(tvVak()?[...q.k,'Mijn reden zegt iets nieuws: ik herhaal niet alleen de vraag']:q.k).map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
@@ -594,7 +598,7 @@ window.Oefen=(()=>{
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
       const upd=()=>{okb.disabled=!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
-      const klaar=ok=>{box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
+      const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
         finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>',el.querySelector('#ans').value.trim()||'(op papier)')};
       okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
       box.scrollIntoView({behavior:smooth,block:'start'})};
@@ -606,6 +610,21 @@ window.Oefen=(()=>{
   function hwRec(q,it,jij,ok){if(!R.hw)return;const A=ST.hwAns=ST.hwAns||{},m=A[R.hw]=A[R.hw]||{};
     m[q.id]=it&&it.alt?{ok:!!ok,v:1}:{j:schoon(jij),ok:!!ok};
     const ks=Object.keys(A).sort();ks.slice(0,Math.max(0,ks.length-15)).forEach(k=>delete A[k])}
+  /* ---------- inzet, voor de ouder (afspraak 12 nov): per ronde elk antwoord en hoe lang ze erover deed.
+     ST.inzet = [{k, d, m:mode, ti:titel, hw, n:aantal vragen, t0, t1, q:[{i:vraag-id, ok, s:seconden, w?:seconden tot ze de uitwerking
+     of het antwoord opende, f?:'r' herkansing 'v' andere woorden of getallen 'h' stap-voor-stap-hulp 'z' zelf nagekeken, e?:foute stappen,
+     j:haar antwoord, q?/a?:de vraag en het antwoord zoals ze hem kreeg (alleen bij andere woorden)}]}]. Laatste 14 dagen.
+     Niet als een ouder in de app kijkt. ---------- */
+  const dagStr=n=>`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  function inzetRec(q,it,ok,jij){if(!R||(Oefen.ctx.ouder&&Oefen.ctx.ouder()))return;
+    const I=ST.inzet=ST.inzet||[],nu=Date.now(),sec=t=>Math.round(Math.max(0,Math.min(t,3600000))/1000);
+    R.ik=R.ik||nu.toString(36);let r=I.find(x=>x.k===R.ik);
+    if(!r){r={k:R.ik,d:dagStr(new Date(R.tStart||nu)),m:R.mode,ti:schoon(R.title||'').slice(0,120),hw:R.hw||null,n:R.total,t0:R.tStart||nu,q:[]};I.push(r)}
+    const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,140)},f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
+    if(f)x.f=f;if(R.tRev)x.w=sec(R.tRev-(R.t0||nu));if(R.stepErr[q.id])x.e=R.stepErr[q.id];
+    if(it.alt||q.gen){x.q=schoon(q.tv||q.q).slice(0,300);x.a=schoon(goedTxt(q)).slice(0,140)}
+    r.q.push(x);r.t1=nu;
+    const grens=dagStr(new Date(nu-14*864e5));ST.inzet=I.filter(x=>x.d>=grens).slice(-300);save()}
   function hwMark(id){if(!R.hw)return;const l=ST.hw[R.hw]=ST.hw[R.hw]||[];if(!l.includes(id)){l.push(id);save()}}
   const nrNum=q=>{const m=String(q.nr||'').replace(/^(Opdracht|Opgave) /,'').match(/^(\d+)([a-z]?)(?![0-9])/);return m?[+m[1],m[2]]:null}; /* ook 'Opdracht 6a/b' */
   function hwIds(nrs,par){const want=nrs.map(Number);
@@ -803,7 +822,63 @@ window.Oefen=(()=>{
     intro();
   }
 
+  /* ---------- inzet bekijken (alleen de ouder): per dag, per vak, elke ronde met haar antwoorden en tijden ----------
+     'Snel' = sneller dan je nodig hebt om de vraag echt te maken: een som in minder dan 12 s (op papier: uitwerking geopend binnen 30 s),
+     een andere vraag in minder dan 3 s (zelf nakijken: binnen 8 s). Met stap-voor-stap-hulp: minder dan 3 s per stap + 6 s. */
+  const VAKN=()=>Object.keys(window.VAKDATA||{}).filter(id=>VAKDATA[id]&&VAKDATA[id].Q);
+  const isSom=(D,Q)=>D.reken!==false&&!!(Q&&Q.st&&Q.st.length);
+  function snelX(D,Q,x){const som=isSom(D,Q);if((x.f||'').includes('h'))return x.s<3*((Q&&Q.st&&Q.st.length)||1)+6;
+    return x.w!=null&&(x.f||'').includes('z')?x.w<(som?30:8):x.s<(som?12:3)}
+  const nietTeZien=x=>(x.f||'').includes('z')&&x.ok&&(!x.j||x.j==='(op papier)');
+  function inzetDag(dag){return VAKN().map(id=>{const D=VAKDATA[id],st=Oefen.ctx.state(id),QX=Object.fromEntries(D.Q.map(q=>[q.id,q]));
+    const rs=(st.inzet||[]).filter(r=>r.d===dag).sort((a,b)=>a.t0-b.t0);
+    const xs=rs.flatMap(r=>r.q.map(x=>({x,Q:QX[x.i]}))).filter(o=>o.Q),eerst=xs.filter(o=>!(o.x.f||'').includes('r'));
+    return {id,D,st,QX,rs,n:eerst.length,goed:eerst.filter(o=>o.x.ok).length,snel:xs.filter(o=>snelX(D,o.Q,o.x)).length,
+      zelf:xs.filter(o=>nietTeZien(o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
+  const tijd=t=>{const d=new Date(t);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
+  const secTxt=s=>s<60?s+' s':s<3600?Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''):'meer dan een uur';
+  const MODEN={stap:'Huiswerk',tvorm:'Huiswerk, zelf op papier',oefen:'Oefenen',ptoets:'Paragraaftoets',ttoets:'Tussentoets',toets:'Proeftoets',fout:'Foute vragen',opwarm:'Opwarmen',diag:'Instaptoets'};
+  function inzetView(target,dag,o){el=target;Oefen.cur='inzet';o=o||{};
+    const V2=inzetDag(dag),hwOud=(o.hw||[]).map(h=>{const D=VAKDATA[h.app];if(!D)return null;const st=Oefen.ctx.state(h.app),A=(st.hwAns||{})[h.id];
+      if(!A||!Object.keys(A).length||(st.inzet||[]).some(r=>r.hw===h.id&&r.d===dag))return null;return {h,D,A,QX:Object.fromEntries(D.Q.map(q=>[q.id,q]))}}).filter(Boolean);
+    const vraagTxt=(Q,x)=>x.q?esc(x.q):fmt(String(Q.tv||Q.q).replace(/<button[\s\S]*?<\/button>/g,''));
+    const kaart=(D,Q,x)=>{const sn=snelX(D,Q,x),f=x.f||'',nz=nietTeZien(x),goed=x.a!=null?esc(x.a):fmt(goedTxt(Q));
+      const extra=[f.includes('r')?'herkansing':'',f.includes('v')?'in andere woorden of met andere getallen':'',f.includes('h')?'met stap-voor-stap-hulp':'',
+        x.e?x.e+(x.e===1?' stap':' stappen')+' eerst fout':'',f.includes('z')?'zelf nagekeken':''].filter(Boolean);
+      return `<div class="card stack antw ${x.ok?'aw-ok':'aw-bad'}${sn||nz?' iz-let':''}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,x)}</div>
+        <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${x.j?fmt(esc(x.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${x.ok?'✓':'✗'}</b></div></div>
+        ${x.ok?'':`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${goed}</div></div>`}
+        <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}</div></div>`};
+    const ronde=(v,r)=>{const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok).length;
+      const sn=xs.filter(x=>snelX(v.D,v.QX[x.i],x)).length,nz=xs.filter(nietTeZien).length,let_=sn||nz;
+      return `<details class="card iz-r"${let_?' open':''}><summary>${(L=>`<b>${esc(L)}</b>${(t=>t&&t!==L?' · '+esc(t):'')(String(r.ti||'').replace(/^Huiswerk:\s*/,''))}`)(r.hw?'Huiswerk':MODEN[r.m]||'Oefenen')}
+        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}</span></summary>
+        <div class="stack" style="margin-top:10px">${xs.map(x=>kaart(v.D,v.QX[x.i],x)).join('')}</div></details>`};
+    const tot=V2.reduce((a,v)=>a+v.n,0),totS=V2.reduce((a,v)=>a+v.snel,0),totZ=V2.reduce((a,v)=>a+v.zelf,0);
+    el.innerHTML=`${top('Terug','Inzet')}
+    <h2>Zo werkte ze · ${esc(o.titel||dag)}</h2>
+    <details class="tip"><summary style="cursor:pointer"><b>Hoe lees je dit?</b></summary><div class="stack" style="margin-top:8px"><span>Per vak elke ronde in de app, met haar antwoorden en hoe lang ze over elke vraag deed. Bij meerkeuze moet ze altijd iets kiezen; een vraag overslaan kan niet. Wel kan ze snel gokken: dat zie je aan de tijd.</span>
+      <span><b class="iz-snel">Snel</b> betekent: sneller dan je nodig hebt om de vraag echt te maken (een som binnen 12 seconden; met stap-voor-stap-hulp minder dan 3 seconden per stap; op papier de uitwerking al binnen 30 seconden geopend; een andere vraag binnen 3 seconden). Dat hoeft niet fout te zijn: een vraag die ze goed kent, gaat ook snel.</span>
+      <span>Bij <b>zelf op papier</b> ziet de app haar uitwerking niet. Rekende ze iets goed zonder een eindantwoord in te typen, dan staat dat erbij: dat kun je alleen in haar schrift nakijken.</span>
+      <span>Rondes met iets opvallends staan open. Een oranje streep markeert de vraag.</span></div></details>
+    ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}</p></div>`:''}
+    ${V2.map(v=>`<h3 style="margin:16px 0 6px">${esc(v.D.naam)}</h3>
+      <p class="sub" style="margin:0 0 8px;font-size:.9rem">${o.min&&o.min[v.id]?`${Math.round(o.min[v.id])} min actief in de app · `:''}${v.n} ${v.n===1?'vraag':'vragen'}, ${v.goed} in één keer goed${v.snel?` · <span class="iz-snel">${v.snel} snel</span>`:''}</p>
+      <div class="stack">${v.rs.map(r=>ronde(v,r)).join('')}</div>`).join('')}
+    ${hwOud.length?`<h3 style="margin:16px 0 6px">Huiswerk, nog zonder tijden</h3><p class="sub" style="font-size:.9rem;margin:0 0 8px">Tijden bewaart de app pas sinds 12 november. Hier zie je wel haar eerste antwoord op elke vraag.</p>
+      ${hwOud.map(({h,D,A,QX})=>{const ids=Object.keys(A).filter(i=>QX[i]),g=ids.filter(i=>A[i].ok).length;
+        return `<details class="card iz-r" open><summary><b>${esc(D.naam)}</b> · ${esc(h.t||'huiswerk')}<span class="sub" style="display:block;font-size:.9rem">${g} van ${ids.length} in één keer goed</span></summary><div class="stack" style="margin-top:10px">${ids.map(i=>{const Q=QX[i],a=A[i];
+          return `<div class="card stack antw ${a.ok?'aw-ok':'aw-bad'}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,{})}</div>
+          <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${a.v?'<span class="sub">(kreeg de vraag in andere woorden)</span>':a.j?fmt(esc(a.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${a.ok?'✓':'✗'}</b></div></div>
+          ${a.ok?'':`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${fmt(goedTxt(Q))}</div></div>`}</div>`}).join('')}</div></details>`}).join('')}`:''}
+    ${!V2.length&&!hwOud.length?'<div class="card">Op deze dag heeft ze niets in de app gemaakt.</div>':''}
+    <div class="stack" style="margin-top:12px"><button class="btn ghost" id="izterug">Terug</button></div>`;
+    const terug=()=>{Oefen.cur=null;if(o.terug)o.terug()};
+    el.querySelector('#back').onclick=terug;el.querySelector('#izterug').onclick=terug;scrollTo(0,0)}
   return {ctx:null,cur:null,
+    /* inzet voor de ouder: samenvatting van een dag, en de hele pagina */
+    inzetSamen(dag){const V2=inzetDag(dag);return {vakken:V2.map(v=>({id:v.id,naam:v.D.naam,n:v.n,goed:v.goed,snel:v.snel,zelf:v.zelf})),n:V2.reduce((a,v)=>a+v.n,0),goed:V2.reduce((a,v)=>a+v.goed,0),snel:V2.reduce((a,v)=>a+v.snel,0),zelf:V2.reduce((a,v)=>a+v.zelf,0)}},
+    inzet:inzetView,
     vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
     huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwTotaal(id,H){const D=VAKDATA[id];if(!D)return 0;const so=x=>D.SECS.find(s=>s.id===x)||{},want=(H.opg||[]).map(Number),ids=new Set();
