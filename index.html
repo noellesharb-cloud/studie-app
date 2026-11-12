@@ -380,6 +380,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 .volg{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:6px}.volg .volgk,.pool .volgk{text-align:left;white-space:normal}
 .volg .volgk:disabled{opacity:1}.volg .volgk.ok{border-color:var(--ok);background:var(--okbg)}.volg .volgk.bad{border-color:var(--bad);background:var(--badbg)}
 .pt-k{font-size:.85rem;color:var(--soft)} .sec.pt:disabled{cursor:not-allowed;opacity:.75} .iz-snel{color:var(--warn);font-weight:700} .iz-let{box-shadow:inset 4px 0 0 var(--warn)} .iz-t{font-size:.85rem;color:var(--soft)} .iz-r>summary{cursor:pointer;list-style-position:outside}
+.blk.schuif{opacity:.75}.blk.schuif .ck{font-weight:700}
 </style>
 
 </head>
@@ -590,10 +591,11 @@ function schedule(){
   if(SCHED)return SCHED;
   const F=eersteOpen(),credit={};
   for(let d=startDag()||F,k=0;d<F&&k<400;d=addDays(d,1),k++)(prepGedaan(d)||[]).forEach(x=>{const id=x.vid+'|'+x.tid;credit[id]=(credit[id]||0)+(x.min||0)});
+  Object.entries(inhaalPrep(F)).forEach(([id,m])=>credit[id]=(credit[id]||0)+m);
   return SCHED=maakSchedule(F,credit);
 }
 function maakSchedule(van,credit){
-  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+inhaalMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -618,6 +620,20 @@ function maakSchedule(van,credit){
     if(o.tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot:o.tot});});
   return A;
 }
+/* ---------- doorschuiven door de ouder (afspraak 12 nov) ----------
+   Op een drukke dag (bijv. donderdag hockey) mag de ouder alles behalve het huiswerk doorschuiven. Een doorgeschoven blok telt die dag
+   niet mee voor de reeks. Bijhouden, oefenen en toetsvoorbereiding komen als inhaalblok op de eerstvolgende vrijdag (of zaterdag) en tellen
+   daar wel mee. Is de toets vóór die dag, dan verdeelt de app de toetsvoorbereiding opnieuw over de dagen tot de toets (in de stempel telt
+   alleen wat ze echt deed). Inhaalblokken voor toetsvoorbereiding tellen mee als toetsvoorbereiding (prep), ook in het plan.
+   Opwarmen vervalt (op vrijdag staat al een sprint). Log: key 'schuif-<blok>', soort 'doorgeschoven', naar = inhaaldag, inh = wat er komt. */
+function naarDag(s){let d=addDays(s<today()?addDays(today(),-1):s,1);for(let k=0;k<60;k++,d=addDays(d,1))if(vrijZa(d)&&!vrijDag(d))return d;return null}
+function inhaalVoor(s){const R=[];Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.naar===s&&e.inh&&window.VAKDATA&&VAKDATA[e.inh.vid])R.push(e)}));
+  return R.map(e=>{const i=e.inh,app=i.app!==false,t=i.prep&&(vakOf(i.vid)?.toetsen||[]).find(t=>t.id===i.prep.tid);
+    return Object.assign({key:'inh-'+e.d+'-'+String(e.key).slice(7),vak:i.vid,soort:app?'oefenen':'leren',auto:app?i.vid:null,mode:i.mode||null,min:i.min,par:i.par||null,inh:e,
+    titel:'Inhalen: '+i.titel,uit:`Doorgeschoven van ${nice(e.d)}.${t?` Toets op ${nice(t.datum)}.`:''} ${app?`Oefen ${i.min} minuten in de app. De tijd telt vanzelf mee.`:'Overhoor jezelf en tik het blok daarna af.'}`},i.prep?{prep:i.prep}:{})})}
+/* toetsvoorbereiding die als inhaalblok al op een komende dag staat: niet nog een keer inplannen */
+function inhaalPrep(van){const c={};Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.inh&&e.inh.prep&&e.naar>=van){const id=e.inh.prep.vid+'|'+e.inh.prep.tid;c[id]=(c[id]||0)+e.inh.min}}));return c}
+const inhaalMin=s=>inhaalVoor(s).reduce((a,b)=>a+b.min,0);
 /* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
 function volgendePar(vid){const st=OEF[vid]||{},p=Oefen.pars(vid);return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
 function blokken(s){
@@ -625,7 +641,8 @@ function blokken(s){
   if(vrijDag(s))return [];
   const wk=vrijZa(s);
   /* vrijdag en zaterdag: zonder leertijd alleen een sprint; met leertijd (Instellingen) toetsvoorbereiding of oefenen in de app */
-  if(wk&&!(SET.maxDagWeekend>0))return [{key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint. Eén is genoeg voor je reeks, meer mag.'}];
+  const IH=inhaalVoor(s);
+  if(wk&&!(SET.maxDagWeekend>0))return [{key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint. Eén is genoeg voor je reeks, meer mag.'},...IH];
   const nd=volgendeSchooldag(s),T=wk?[]:hwVoor(nd);
   const BH=bijhouden(s),WV=wk?[]:warmVakken(s);
   if(!wk)B.push({key:'opwarm',vak:'opwarm',soort:'opwarm',auto:'opwarm',min:opwarmRekenMin(),titel:'Opwarmen: rekenen',
@@ -646,6 +663,7 @@ function blokken(s){
       uit:`Toets over ${p.n} ${p.n===1?'dag':'dagen'} (${nice(p.t.datum)})${p.zwaar?' · extra tijd: '+((num(p.t.weging)??1)>=3?'telt '+p.t.weging+'× mee':'je moet hier omhoog'):''}. `+
         (bh?`Je beheerst ${bh.g} van de ${bh.n} paragrafen${bh.proefOk?' en je proeftoets is voldoende':''}. Daardoor is je toetsvoorbereiding ${Math.round(info.tot/60*10)/10} in plaats van ${Math.round(info.vol/60*10)/10} uur. De tijd telt vanzelf mee.`
           :app?'De tijd telt vanzelf mee.':'Overhoor jezelf en tik het blok daarna af.')}))});
+  B.push(...IH);
   /* elke schooldag ook leren met de app, zolang het binnen het maximum past; alleen voor een vak met een komende toets */
   const room=(wk?SET.maxDagWeekend:SET.maxDagSchool)-B.reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
   if(!B.some(b=>b.auto&&b.soort!=='opwarm')&&metToets.length&&room>=10){
@@ -673,7 +691,9 @@ function blokStatus(s){
   /* was de dag al af, dan staat in de stempel welke blokken toen op het plan stonden. Wat daarna bijkomt (nieuwe toetsdatum,
      nieuw huiswerk, een ander vak dat schuift) telt die dag niet meer mee: het staat apart als 'bijgekomen' */
   const stE=L.find(e=>e.key==='dag-gehaald'),vast=stE&&Array.isArray(stE.keys)?new Set(stE.keys):null;
-  const R=B.map(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
+  /* doorgeschoven blokken als laatste: hun minuten tellen pas na de rest van dat vak (anders moet ze voor de toetsvoorbereiding langer oefenen) */
+  const sch=b=>keys.has('schuif-'+b.key)?1:0,volg=B.map((b,i)=>i).sort((i,j)=>sch(B[i])-sch(B[j])||i-j),R=[];
+  volg.forEach(i=>{const b=B[i];R[i]=(b=>{let done,prog=null;const ok=dagOk||keys.has('ok-'+b.key),vraag=keys.has('vraag-'+b.key);
     if(b.auto==='opwarm'){const rs=L.some(e=>e.soort==='sprint'&&String(e.key).startsWith('sprint-reken-')),rr=!RR()||keys.has('klaar-rekenregels');
       return Object.assign({},b,{rs,rr,done:(rs&&rr)||ok,ok:ok&&!(rs&&rr),vraag:vraag&&!(rs&&rr)&&!ok})}
     if(b.auto==='warm'){const d=keys.has('klaar-warm-'+b.warm.vid)||hwDone(b.warm.h);return Object.assign({},b,{done:d||ok,ok:ok&&!d,vraag:vraag&&!d&&!ok})}
@@ -681,7 +701,13 @@ function blokStatus(s){
     else if(b.auto){need[b.auto]=(need[b.auto]||0)+b.min;const have=autoMin(s,b.auto),before=need[b.auto]-b.min;prog=Math.max(0,Math.min(b.min,Math.floor(have-before)));done=have>=need[b.auto]}
     else if(b.hwt)done=hwDone(b.hwt);
     else done=keys.has(b.key);
-    return Object.assign({},b,{done:done||ok,ok:ok&&!done,echt:done||keys.has('ok-'+b.key),vraag:vraag&&!done&&!ok,prog,later:!!vast&&!vast.has(b.key)&&!done&&!ok})});
+    return Object.assign({},b,{done:done||ok,ok:ok&&!done,echt:done||keys.has('ok-'+b.key),vraag:vraag&&!done&&!ok,prog,later:!!vast&&!vast.has(b.key)&&!done&&!ok})})(b)});
+  /* door de ouder doorgeschoven en niet toch gedaan: telt vandaag niet mee (wel als gehaald voor de reeks) */
+  R.forEach((b,i)=>{if(b.done&&keys.has('schuif-'+b.key))R[i]=Object.assign({},b,{schuifWeg:true});
+    else if(!b.done&&!b.hwt&&keys.has('schuif-'+b.key))R[i]=Object.assign({},b,{done:true,schuif:L.find(e=>e.key==='schuif-'+b.key),ok:false,vraag:false,later:false})});
+  /* een doorgeschoven blok dat niet meer in het plan staat (toetsvoorbereiding die nu als inhaalblok op vrijdag staat): toch tonen, met Terugzetten */
+  L.filter(e=>e.soort==='doorgeschoven'&&e.inh&&!R.some(b=>'schuif-'+b.key===e.key)).forEach(e=>R.push(Object.assign({key:String(e.key).slice(7),vak:e.inh.vid,
+    soort:'oefenen',auto:e.inh.app!==false?e.inh.vid:null,titel:e.inh.titel,min:e.inh.min,done:true,schuif:e},e.inh.prep?{prep:e.inh.prep}:{})));
   return R.filter(b=>!b.later).concat(R.filter(b=>b.later));
 }
 const gehaaldNu=s=>blokStatus(s).filter(b=>!b.later).every(b=>b.done);
@@ -695,10 +721,10 @@ function stempelBij(){if(!canWrite||!db||vrijDag(today()))return;const d=today()
       prep[id]=prep[id]||{vid:b.prep.vid,tid:b.prep.tid,zwaar:b.prep.zwaar,min:0};prep[id].min+=m});
     addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now(),keys:BS.map(b=>b.key),prep:Object.values(prep)},true);SCHED=null}
   else if(!nu&&st){delLog(d,'dag-gehaald',true);SCHED=null}}
-const NIETMEE=['vraag','stempel','afgewezen','opwarm'];
+const NIETMEE=['vraag','stempel','afgewezen','opwarm','doorgeschoven'];
 const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).reduce((a,e)=>a+(e.sec?e.sec/60:(e.min||0)),0));
 const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&[].concat(CONFIG.ouder).some(e=>String(e).toLowerCase()===String(WIE).toLowerCase()));
-const planMin=s=>blokStatus(s).filter(b=>!b.later).reduce((a,b)=>a+b.min,0);
+const planMin=s=>blokStatus(s).filter(b=>!b.later&&!b.schuif).reduce((a,b)=>a+b.min,0);
 function startDag(){return SET.streakStart||DEF.streakStart}
 function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(!vrijDag(d)&&gehaald(d))n++;d=addDays(d,-1);
   while(d>=st&&(vrijDag(d)||gehaald(d))){if(!vrijDag(d))n++;d=addDays(d,-1)}return n}
@@ -730,13 +756,26 @@ function goedkeur(b){if(b.done&&!b.ok)return '';if(!b.auto)return '';
   if(b.vraag)return '<small class="sub" style="display:block;margin-top:6px">Wacht op goedkeuring van je ouder.</small>';
   if(!b.auto)return '';
   return `<button class="link" data-vraag="${b.key}" data-vak="${b.vak}" data-stop>Wel gedaan, maar niet in de app? Vraag goedkeuring</button>`}
+function schuifSoort(b){if(b.hwt||b.soort==='huiswerk'||b.auto==='sprint')return null;
+  if(b.prep)return 'prep';if(b.auto==='opwarm'||b.auto==='warm')return 'vervalt';if(b.auto)return 'inhalen';return null}
+/* naar welke dag gaat dit blok: vrijdag/zaterdag, of (toetsvoorbereiding met de toets daarvoor) null = opnieuw verdelen */
+function schuifNaar(b){const k=schuifSoort(b),n=naarDag(dag);if(k==='inhalen')return n;if(k!=='prep'||!n)return null;
+  const t=(vakOf(b.prep.vid)?.toetsen||[]).find(t=>t.id===b.prep.tid);return t&&n<t.datum?n:null}
+function schuifKnop(b){const k=schuifSoort(b);if(!k||!isOuder()||!canWrite||b.done||b.later||dag<startDag())return '';const n=schuifNaar(b);
+  const t=n?`Doorschuiven naar ${nice(n)}`:k==='prep'?'Doorschuiven naar de andere dagen':'Vandaag overslaan';
+  return `<button class="link" data-schuif="${esc(b.key)}" data-stop>${t}</button>`}
+function schuifRij(b){const e=b.schuif,v=vakOf(b.vak||b.cv),k=schuifSoort(b),pt=b.prep&&prepVoor(dag).find(p=>p.v.id===b.prep.vid&&p.t.id===b.prep.tid);
+  const waar=e.naar?`Inhalen op ${nice(e.naar)}.`:k==='prep'?(pt&&pt.n<=1?'Let op: de toets is morgen, er is geen dag meer om dit in te halen.':`Wordt verdeeld over de dagen tot de toets${pt?' ('+nice(pt.t.datum)+')':''}, zodra deze dag af is.`):'Vervalt vandaag.';
+  return `<div class="blk done schuif"><span class="ck">→</span>${v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:''}<span class="tx">${esc(b.titel)}<small>Doorgeschoven door je ouder. Hoeft vandaag niet af voor je reeks. ${waar}${b.prog?` Wat je al deed (${b.prog} min) telt wel.`:''}</small>${isOuder()&&canWrite?`<span class="row" style="margin-top:6px"><button class="link" data-ontschuif="${esc(b.key)}" data-stop>Terugzetten</button></span>`:''}</span><span class="mn"><s>${b.min} min</s></span></div>`}
 /* ---------- tab: vandaag ---------- */
 const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
 function rVandaag(){
   const B=blokStatus(dag),L=logDag(dag),open=B.filter(b=>!b.done&&!b.later);
+  /* toch gedaan wat de ouder had doorgeschoven: dan hoeft het niet meer ingehaald te worden */
+  if(canWrite&&db&&B.some(b=>b.schuifWeg)){B.filter(b=>b.schuifWeg).forEach(b=>delLog(dag,'schuif-'+b.key,true));SCHED=null}
   const zelf=B.filter(b=>!b.auto&&b.done&&!b.ok&&(b.hwt?hwLog(b.hwt.id)&&!b.hwt.klaar:L.some(e=>e.key===b.key)));
   const rest=(schedule()._rest||[]).filter(r=>r.t.datum>=today()&&r.tot>=15);
-  const plan=B.filter(b=>!b.later).reduce((a,b)=>a+b.min,0),gedaan=gedaanMin(dag);
+  const plan=B.filter(b=>!b.later&&!b.schuif).reduce((a,b)=>a+b.min,0),gedaan=gedaanMin(dag);
   const extra=L.filter(e=>!B.some(b=>b.key===e.key)&&!String(e.key).startsWith('hwt-')&&e.soort!=='oefenen'&&e.soort!=='sprint'&&e.soort!=='goedgekeurd'&&!NIETMEE.includes(e.soort));
   const komend=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&diffDays(dag,t.datum)>=0)komend.push({v,t,n:diffDays(dag,t.datum)})}));komend.sort((a,b)=>a.n-b.n);
   const n=streak(),isToday=dag===today(),week=[...Array(7)].map((_,i)=>addDays(today(),i-6));const st=startDag();
@@ -761,10 +800,11 @@ function rVandaag(){
   ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
   ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}
   ${isOuder()&&dag<=today()?inzetKaart(dag):''}
+  ${isOuder()&&canWrite&&!gehaald(dag)&&dag>=today()&&B.some(b=>schuifKnop(b))?`<div class="note"><b>Weinig tijd vandaag?</b><span>Je kunt bij elk blok behalve het huiswerk op Doorschuiven tikken. Dat blok hoeft dan vandaag niet af voor haar reeks. Bijhouden, oefenen en toetsvoorbereiding komen als inhaalblok op ${nice(naarDag(dag))}. Is de toets eerder, dan wordt de toetsvoorbereiding over de andere dagen tot de toets verdeeld. Opwarmen vervalt.</span></div>`:''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
   ${vrijDag(dag)?`<div class="note"><b>${esc(vakantieVan(dag).naam)}</b><span>Vandaag staat er niets op het plan. Je reeks staat op pauze: hij gaat niet verloren en loopt na de vakantie gewoon door. Oefenen in de app mag altijd.</span></div>`:''}
-  <div class="stack">${B.map((b,i)=>(b.later&&!(B[i-1]||{}).later?`<div class="note"><b>Bijgekomen nadat je dag al af was</b><span>Je had alles van ${dag===today()?'vandaag':'deze dag'} al gedaan toen dit erbij kwam. Het hoeft ${dag===today()?'vandaag':'die dag'} niet meer en je reeks blijft staan. Doe je het toch, dan telt het als extra.</span></div>`:'')+(b=>{const v=vakOf(b.vak),gk=goedkeur(b);
+  <div class="stack">${B.map((b,i)=>(b.later&&!(B[i-1]||{}).later?`<div class="note"><b>Bijgekomen nadat je dag al af was</b><span>Je had alles van ${dag===today()?'vandaag':'deze dag'} al gedaan toen dit erbij kwam. Het hoeft ${dag===today()?'vandaag':'die dag'} niet meer en je reeks blijft staan. Doe je het toch, dan telt het als extra.</span></div>`:'')+(b=>{if(b.schuif)return schuifRij(b);const v=vakOf(b.vak),gk=goedkeur(b)+schuifKnop(b);
     if(b.auto==='opwarm')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span><span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
       <span class="row" style="margin-top:8px"><button class="btn${b.rs?' ghost':''}" data-sprint="reken">${b.rs?'✓ ':''}Rekensprint</button>${RR()?`<button class="btn${b.rr?' ghost':''}" data-rr="1">${b.rr?'✓ ':''}Rekenregels van vandaag</button>`:''}</span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     if(b.auto==='warm')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(vakOf(b.cv))}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
@@ -802,6 +842,12 @@ function rVandaag(){
   document.querySelectorAll('[data-hwt]').forEach(b=>b.onclick=()=>{const id=b.dataset.hwt,e=hwLog(id);
     if(e)delLog(e.d,e.key);else addLog({d:dag<=today()?dag:today(),key:'hwt-'+id,vak:b.dataset.vak,soort:'huiswerk',min:+b.dataset.min,t:Date.now()})});
   document.querySelectorAll('[data-vraag]').forEach(b=>b.onclick=e=>{e.stopPropagation();addLog({d:dag,key:'vraag-'+b.dataset.vraag,vak:b.dataset.vak,soort:'vraag',min:0,t:Date.now()})});
+  document.querySelectorAll('[data-schuif]').forEach(x=>x.onclick=ev=>{ev.stopPropagation();const b=B.find(y=>y.key===x.dataset.schuif);if(!b)return;
+    const k=schuifSoort(b),e={d:dag,key:'schuif-'+b.key,vak:b.vak||b.cv||'hw',soort:'doorgeschoven',min:0,door:window.WIE,t:Date.now()};
+    const n=schuifNaar(b);if(n){e.naar=n;e.inh={vid:b.auto||b.vak,app:!!b.auto,par:b.par||null,mode:b.mode||null,min:Math.max(10,Math.round((b.min-(b.prog||0))/5)*5),titel:b.titel.replace(/^Inhalen: /,'')};
+      if(b.prep)e.inh.prep={vid:b.prep.vid,tid:b.prep.tid,zwaar:!!b.prep.zwaar}}
+    SCHED=null;addLog(e)});
+  document.querySelectorAll('[data-ontschuif]').forEach(x=>x.onclick=ev=>{ev.stopPropagation();SCHED=null;delLog(dag,'schuif-'+x.dataset.ontschuif)});
   const nkv=$('#nkv');if(nkv)nkv.onclick=openNakijk;
   const izv=$('#izv');if(izv)izv.onclick=()=>openInzet(dag);
   document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.ok;const wid=weekId(dag);
@@ -982,7 +1028,7 @@ function rWeek(){
   const ma=monday(dag),days=[...Array(7)].map((_,i)=>addDays(ma,i));
   const P=days.map(planMin),G=days.map(gedaanMin),max=Math.max(60,...P,...G);
   const totP=P.reduce((a,b)=>a+b,0),totG=G.reduce((a,b)=>a+b,0);
-  const perVak={},lab=id=>id==='hw'?'<b>HW</b>':id==='sprint'?'<b>SP</b>':id==='opwarm'?'<b>OP</b>':'<b>?</b>';days.forEach(d=>{blokken(d).forEach(b=>{perVak[b.vak]=perVak[b.vak]||{p:0,g:0};perVak[b.vak].p+=b.min});
+  const perVak={},lab=id=>id==='hw'?'<b>HW</b>':id==='sprint'?'<b>SP</b>':id==='opwarm'?'<b>OP</b>':'<b>?</b>';days.forEach(d=>{blokStatus(d).filter(b=>!b.schuif&&!b.later).forEach(b=>{perVak[b.vak]=perVak[b.vak]||{p:0,g:0};perVak[b.vak].p+=b.min});
     logDag(d).forEach(e=>{perVak[e.vak]=perVak[e.vak]||{p:0,g:0};perVak[e.vak].g+=Math.round(e.sec?e.sec/60:(e.min||0))})});
   const vk=Object.entries(perVak).sort((a,b)=>b[1].p-a[1].p);
   const dis=canWrite?'':'disabled';
