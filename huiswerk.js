@@ -73,4 +73,10 @@ window.HUISWERK=[
   {id:'2026-11-19-ne',d:'2026-11-19',vak:'nederlands',t:'Voorbereiden toets USO leesvaardigheid',wat:['Dit is een vaardighedentoets: er is geen stof om te leren.','Kijk opnieuw naar de gemaakte opdrachten in het hoofdstuk Meer dan lezen en oefen zo nodig nog een keer.'],min:30},
   /* vrijdag 27 november: inleveren vlog PO Frans (in het document staat 2027, bedoeld is 2026) */
   {id:'2026-11-27-fa-po',d:'2026-11-27',vak:'frans',t:'PO C’est moi: vlog inleveren op Teams',wat:['Lever je vlog in op Teams, vóór 27 november. Is hij nog niet af in de les, maak hem dan thuis af.','# Checklist','Moi: naam, leeftijd, woonplaats, hobby’s','Ma famille: minstens twee familieleden','Ma maison: minstens twee kamers','Minstens 8 bijvoeglijke naamwoorden en 5 werkwoorden op -er','2–3 minuten, met beeldmateriaal'],min:10},
+  /* donderdag 10 december (toetsweek 2): Repetitie Grieks TW2 (grote toets). Toetsdatum hoort in Cijfers, niet hier.
+     Stof: alle woorden t/m les 11 (nadruk les 9 en 11) · alle grammatica t/m les 11 (nadruk les 11, ook grammatica Thema 2 herhalen)
+     · cultuur: proloog Thema 3 en les 11 (TB p. 54 en 56) · Griekse tekst les 11.
+     In de app (gr.js, gr2.js): woorden les 8, 9, 11 · persoonlijk vnw · tekst 8, 9, 11 · HB-opdrachten les 8–11, epiloog, proloog Thema 3.
+     Niet in de app: woorden les 1–7 en 10, grammatica-overzicht Thema 2 en les 11. Les 10, epiloog, proloog en les 11 gaan pas open
+     als een huiswerk ze opgeeft (gate). */
 ];
