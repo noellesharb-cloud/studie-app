@@ -44,6 +44,12 @@ window.Oefen=(()=>{
   const cijfer=(g,t)=>Math.round((1+9*g/t)*10)/10;
   const f1=n=>n.toFixed(1).replace('.',',');
   const save=()=>Oefen.ctx.save(vid);
+  /* wanneer is een toets gemaakt? rid = Date.now() in base 36 (afspraak 12 nov: datum en tijd bij de paragraaftoets en proeftoets).
+     Zij ziet de laatste keer, de ouder elke keer met het cijfer. */
+  const DGN=['zo','ma','di','wo','do','vr','za'],MND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const wanneer=rid=>{const t=parseInt(rid,36);if(!isFinite(t)||t<1.6e12)return '';const d=new Date(t);return `${DGN[d.getDay()]} ${d.getDate()} ${MND[d.getMonth()]} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`};
+  const keren=(rs,c)=>{rs=(rs||[]).filter(x=>wanneer(x.rid));if(!rs.length)return '';const ouder=Oefen.ctx.ouder&&Oefen.ctx.ouder(),l=rs[rs.length-1];
+    return ouder?`<br><span class="pt-k">Gemaakt: ${rs.slice().reverse().map(x=>`${wanneer(x.rid)} (${c(x)})`).join(' · ')}</span>`:`<br><span class="pt-k">Laatst gemaakt: ${wanneer(l.rid)}</span>`};
   const top=(back,label)=>`<div class="top"><button class="link" id="back">← ${back}</button><span class="tag">${label||''}</span></div>`;
 
   /* V = wat vrij oefenen mag zien (oefen/gate.js: alleen wat al in een huiswerk aan de beurt was), VF = het hele vak.
@@ -63,7 +69,7 @@ window.Oefen=(()=>{
     const ttCard=p=>{if(!ttHeeft(p))return '';const b=(ST.ttoets||{})[p],ok=ttGehaald(p);
       return `<button class="sec pt${ok?' gehaald':''}" data-tt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--c2)'};color:var(--bg)">${ok?'✓':'1'}</span><span><b>Tussentoets</b><small>6 meerkeuzevragen: zit de basis? ${ok?'Gehaald: de paragraaftoets staat open.':'Haal een 7, dan gaat de paragraaftoets open.'}</small></span><span class="best">${b!=null?'beste<br>'+f1(b):''}</span></button>`};
     const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7,dicht=ttNodig(p);
-      return ttCard(p)+`<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>${dicht?'🔒 Eerst de tussentoets. ':''}10 vragen zonder hulp${V.toetsvorm||tvVak()?' en zonder antwoorden om uit te kiezen, zoals op school':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
+      return ttCard(p)+`<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>${dicht?'🔒 Eerst de tussentoets. ':''}10 vragen zonder hulp${V.toetsvorm||tvVak()?' en zonder antwoorden om uit te kiezen, zoals op school':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}${r?keren(r.rondes,x=>f1(x.c)):''}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
     const B=V.basis,isB=p=>!!B&&p===B.par;
     const basisCards=p=>{const d=ST.diag,n=diagIds(p).length,dg=d&&Object.values(d.r).reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]);
       return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
@@ -92,7 +98,7 @@ window.Oefen=(()=>{
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
-      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%'+voorl((ST.toetsR||{}).rondes):''}</span></button>
+      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer${keren((ST.toetsR||{}).rondes,x=>f1(cijfer(x.g,x.t)))}</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%'+voorl((ST.toetsR||{}).rondes):''}</span></button>
       <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,ST.wrong.length)}.`:'Nog niets fout gedaan'}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
     </div>
