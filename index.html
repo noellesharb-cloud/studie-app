@@ -595,7 +595,7 @@ function schedule(){
   return SCHED=maakSchedule(F,credit);
 }
 function maakSchedule(van,credit){
-  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+inhaalMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -633,7 +633,6 @@ function inhaalVoor(s){const R=[];Object.values(LOG).forEach(w=>((w&&w.entries)|
     titel:'Inhalen: '+i.titel,uit:`Doorgeschoven van ${nice(e.d)}.${t?` Toets op ${nice(t.datum)}.`:''} ${app?`Oefen ${i.min} minuten in de app. De tijd telt vanzelf mee.`:'Overhoor jezelf en tik het blok daarna af.'}`},i.prep?{prep:i.prep}:{})})}
 /* toetsvoorbereiding die als inhaalblok al op een komende dag staat: niet nog een keer inplannen */
 function inhaalPrep(van){const c={};Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.inh&&e.inh.prep&&e.naar>=van){const id=e.inh.prep.vid+'|'+e.inh.prep.tid;c[id]=(c[id]||0)+e.inh.min}}));return c}
-const inhaalMin=s=>inhaalVoor(s).reduce((a,b)=>a+b.min,0);
 /* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
 function volgendePar(vid){const st=OEF[vid]||{},p=Oefen.pars(vid);return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
 function blokken(s){
@@ -665,8 +664,9 @@ function blokken(s){
           :app?'De tijd telt vanzelf mee.':'Overhoor jezelf en tik het blok daarna af.')}))});
   B.push(...IH);
   /* elke schooldag ook leren met de app, zolang het binnen het maximum past; alleen voor een vak met een komende toets */
-  const room=(wk?SET.maxDagWeekend:SET.maxDagSchool)-B.reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
-  if(!B.some(b=>b.auto&&b.soort!=='opwarm')&&metToets.length&&room>=10){
+  /* inhaalblokken komen bovenop het gewone plan van die dag (afspraak 12 nov): ze tellen niet mee voor de ruimte en verdringen niets */
+  const room=(wk?SET.maxDagWeekend:SET.maxDagSchool)-B.filter(b=>!b.inh).reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
+  if(!B.some(b=>b.auto&&b.soort!=='opwarm'&&!b.inh)&&metToets.length&&room>=10){
     const vid=metToets.sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],par=volgendePar(vid);
     B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:wk?room:Math.min(SET.oefenMin,room),par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`});
   }
