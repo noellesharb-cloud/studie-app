@@ -501,8 +501,14 @@ window.Oefen=(()=>{
   const NV_AF={nominativus:'nom',genitivus:'gen',dativus:'dat',accusativus:'acc',ablativus:'abl',vocativus:'voc',enkelvoud:'ev',meervoud:'mv'};
   const tvNorm=(x,hl)=>{let t=schoon(x).replace(/\b(nom|gen|dat|acc|abl|voc|ev|mv)\./gi,'$1').replace(/\b(nominativus|genitivus|dativus|accusativus|ablativus|vocativus|enkelvoud|meervoud)\b/gi,w=>NV_AF[w.toLowerCase()]).replace(/-$/,'').replace(/[’‘`´]/g,"'").replace(/[“”„]/g,'"').replace(/\s*([,;:])\s*/g,'$1 ').replace(/\s+/g,' ').replace(/[\s.!]+$/,'').trim();return hl?t:t.toLowerCase()};
   const tvKaal=x=>tvNorm(x).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9Ͱ-Ͽ ]/g,'').replace(/\s+/g,' ').trim();
+  /* tvLos: zonder leestekens, haakjes en lengtetekens (ā ĕ: staan in het boek, niet op de toets). Accenten en umlauts tellen wel. */
+  const tvLos=(x,hl)=>tvNorm(x,hl).normalize('NFD').replace(/[̄̆]/g,'').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
   function tvMatch(t,goed){
-    if(goed.some(a=>tvNorm(a)===tvNorm(t)))return V.hoofdletters&&!goed.some(a=>tvNorm(a,1)===tvNorm(t,1))?'bijna':'goed';
+    const heel=x=>goed.some(a=>tvLos(a)===tvLos(x)),hlOk=x=>!V.hoofdletters||goed.some(a=>tvLos(a,1)===tvLos(x,1));
+    if(heel(t))return hlOk(t)?'goed':'bijna';
+    /* een deel van de betekenissen opgeschreven ('uit, weg van' bij 'uit, weg van, van'): goed als elk deel klopt */
+    const dl=String(t).split(/\s*[,;]\s*/).filter(Boolean);
+    if(dl.length>1&&dl.every(heel))return dl.every(hlOk)?'goed':'bijna';
     return goed.some(a=>tvKaal(a)===tvKaal(t))?'bijna':'mis'}
   function tvGoed(q){const basis=[goedTxt(q),...(q.tvAlt||[])].map(schoon),uit=new Set(basis),vert=/^(wat betekent|wat is het [a-z]+ voor|hoe zeg je|vertaal)/i.test(schoon(q.q));
     basis.forEach(a=>{const zonder=a.replace(/\s*\([^)]*\)/g,'').trim();
