@@ -544,7 +544,9 @@ window.Oefen=(()=>{
   const tvNorm=(x,hl)=>{let t=schoon(x).replace(/\b(nom|gen|dat|acc|abl|voc|ev|mv)\./gi,'$1').replace(/\b(nominativus|genitivus|dativus|accusativus|ablativus|vocativus|enkelvoud|meervoud)\b/gi,w=>NV_AF[w.toLowerCase()]).replace(/-$/,'').replace(/[’‘`´]/g,"'").replace(/[“”„]/g,'"').replace(/\s*([,;:])\s*/g,'$1 ').replace(/\s+/g,' ').replace(/[\s.!]+$/,'').trim();return hl?t:t.toLowerCase()};
   const tvKaal=x=>tvNorm(x).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9Ͱ-Ͽ ]/g,'').replace(/\s+/g,' ').trim();
   /* tvLos: zonder leestekens, haakjes en lengtetekens (ā ĕ: staan in het boek, niet op de toets). Accenten en umlauts tellen wel. */
-  const tvLos=(x,hl)=>tvNorm(x,hl).normalize('NFD').replace(/[̄̆]/g,'').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+  /* Nederlandse voornaamwoorden: 'wij moeten' = 'we moeten' (fout 13 nov: 'Wij moeten' werd fout gerekend bij δεῖ ἡμᾶς) */
+  const NL_VNW={wij:'we',zij:'ze',jij:'je',mij:'me'};
+  const tvLos=(x,hl)=>tvNorm(x,hl).normalize('NFD').replace(/[̄̆]/g,'').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/(^| )(wij|zij|jij|mij)(?= |$)/gi,(m,a,w)=>a+(w[0]===w[0].toUpperCase()?NL_VNW[w.toLowerCase()][0].toUpperCase()+NL_VNW[w.toLowerCase()].slice(1):NL_VNW[w.toLowerCase()])).trim();
   function tvMatch(t,goed){
     const heel=x=>goed.some(a=>tvLos(a)===tvLos(x)),hlOk=x=>!V.hoofdletters||goed.some(a=>tvLos(a,1)===tvLos(x,1));
     if(heel(t))return hlOk(t)?'goed':'bijna';
@@ -562,8 +564,9 @@ window.Oefen=(()=>{
      Kort antwoord van hooguit drie woorden per deel, geen zin, geen Griekse letters (die kan ze niet typen) en geen uitleg met : of ; */
   const GRIEKS=/[\u0370-\u03ff\u1f00-\u1fff]/;
   const VORMVRAAG=/^(wat betekent|wat is het [a-z]+ voor|hoe zeg je|welke vorm|wat is de |der, die of das|vul in|vul het|welke naamval|benoem|schrijf het rijtje|maak het rijtje|bij welk persoon)/i;
+  /* een antwoord met … ('we moeten …') is een patroon, geen vaste vorm: dan kijkt ze zelf na (wat precies klopt, is meteen goed) */
   function streng(q){if(q.tvIn)return true;if(!V.woorden||q.tvVrij)return false;const a=schoon(goedTxt(q));
-    return VORMVRAAG.test(schoon(q.tv||q.q))&&a.length<=45&&!/[.!?:;=()]/.test(a)&&!GRIEKS.test(a)&&a.split(/\s*[,/]\s*/).every(p=>p.split(/\s+/).length<=3)}
+    return VORMVRAAG.test(schoon(q.tv||q.q))&&a.length<=45&&!/[.!?:;=()…]/.test(a)&&!GRIEKS.test(a)&&a.split(/\s*[,/]\s*/).every(p=>p.split(/\s+/).length<=3)}
   function schrijfVorm(q,it){if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets')||it.retry)return false;
     if(q.type)return !!q.tvIn||(V.tvCustom||[]).includes(q.type);
     const svg=x=>String(Array.isArray(x)?x[0]:x).includes('<svg');
