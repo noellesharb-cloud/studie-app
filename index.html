@@ -404,7 +404,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611121945"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611122110"></script>
+<script src="oefen/engine.js?v=202611131500"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611111930"></script>
@@ -652,7 +652,7 @@ function blokken(s){
     B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
     const b=BH.find(x=>x.h===h);
     if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
-      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, na de ${b.h.min} minuten van je huiswerk in de app. Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
+      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de terugblik (een paar vragen oude stof, ongeveer 5 minuten), dan de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, na de ${b.h.min} minuten van je huiswerk in de app. Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
   const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();

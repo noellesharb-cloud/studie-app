@@ -56,7 +56,7 @@ window.Oefen=(()=>{
      extra = het huiswerk dat nu open staat: dat is meteen aan de beurt. */
   const vw=(id,extra)=>window.Gate?Gate.view(id,extra):VAKDATA[id];
   function load(id,extra){vid=id;VF=VAKDATA[id];ST=Oefen.ctx.state(id);V=vw(id,extra);QM=Object.fromEntries(VF.Q.map(q=>[q.id,q]));
-    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};}
+    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});}
   function done(){Oefen.cur=null}
 
   /* ---------- startscherm van een vak ---------- */
@@ -76,6 +76,7 @@ window.Oefen=(()=>{
       <button class="sec" id="b-dag"><span class="sq" style="background:var(--c2)">5</span><span><b>Rekenregels van vandaag</b><small>${B.dag||5} sommen, ongeveer 5 minuten. ${d?'Vooral de regels die nog niet goed gaan.':'Maak eerst de instaptoets, dan weet de app wat je moet oefenen.'}</small></span></button>
       <button class="sec" id="b-ov"><span class="sq" style="background:var(--line)">≡</span><span><b>Alle rekenregels onder elkaar</b><small>Het overzicht. Schrijf het over in je schrift, met bij elke regel een eigen voorbeeld.</small></span></button>`};
     const bh=focusMode==='bijhouden'&&focusPar,tv=focusMode==='toets';
+    const tbAan=bh&&terugPool(focusPar).length>=3,tbKlaar=tbAan&&tbGedaan(),tbIds=tbAan&&!tbKlaar?terugIds(focusPar):[];
     /* V.extra = {par, titel, n}: een korte vaste ronde die bij elke keer bijhouden en bij de toetsvoorbereiding hoort (aardrijkskunde: topografie) */
     const X=V.extra,xLi=X&&(tv||bh&&focusPar!==X.par)?`<li>En elke keer even: <button class="link" id="bh-x">${X.titel}</button> (${X.n} vragen, een paar minuten)</li>`:'';
     const ok=leerPars().filter(p=>ST.ptoets[p]&&ST.ptoets[p].best>=7);
@@ -84,8 +85,10 @@ window.Oefen=(()=>{
     <h2>${V.naam}</h2>
     ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
       <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
-      <button class="btn" id="bh-her">Herhaalronde (10 vragen)</button>
-      <p class="sub" style="font-size:.9rem;margin:0">Niet de vragen die je net als huiswerk maakte, maar eerst wat je daarin fout had en dan andere vragen uit deze paragraaf. Elke keer een nieuwe mix. Of kies zelf:</p>
+      ${tbAan?(tbKlaar?`<p class="sub" style="font-size:.9rem;margin:0">✓ Terugblik van vandaag gedaan.</p>`:tbIds.length?`<button class="btn" id="bh-tb">1. Terugblik: oude stof (${tbIds.length} ${tbN()===5?'sommen':'vragen'}, ongeveer 5 min)</button>`:`<p class="sub" style="font-size:.9rem;margin:0">Terugblik: vandaag niets. Wat je eerder leerde, zit nog vers.</p>`):''}
+      <button class="btn${tbIds.length&&!tbKlaar?' ghost':''}" id="bh-her">${tbIds.length&&!tbKlaar?'2. ':''}Herhaalronde (10 vragen)</button>
+      ${tbIds.length&&!tbKlaar?'<p class="sub" style="font-size:.9rem;margin:0">De terugblik haalt stof uit eerdere paragrafen op, door elkaar. Dat voelt lastiger, en juist daardoor onthoud je het.</p>':''}
+      <p class="sub" style="font-size:.9rem;margin:0">Herhaalronde: niet de vragen die je net als huiswerk maakte, maar eerst wat je daarin fout had en dan andere vragen uit deze paragraaf. Elke keer een nieuwe mix. Of kies zelf:</p>
       <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">${ttNodig(focusPar)?'tussentoets':'paragraaftoets'}</button>${ttNodig(focusPar)?' (meerkeuze). Bij een 7 gaat de paragraaftoets open, zonder keuzes':''}. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
@@ -113,6 +116,7 @@ window.Oefen=(()=>{
     const q=x=>el.querySelector(x);
     if(q('#bh-beg'))q('#bh-beg').onclick=()=>kStart(shuf(begVan(focusPar)),false);
     if(q('#bh-pt'))q('#bh-pt').onclick=()=>ptoets(focusPar);
+    if(q('#bh-tb'))q('#bh-tb').onclick=()=>terugblik(focusPar);
     if(q('#bh-her'))q('#bh-her').onclick=()=>start('oefen',herhaalIds(focusPar),'Herhaalronde · '+(V.PN[focusPar]||focusPar));
     if(q('#bh-x'))q('#bh-x').onclick=()=>{const al=V.Q.filter(x=>secOf(x.o).par===X.par&&x.t!=='open').map(x=>x.id),fout=shuf(al.filter(id=>ST.wrong.includes(id)));
       start('oefen',[...fout,...shuf(al.filter(id=>!fout.includes(id)))].slice(0,X.n),X.titel)};
@@ -143,8 +147,10 @@ window.Oefen=(()=>{
   function warmPool(vd,par){const v=vw(vd);if(!v)return [];const ps=v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))],i=ps.indexOf(par);
     if(i<1)return [];const eerder=new Set(ps.slice(0,i)),sec=Object.fromEntries(v.SECS.map(s=>[s.id,s.par]));
     return v.Q.filter(q=>eerder.has(sec[q.o])&&q.t!=='open'&&!q.type).map(q=>q.id)}
-  function warmIds(vd,par){const pool=warmPool(vd,par),st=Oefen.ctx.state(vd),f=shuf((st.wrong||[]).filter(id=>pool.includes(id))).slice(0,2);
-    return shuf([...f,...shuf(pool.filter(id=>!f.includes(id))).slice(0,3-f.length)])}
+  function warmIds(vd,par){const pool=warmPool(vd,par),st=Oefen.ctx.state(vd),S=st.sr||{},t=vandaag(),f=shuf((st.wrong||[]).filter(id=>pool.includes(id))).slice(0,2);
+    /* daarna eerst wat volgens de terugblik vandaag terug mag komen */
+    const due=shuf(pool.filter(id=>!f.includes(id)&&S[id]&&S[id][1]<=t));
+    return shuf([...f,...due,...shuf(pool.filter(id=>!f.includes(id)&&!due.includes(id)))].slice(0,3))}
   /* herhaalronde bij bijhouden (afspraak 9 nov): niet de vragen die ze net als huiswerk deed, maar eerst wat daarin fout ging,
      dan andere vragen uit deze paragraaf, en als die op zijn eerdere stof van dit vak. Elke keer een nieuwe mix. */
   function recentHw(){const d=new Date(),t=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -159,6 +165,42 @@ window.Oefen=(()=>{
     add(shuf(inP.filter(vers).map(q=>q.id)));
     const eerder=leerPars().filter(x=>x!==p);add(shuf(V.Q.filter(q=>eerder.includes(secOf(q.o).par)&&vers(q)).map(q=>q.id)));
     add(shuf(inP.map(q=>q.id)));return shuf(R)}
+  /* ---------- terugblik (afspraak 13 nov): oude stof komt terug op groeiende tussenpozen, door elkaar.
+     ST.sr[vraag-id] = [stap, dag waarop hij terug mag komen]. In één keer goed zonder hulp: een stap verder (3, 7, 14, 30 dagen).
+     Fout of met hulp: morgen weer. Geldt voor elke ronde, ook huiswerk en toetsen.
+     In het bijhoudblok (binnen de 20 minuten) eerst een terugblik: hooguit 8 vragen (5 sommen bij wiskunde en natuurkunde)
+     uit EERDERE paragrafen die al behandeld zijn (Gate), eerst wat terug moet komen, daarna wat nog nooit terugkwam.
+     Eén keer per dag; wat niet past, stapelt niet op: de rest komt een andere dag. ---------- */
+  const SR_DAGEN=[1,3,7,14,30];
+  const plusDag=n=>{const d=new Date();d.setDate(d.getDate()+n);return dagStr(d)};
+  const vandaag=()=>dagStr(new Date());
+  function srRec(id,ok){const S=ST.sr=ST.sr||{},o=S[id]||[-1,''],st=ok?Math.min(Math.max(o[0],0)+1,SR_DAGEN.length-1):0;S[id]=[st,plusDag(SR_DAGEN[st])]}
+  const tbN=()=>tvVak()?5:8;
+  function terugPool(p){const ps=leerPars().filter(x=>x!==p&&!(V.basis&&x===V.basis.par));
+    return V.Q.filter(q=>ps.includes(secOf(q.o).par)&&q.t!=='open')}
+  /* door elkaar: na elkaar zo min mogelijk dezelfde paragraaf */
+  function rits(ids){const G={};shuf(ids).forEach(id=>{const k=secOf(QM[id].o).par;(G[k]=G[k]||[]).push(id)});
+    const L=Object.values(G).sort((a,b)=>b.length-a.length),R=[];while(L.some(x=>x.length))L.forEach(x=>{if(x.length)R.push(x.shift())});return R}
+  function terugIds(p){const n=tbN(),t=vandaag(),S=ST.sr||{},pool=terugPool(p),fout=new Set(ST.wrong);
+    const due=pool.filter(q=>S[q.id]&&S[q.id][1]<=t).sort((a,b)=>(fout.has(b.id)-fout.has(a.id))||(S[a.id][1]<S[b.id][1]?-1:S[a.id][1]>S[b.id][1]?1:0)).map(q=>q.id);
+    const R=due.concat(shuf(pool.filter(q=>!S[q.id]&&fout.has(q.id)).map(q=>q.id))).slice(0,n);
+    if(R.length<n){const nieuw=rits(pool.filter(q=>!S[q.id]&&!fout.has(q.id)).map(q=>q.id));R.push(...nieuw.slice(0,n-R.length))}
+    return rits(R)}
+  const tbGedaan=()=>ST.tbDag===vandaag();
+  function terugblik(p){const ids=terugIds(p);if(!ids.length)return home();
+    if(!ST.tbIntro)return tbIntro(()=>terugblik(p));
+    start('oefen',ids,'Terugblik · '+V.naam,null,p);R.tb=1}
+  function tbIntro(verder){
+    el.innerHTML=`${top(V.naam,'Nieuw')}
+    <h2>Terugblik: oude stof ophalen</h2>
+    <div class="card stack">
+      <p><b>Wat je moet ophalen uit je geheugen, onthoud je.</b> Wat je alleen terugleest, vergeet je weer. Daarom begint bijhouden voortaan met een paar vragen uit eerdere paragrafen, door elkaar.</p>
+      <p><b>Dit voelt moeilijker dan de stof van deze week.</b> Dat is precies de bedoeling: juist die moeite zorgt dat het blijft hangen. Een fout is hier niet erg.</p>
+      <p>Wat je goed hebt, komt pas later terug: na 3 dagen, dan na een week, dan na twee weken. Wat fout gaat, komt morgen nog eens. Zo hoef je voor de toets veel minder opnieuw te leren.</p>
+      <p>Het is kort: ${tbN()===5?'hooguit 5 sommen':'hooguit 8 vragen'}, ongeveer 5 minuten. Het hoort bij je bijhouden, het komt er niet bij.</p></div>
+    <div class="stack"><button class="btn" id="tbbegin">Begin de terugblik</button><button class="btn ghost" id="tbterug">Terug</button></div>`;
+    el.querySelector('#back').onclick=home;el.querySelector('#tbterug').onclick=home;
+    el.querySelector('#tbbegin').onclick=()=>{ST.tbIntro=1;save();verder()};scrollTo(0,0)}
   function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
   function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
   /* tussentoets (afspraak 9 nov): per paragraaf eerst 6 meerkeuzevragen. Een 7 of hoger zet de paragraaftoets (zonder keuzes) open.
@@ -681,6 +723,7 @@ window.Oefen=(()=>{
   const dagStr=n=>`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
   function inzetRec(q,it,ok,jij){if(!R||(Oefen.ctx.ouder&&Oefen.ctx.ouder()))return;
     const I=ST.inzet=ST.inzet||[],nu=Date.now(),sec=t=>Math.round(Math.max(0,Math.min(t,3600000))/1000);
+    if(!(q.id in R.first))srRec(q.id,ok&&!R.helped[q.id]&&!R.stepErr[q.id]);
     R.ik=R.ik||nu.toString(36);let r=I.find(x=>x.k===R.ik);
     if(!r){r={k:R.ik,d:dagStr(new Date(R.tStart||nu)),m:R.mode,ti:schoon(R.title||'').slice(0,120),hw:R.hw||null,n:R.total,t0:R.tStart||nu,q:[]};I.push(r)}
     const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,140)},f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
@@ -783,20 +826,22 @@ window.Oefen=(()=>{
     if(R.mode==='ttoets'){ST.ttoets=ST.ttoets||{};ST.ttoets[R.par]=Math.max(ST.ttoets[R.par]||0,c)}
     if(R.mode==='toets'){const o=ST.toetsR||{oud:vorigToets??null,rondes:[]},rs=o.rondes.concat([{rid:R.rid,g:good,t:tot,p:pct}]),weg=rs.slice(0,-10);
       const oud=[o.oud,...weg.map(x=>x.p)].filter(x=>x!=null);ST.toetsR={oud:oud.length?Math.max(...oud):null,rondes:rs.slice(-10)}}
+    if(R.tb)ST.tbDag=vandaag();
     save();
     const wrong=R.ids.filter(id=>!R.first[id]);
     const rest=R.mode==='fout'?foutIds(R.sec).length:0;
-    const msg=R.mode==='ttoets'?(c>=7?'De basis zit! Nu de paragraaftoets: zonder antwoorden om uit te kiezen, zoals op school.':'Nog geen 7. Bekijk wat je fout had, oefen nog even en doe de tussentoets opnieuw. Daarna komt de paragraaftoets.')
+    const msg=R.tb?(pct===100?'Alles nog paraat! Die komen pas over een tijdje terug.':pct>=60?'Goed opgehaald. Wat je goed had, komt pas over een paar dagen terug. Wat fout ging, morgen nog eens.':'Oude stof is lastiger dan nieuwe, dus dit hoort erbij. Juist deze vragen komen morgen terug, en dan gaat het al beter.')+' Ga nu door met de herhaalronde.'
+      :R.mode==='ttoets'?(c>=7?'De basis zit! Nu de paragraaftoets: zonder antwoorden om uit te kiezen, zoals op school.':'Nog geen 7. Bekijk wat je fout had, oefen nog even en doe de tussentoets opnieuw. Daarna komt de paragraaftoets.')
       :R.mode==='ptoets'?(c>=7?'Paragraaf gehaald! Op naar de volgende.':'Nog geen 7. Oefen je fouten en doe de paragraaftoets nog een keer.')
       :pct===100?'Alles in één keer goed!':pct>=80?'Heel goed gedaan!':pct>=55?'Goed bezig. Oefen je fouten nog even.':'Niet erg, zo leer je het. Oefen je fouten nog een keer.';
     el.innerHTML=`<span class="tag">${R.title}</span>
     <div class="card stack"><div class="score">${good} / ${tot}</div><p>in één keer goed. ${msg}</p>${aanmoedig(good,tot,c)}${R.nk?`<p class="sub">${R.nk===1?'Eén antwoord heb':R.nk+' antwoorden heb'} je zelf goed gerekend. Je ouder kijkt ${R.nk===1?'het':'ze'} nog na, dus je cijfer kan nog veranderen.</p>`:''}${R.exam?`<p>Cijfer: <b class="count">${f1(c)}</b></p>`:''}${R.mode==='fout'?`<p class="sub">${rest?`Er staan nog ${rest} foute vragen op je stapel. Die komen een volgende keer; je hoeft ze niet allemaal vandaag te doen.`:'Je stapel foute vragen is leeg!'}</p>`:''}</div>
     ${wrong.length?`<h2>Deze had je fout</h2><div class="wl">${wrong.map(id=>{const q=QM[id];return `<div class="card"><span class="tag">${nrTag(q)}</span><div>${fmt(q.q)}</div><div class="res">→ ${fmt(q.a??(q.k||[]).join(' '))}</div></div>`}).join('')}</div>`:''}
-    <div class="stack">${wrong.length?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
-      ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.mode==='ttoets'?(c>=7?'Door naar de paragraaftoets':'Tussentoets opnieuw'):R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
+    <div class="stack">${wrong.length&&!R.tb?'<button class="btn" id="fo">Oefen alleen je fouten</button>':''}
+      ${R.mode==='fout'&&!rest?'':`<button class="btn ${wrong.length?'ghost':''}" id="nw">${R.tb?'Door naar de herhaalronde':R.mode==='ttoets'?(c>=7?'Door naar de paragraaftoets':'Tussentoets opnieuw'):R.mode==='ptoets'?'Paragraaftoets opnieuw':R.mode==='fout'?'Nog '+Math.min(FOUT_MAX,rest)+' foute vragen':'Nieuwe ronde'}</button>`}
       <button class="btn ghost" id="hm">${R.hw?'Terug naar je huiswerk':'Terug naar '+V.naam}</button></div>`;
     const fo=el.querySelector('#fo');if(fo)fo.onclick=()=>start('fout',shuf(wrong),R.title+' · fouten',R.sec);
-    const nwb=el.querySelector('#nw');if(nwb)nwb.onclick=()=>R.mode==='fout'?start('fout',foutIds(R.sec),R.title,R.sec):R.mode==='ptoets'||R.mode==='ttoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
+    const nwb=el.querySelector('#nw');if(nwb)nwb.onclick=()=>R.tb?start('oefen',herhaalIds(R.par),'Herhaalronde · '+(V.PN[R.par]||R.par)):R.mode==='fout'?start('fout',foutIds(R.sec),R.title,R.sec):R.mode==='ptoets'||R.mode==='ttoets'?ptoets(R.par):R.mode==='toets'?start('toets',toetsIds(),'Proeftoets'):R.title==='Korte ronde'?start('oefen',kortIds(),'Korte ronde'):R.title==='Rekenregels van vandaag'?start('oefen',dagIds(R.par),R.title,null,R.par):R.mode==='tvorm'&&R.par?start('tvorm',tvParIds(R.par),R.title,null,R.par):start(R.mode,R.hw?R.ids:shuf(R.ids),R.title,R.sec,null,R.hw);
     el.querySelector('#hm').onclick=R.van?()=>{done();Oefen.ctx.home()}:R.hw&&Oefen._hw?()=>hwHome(Oefen._hw):home;if(R.van)el.querySelector('#hm').textContent='Naar vandaag';scrollTo(0,0);
   }
 
