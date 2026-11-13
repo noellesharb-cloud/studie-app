@@ -23,6 +23,25 @@ const W=[
  ['gravis, -is, -e (gravis)','1. zwaar 2. gewichtig 3. ernstig'],['bonus, -a, -um','goed'],['si','als'],['necesse','noodzakelijk'],
  ['neco (necare)','doden'],['mors, mortis (v)','dood'],['servo (servare)','redden, beschermen'],['nomen, nominis (o)','naam']
 ];
+/* ---------- woorden 7B (boek p. 86, woordenlijst Een vriendelijke omgang met slaven) ---------- */
+const W2=[
+ ['vivo (vivĕre)','leven'],['alii ... alii','sommige(n) ... andere(n)'],['puto (putare)','1. menen 2. (+ 2 acc.) beschouwen als'],
+ ['exemplum','voorbeeld'],['licet + dat.','het is toegestaan, het is mogelijk'],['silentium','stilte'],
+ ['alius ... alius','de een ... de ander'],['colligo (colligĕre)','verzamelen'],['vestis, vestis (v)','kleding(stuk)'],
+ ['aeque (bijw.)','net zo, even(zeer)'],['enim','want, immers'],['aestimo (aestimare)','1. schatten, waarderen 2. beoordelen'],
+ ['opinio, opinionis (v)','mening, opvatting'],['inferior, -or, -us (inferioris)','1. lager 2. minder, zwakker'],
+ ['quemadmodum','1. hoe? 2. (zo)als'],['ingens, -ns, -ns (ingentis)','geweldig, enorm'],['fortis, -is, -e (fortis)','dapper, sterk']
+];
+const WU2={'licet + dat.':'licet heeft een dativus bij zich: servis non licet loqui = het is de slaven niet toegestaan te spreken (tekst 7B r. 6).',
+ 'alii ... alii':'Meervoud: alii dicunt ..., alii putant ... = sommigen zeggen ..., anderen menen ... (tekst 7B r. 2-4).',
+ 'alius ... alius':'Enkelvoud: alius sputa deterget, alius reliquias colligit = de een ruimt spuug op, de ander verzamelt de resten (r. 9-10).',
+ 'puto (putare)':'Met twee accusativi: Lucilium amicum puto = ik beschouw Lucilius als vriend.',
+ 'quemadmodum':'Vraag = hoe? Vergelijking = (zo)als: vive quemadmodum vis = leef zoals je wilt (r. 19).',
+ 'vestis, vestis (v)':'Groep 3: vestis, vestis. Denk aan travestiet (iemand die andere kleren draagt) en vest.',
+ 'exemplum':'Denk aan het Nederlandse exempel en het Engelse example.','silentium':'Engels: silence.','aestimo (aestimare)':'Engels: to estimate = schatten.',
+ 'inferior, -or, -us (inferioris)':'Inferieure kwaliteit = mindere, lagere kwaliteit.',
+ 'ingens, -ns, -ns (ingentis)':'Bijvoeglijk naamwoord groep 3 met één uitgang voor m, v en o (ingens). Stam ingent-.',
+ 'fortis, -is, -e (fortis)':'Bijvoeglijk naamwoord groep 3: fortis (m), fortis (v), forte (o). Stam fort-.'};
 const WU={habui:'habui = ik heb gehad / ik had. Het is een vorm van habeo.',fregi:'fregi = ik heb gebroken / ik brak. Het is een vorm van frango (breken).',
  'parco (parcĕre) + dat.':'parco heeft een dativus bij zich: parce mihi = spaar mij (tekst r. 13).',
  'e(x) + abl.':'ex voor een klinker, e of ex voor een medeklinker: unus ex servis = een van de slaven (r. 9).'};
@@ -81,6 +100,8 @@ const SECS=[
    ['Sanquin','sanguis, sanguinis = bloed',''],['salto mortale','mors, mortis = dood',''],['pedicure','pes, pedis = voet','']]},
  {id:'w7',par:'7w',nr:'2',name:'Woorden 7A',c:'--c2',sub:'Door het oog van de naald · 27 woorden',
   rules:W.map(w=>[L(w[0]),w[1],''])},
+ {id:'w7b',par:'7wb',nr:'2b',name:'Woorden 7B',c:'--c5',sub:'Een vriendelijke omgang met slaven · boek p. 86 · 17 woorden',
+  rules:W2.map(w=>[L(w[0]),w[1],''])},
  {id:'g3',par:'g3',nr:'3',name:'Rijtjes groep 3',c:'--c3',sub:'Boek p. 90 · rex, nomen + mons, sanguis, frater',
   rules:[['Stam = genitivus min -is','rex, reg-is → stam <b>reg-</b> · nomen, nomin-is → stam <b>nomin-</b>','Daarom staat in de woordenlijst bij groep 3 altijd de genitivus.'],
    ['Uitgangen achter de stam','ev: — · -is · -i · -em · -e<br>mv: -es · -um · -ibus · -es · -ibus','De nominativus ev heeft geen vaste uitgang.'],
@@ -140,6 +161,12 @@ const Q=[];
 W.forEach((w,i)=>{const pool=W.filter(x=>x!==w);
   Q.push({id:'w'+i,o:'w7',nr:'Woord',q:`Wat betekent ${L(w[0])}?`,a:w[1],f:pick(pool.map(x=>x[1]),3,w[1]),
     u:WU[w[0].split(' (')[0]]||WU[w[0]]||`${L(w[0])} = ${w[1]}.`,
+    v:{q:`Welk Latijns woord betekent <b>${w[1]}</b>?`,a:L(w[0]),f:pick(pool.map(x=>L(x[0])),3,L(w[0]))}})});
+
+/* woorden 7B: Latijn → betekenis, variant andersom */
+W2.forEach((w,i)=>{const pool=W2.filter(x=>x!==w);
+  Q.push({id:'wb'+i,o:'w7b',nr:'Woord 7B',q:`Wat betekent ${L(w[0])}?`,a:w[1],f:pick(pool.map(x=>x[1]),3,w[1]),
+    u:WU2[w[0]]||`${L(w[0])} = ${w[1]}.`,
     v:{q:`Welk Latijns woord betekent <b>${w[1]}</b>?`,a:L(w[0]),f:pick(pool.map(x=>L(x[0])),3,L(w[0]))}})});
 
 /* rijtjes bouwen */
@@ -298,8 +325,8 @@ function drawRij(q,it,box,api){
 
 /* toetsvorm: rijtjes zelf opschrijven in tien vakjes */
 Q.forEach(q=>{if(q.type==='rij'){q.tvIn=PL;q.tvA=RIJ[q.w].f;q.tv=q.q.replace('Zet de vormen op de goede plek.','Schrijf alle vormen op.')}});
-return {id:'la',naam:'Latijn',afk:'LA',kop:'H7A Door het oog van de naald',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'7w']),Q,snapHtml,
-  woorden:{taal:'Latijn',lijst:W.map(w=>[w[0],w[1]])},
-  leer:['bas','wo','7w','g3','7t'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,custom:{rij:drawRij},
-  PN:{bas:'Basis Latijn (D-toets P1)',wo:'Opdracht Woorden 1 (p. 81–82)','7w':'Woorden 7A','g3':'Rijtjes groep 3 (p. 90)','7t':'Tekst 7A','mix':'Door elkaar'}};
+return {id:'la',naam:'Latijn',afk:'LA',kop:'H7A Door het oog van de naald',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'7w']).concat(W2.map(w=>[w[0],w[1],'7wb'])),Q,snapHtml,
+  woorden:{taal:'Latijn',lijst:W.concat(W2).map(w=>[w[0],w[1]])},
+  leer:['bas','wo','7w','7wb','g3','7t'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,custom:{rij:drawRij},
+  PN:{bas:'Basis Latijn (D-toets P1)',wo:'Opdracht Woorden 1 (p. 81–82)','7w':'Woorden 7A','7wb':'Woorden 7B (p. 86)','g3':'Rijtjes groep 3 (p. 90)','7t':'Tekst 7A','mix':'Door elkaar'}};
 })();
