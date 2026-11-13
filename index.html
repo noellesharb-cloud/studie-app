@@ -740,13 +740,27 @@ function saveVak(v){const body=JSON.parse(JSON.stringify(v));delete body.id;writ
    Zo kan een ander apparaat (of een tabblad dat al lang openstaat) met oude instellingen niets meer terugzetten. */
 function saveSet(keys){if(!GELADEN.set)return;const ks=keys||Object.keys(SET),p={v:SET.v};ks.forEach(k=>p[k]=JSON.parse(JSON.stringify(SET[k]??null)));
   write(()=>{const d=db.collection('instellingen').doc('plan');return d.patch?d.patch(p):d.set(Object.assign({},SET))})}
-function saveLog(wid){const body={entries:(LOG[wid]||{entries:[]}).entries};write(()=>db.collection('log').doc(wid).set(body))}
-function addLog(e,stil){const wid=weekId(e.d);LOG[wid]=LOG[wid]||{entries:[]};LOG[wid].entries=[...LOG[wid].entries.filter(x=>!(x.d===e.d&&x.key==='nee-'+e.key)),e];saveLog(wid);if(!stil)render()}
-function delLog(d,key,stil){const wid=weekId(d);if(!LOG[wid])return;LOG[wid].entries=LOG[wid].entries.filter(e=>!(e.d===d&&e.key===key));saveLog(wid);if(!stil)render()}
+/* opslaan van het logboek (fout gevonden 13 nov): elk apparaat schreef de hele week terug. Oefende ze, dan schreef haar apparaat elke
+   30 seconden zijn oude kopie terug en verdween een goedkeuring van de ouder weer. Nu onthoudt elk apparaat alleen wat het zelf
+   veranderde (LOGOPS: toegevoegd/gewijzigd of weg), leest vlak voor het opslaan wat er nu in Supabase staat en voegt het samen. */
+const LOGOPS={};
+const logPut=(wid,e)=>{(LOGOPS[wid]=LOGOPS[wid]||new Map()).set(e.d+'|'+e.key,e)};
+const logDel=(wid,d,key)=>{(LOGOPS[wid]=LOGOPS[wid]||new Map()).set(d+'|'+key,null)};
+function saveLog(wid){write(async()=>{const ops=LOGOPS[wid];delete LOGOPS[wid];const ref=db.collection('log').doc(wid);
+  if(!ops||!ref.get)return ref.set({entries:(LOG[wid]||{entries:[]}).entries});
+  const srv=await ref.get(),basis=srv&&Array.isArray(srv.entries)?srv.entries:(LOG[wid]||{entries:[]}).entries;
+  const uit=basis.filter(e=>!ops.has(e.d+'|'+e.key));ops.forEach(e=>{if(e)uit.push(JSON.parse(JSON.stringify(e)))});
+  /* wat er in de tussentijd lokaal veranderde, blijft staan */
+  const nu=LOGOPS[wid],L2=nu?uit.filter(e=>!nu.has(e.d+'|'+e.key)).concat([...nu.values()].filter(Boolean)):uit;
+  LOG[wid]={entries:L2};return ref.set({entries:uit})})}
+function addLog(e,stil){const wid=weekId(e.d);LOG[wid]=LOG[wid]||{entries:[]};LOG[wid].entries=[...LOG[wid].entries.filter(x=>!(x.d===e.d&&(x.key==='nee-'+e.key||x.key===e.key))),e];
+  logDel(wid,e.d,'nee-'+e.key);logPut(wid,e);saveLog(wid);if(!stil)render()}
+function delLog(d,key,stil){const wid=weekId(d);if(!LOG[wid])return;LOG[wid].entries=LOG[wid].entries.filter(e=>!(e.d===d&&e.key===key));logDel(wid,d,key);saveLog(wid);if(!stil)render()}
 /* ouder wijst een zelf afgevinkt blok af: het vinkje gaat weg, de dag telt niet meer tot het weer af is */
 function afwijzen(d,key){const wid=weekId(d);if(!LOG[wid])return;
-  LOG[wid].entries=[...LOG[wid].entries.filter(e=>!(e.d===d&&(e.key===key||e.key==='dag-gehaald'))),{d,key:'nee-'+key,vak:'hw',soort:'afgewezen',min:0,door:window.WIE,t:Date.now()}];
-  saveLog(wid);render()}
+  const ne={d,key:'nee-'+key,vak:'hw',soort:'afgewezen',min:0,door:window.WIE,t:Date.now()};
+  LOG[wid].entries=[...LOG[wid].entries.filter(e=>!(e.d===d&&(e.key===key||e.key==='dag-gehaald'))),ne];
+  logDel(wid,d,key);logDel(wid,d,'dag-gehaald');logPut(wid,ne);saveLog(wid);render()}
 const afgewezen=(d,key)=>logDag(d).some(e=>e.key==='nee-'+key);
 
 /* ---------- goedkeuren: gedaan buiten de app, met toestemming van de ouder ---------- */
@@ -852,7 +866,7 @@ function rVandaag(){
   const nkv=$('#nkv');if(nkv)nkv.onclick=openNakijk;
   const izv=$('#izv');if(izv)izv.onclick=()=>openInzet(dag);
   document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.ok;const wid=weekId(dag);
-    if(LOG[wid])LOG[wid].entries=LOG[wid].entries.filter(x=>!(x.d===dag&&x.key==='vraag-'+k));
+    if(LOG[wid]){LOG[wid].entries=LOG[wid].entries.filter(x=>!(x.d===dag&&x.key==='vraag-'+k));logDel(wid,dag,'vraag-'+k)}
     addLog({d:dag,key:'ok-'+k,vak:b.dataset.vak,soort:'goedgekeurd',min:+b.dataset.min,door:WIE,t:Date.now()})});
   document.querySelectorAll('[data-nee]').forEach(b=>b.onclick=e=>{e.stopPropagation();delLog(dag,'vraag-'+b.dataset.nee)});
   document.querySelectorAll('[data-ontok]').forEach(b=>b.onclick=e=>{e.stopPropagation();delLog(dag,'ok-'+b.dataset.ontok)});
@@ -969,7 +983,7 @@ setInterval(()=>{
 function flushAct(){Object.entries(ACT).forEach(([k,s])=>{if(!s)return;const [d,vid]=k.split('|'),wid=weekId(d);
   LOG[wid]=LOG[wid]||{entries:[]};const key='auto-'+vid;let e=LOG[wid].entries.find(x=>x.d===d&&x.key===key);
   if(!e){e={d,key,vak:vid,soort:'oefenen',sec:0,min:0};LOG[wid].entries=[...LOG[wid].entries,e]}
-  e.sec=(e.sec||0)+s;e.min=Math.floor(e.sec/60);ACT[k]=0;saveLog(wid)})}
+  e.sec=(e.sec||0)+s;e.min=Math.floor(e.sec/60);ACT[k]=0;logPut(wid,e);saveLog(wid)})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushAct()});
 
 /* ---------- tab: cijfers ---------- */
@@ -1162,6 +1176,8 @@ async function startDb(){
       async set(b){cache[c]=cache[c]||{};cache[c][id]=JSON.parse(JSON.stringify(b));notify(c,true);
         const {error}=await SB.from('docs').upsert({coll:c,id,data:b,updated_at:new Date().toISOString()});
         if(error)throw {code:'unavailable',message:error.message}},
+      async get(){const {data,error}=await SB.from('docs').select('data').eq('coll',c).eq('id',id).maybeSingle();
+        if(error)throw {code:'unavailable',message:error.message};return data&&data.data?JSON.parse(JSON.stringify(data.data)):null},
       async patch(p){const {data,error}=await SB.from('docs').select('data').eq('coll',c).eq('id',id).maybeSingle();
         if(error)throw {code:'unavailable',message:error.message};
         const b=Object.assign({},(data&&data.data)||{},JSON.parse(JSON.stringify(p)));cache[c]=cache[c]||{};cache[c][id]=b;notify(c,true);
