@@ -388,7 +388,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <div id="app">
   <header class="stack" style="gap:8px">
     <span class="tag">Klas 2 · schooljaar 2026–2027 · volgens het PTO</span>
-    <h1>Mijn <span class="hl">studie-app</span></h1>
+    <div class="row" style="justify-content:space-between;align-items:center"><h1>Mijn <span class="hl">studie-app</span></h1><button class="btn ghost" id="herlaad" aria-label="Vernieuwen" title="Vernieuwen">↻ Vernieuwen</button></div>
   </header>
   <div class="seg tabs" role="tablist" aria-label="Onderdelen">
     <button id="tab-vandaag" data-tab="vandaag">Vandaag</button><button id="tab-oefenen" data-tab="oefenen">Oefenen</button><button id="tab-cijfers" data-tab="cijfers">Cijfers</button><button id="tab-week" data-tab="week">Week</button>
@@ -1104,6 +1104,8 @@ $('#v-cijfers').addEventListener('click',e=>{
 /* ---------- tabs en tekenen ---------- */
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{flushAct();if(b.dataset.tab==='oefenen'&&tab==='oefenen'&&Oefen.cur){Oefen.stop()}tab=b.dataset.tab;try{localStorage.setItem('tab',tab)}catch(e){};render()});
 const GELADEN={};
+/* vernieuwen: op het beginscherm van de iPhone is er geen adresbalk en dus geen herlaadknop (13 nov, vader). Eerst opslaan, dan herladen. */
+$('#herlaad').onclick=()=>{try{flushAct()}catch(e){};$('#herlaad').textContent='Bezig…';setTimeout(()=>location.reload(),1500)};
 function render(){
   SCHED=null;SCHED_OUD=null;
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen)stempelBij();
@@ -1178,7 +1180,7 @@ async function startDb(){
   db.collection('vakken').onSnapshot(snap=>{
     if(!snap.metadata.fromCache)clearTimeout(timer);
     VAK=snap.docs.map(d=>Object.assign({id:d.id},JSON.parse(JSON.stringify(d.data()))));GELADEN.vakken=1;
-    stateEl.textContent=VAK.length?'':'Er staan nog geen vakken in.';
+    stateEl.textContent=VAK.length?'':`Er staan nog geen vakken in, of dit account (${window.WIE||''}) mag de gegevens nog niet zien. Dat laatste stel je in bij Supabase.`;
     if(busy()&&snap.metadata.hasPendingWrites)return;
     render();
   },()=>{clearTimeout(timer);stateEl.textContent='De cijfers konden niet geladen worden.'});
