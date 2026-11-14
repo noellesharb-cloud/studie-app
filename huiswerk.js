@@ -11,7 +11,7 @@
    par   = paragraaf in de oefenapp (voor het bijhoudblok na het huiswerk). Leeg: de eerste paragraaf zonder vinkje
    COMPLEET_TOT: tot en met deze datum staat al het huiswerk erin. Daarna is het nog onvolledig
    en blijft er ook een algemeen huiswerkblok ("kijk in SOMtoday") staan. */
-window.HUISWERK_COMPLEET_TOT='2026-11-13';
+window.HUISWERK_COMPLEET_TOT='2026-11-16';
 window.HUISWERK=[
   /* maandag 2 november */
   {id:'2026-11-02-ak',d:'2026-11-02',vak:'aardrijkskunde',t:'Taak 2: §3.2 Dubai',wat:['Bestudeer LB H3.2','Maak WB H3.2 opdracht 2, 4, 6, 7, 9','# Begrippen in je schrift (met betekenis) en leren','Welvaart, bnp/inwoner, armoedegrens, basisbehoefte, welzijn, wereldstad, mainport, diversificatie, kennismigranten, arbeidsmigranten, duurzaamheid, ecologische voetafdruk, klimaatafspraken, greenwashing'],min:20,klaar:true,app:'ak',par:'3.2',opg:[2,4,6,7,9]},
