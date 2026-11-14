@@ -511,8 +511,8 @@ function drawVolg(q,it,box,api){
 }
 
 /* ---------- Toetsweek 2 (stofoverzicht MG2 2026-2027): Redemittel en Grammatik uit SB blz. 12, 20, 28 en 42 ----------
-   Gemaakt op 14 nov 2026 uit het stofoverzicht en de Grammatikübersicht (B. Baljeu). De bladzijden uit het Schülerbuch zelf
-   waren er niet bij: zinnen, uitleg en extra oefeningen zijn door Claude gemaakt en kunnen afwijken van het boek. */
+   Gemaakt op 14 nov 2026 uit het stofoverzicht, de Grammatikübersicht (B. Baljeu) en foto's van SB blz. 12, 20, 21, 28 en 42.
+   De voorbeeldzinnen van het boek zitten erin; de extra oefenzinnen en de uitleg zijn door Claude gemaakt. */
 const U=s=>`<u>${s}</u>`;
 const twQ=(o,nr)=>(id,q,a,f,u,v,x)=>Q.push(Object.assign({id:'tw-'+id,o,nr,q,a,f,u,v},x||{}));
 
@@ -547,8 +547,8 @@ const VERBS2={
    uitleg:'Regelmatig: stam <b>wohn</b> + e, st, t, en, t, en.'},
  kommen:{nl:'komen',f:['komme','kommst','kommt','kommen','kommt','kommen'],x:['komst'],
    uitleg:'Regelmatig: stam <b>komm</b> + e, st, t, en, t, en. De dubbele m blijft overal staan.'},
- spielen:{nl:'spelen',f:['spiele','spielst','spielt','spielen','spielt','spielen'],x:['spielet'],
-   uitleg:'Regelmatig: stam <b>spiel</b> + e, st, t, en, t, en.'}
+ machen:{nl:'maken, doen',f:['mache','machst','macht','machen','macht','machen'],x:['machet'],
+   uitleg:'Regelmatig: stam <b>mach</b> + e, st, t, en, t, en.'}
 };
 Object.assign(VF,Object.fromEntries(Object.entries(VERBS2).map(([k,v])=>[k,v.f])));
 Object.keys(VERBS2).forEach(v=>Q.push({id:'r2-'+v,o:'pv',nr:'Personalpronomen und Verben · rijtje',type:'rij',verb:v,a:VERBS2[v].f.join(', '),tvIn:PERS,tvA:VERBS2[v].f,
@@ -565,12 +565,14 @@ Object.keys(VERBS2).forEach(v=>Q.push({id:'r2-'+v,o:'pv',nr:'Personalpronomen un
   ['er','wohnen','wohnt',[['wohnst','wohnst hoort bij du.'],['wohne','wohne hoort bij ich.']]],
   ['du','kommen','kommst',[['komst','De dubbele m blijft: du kommst.'],['kommt','kommt hoort bij er/sie/es of ihr.']]],
   ['wir','heißen','heißen',[['heißt','heißt hoort bij du, er/sie/es en ihr.'],['heißn','Bij wir komt er -en achter: wir heißen.']]],
-  ['sie (meervoud)','spielen','spielen',[['spielt','spielt hoort bij er/sie/es en ihr. sie meervoud = -en.'],['spielst','spielst hoort bij du.']]],
+  ['sie (meervoud)','machen','machen',[['macht','macht hoort bij er/sie/es en ihr. sie meervoud = -en.'],['machst','machst hoort bij du.']]],
+  ['ihr','mögen','mögt',[['magt','Bij ihr staat er een ö: ihr mögt.'],['mögen','mögen hoort bij wir en sie.']]],
+  ['Sie (u)','kommen','kommen',[['kommt','kommt hoort bij er/sie/es en ihr. Bij Sie (u): kommen.'],['kommst','kommst hoort bij du. Bij Sie (u): kommen.']]],
   ['ihr','haben','habt',[['hat','hat hoort bij er/sie/es.'],['habe','habe hoort bij ich.']]],
- ].forEach(([p,inf,ans,f],i)=>{const fs=VF[inf],lab=p==='er'?'er/sie/es':p;
+ ].forEach(([p,inf,ans,f],i)=>{const fs=VF[inf],lab=p==='er'?'er/sie/es':p.startsWith('Sie')||p.startsWith('sie (')?'sie/Sie':p;
    const andere=PERS.filter((x,j)=>fs[j]!==ans).slice(0,3).map(x=>[x,`Bij ${x} is het: ${x.split('/')[0]} ${fs[PERS.indexOf(x)]}.`]);
    pv('pf'+(i+1),`Welke vorm hoort bij <b>${p}</b> + <b>${inf}</b>?`,ans,f,`${p.split(' ')[0]} <b>${ans}</b><div class="why">${(VERBS2[inf]||VERBS[inf]).uitleg}</div>`,
-     {q:`Bij welk persoon hoort <b>${ans}</b> (van ${inf})?`,a:p==='sie (meervoud)'?'sie/Sie':lab,f:andere.filter(x=>!(p==='sie (meervoud)'&&x[0]==='wir'))}) });
+     {q:`Bij welk persoon hoort <b>${ans}</b> (van ${inf})?`,a:lab,f:andere.filter(x=>!(lab==='sie/Sie'&&x[0]==='wir'))}) });
  [['___ wohnst in Berlin.','Du',[['Ich','Bij ich hoort wohne.'],['Er','Bij er hoort wohnt.']],'wohnst eindigt op -st: dat hoort bij du.'],
   ['___ heißen Ben und Lukas.','Sie',[['Er','Bij er hoort heißt. Ben und Lukas zijn twee jongens: sie.'],['Ihr','Bij ihr hoort heißt.']],'Twee personen, werkwoord op -en: sie (meervoud).'],
   ['___ seid zwölf Jahre alt.','Ihr',[['Wir','Bij wir hoort sind.'],['Sie','Bij sie hoort sind.']],'seid hoort alleen bij ihr.'],
@@ -626,8 +628,10 @@ Object.keys(VERBS2).forEach(v=>Q.push({id:'r2-'+v,o:'pv',nr:'Personalpronomen un
  const PR={Er:'Er = hij: voor der-woorden en jongens.',Sie:'Sie = zij: voor die-woorden, meisjes en meervoud.',Es:'Es = het: voor das-woorden.',Ihr:'Ihr = jullie.'};
  [['Das ist Paul. ___ ist zwölf.','Er','Paul is een jongen.'],['Das ist meine Katze. ___ heißt Mimi.','Sie','die Katze → sie.'],['Das ist mein Hund. ___ ist braun.','Er','der Hund → er.'],
   ['Das ist mein Pferd. ___ ist groß und stark.','Es','das Pferd → es.'],['Das sind meine Mäuse. ___ sind klein und weiß.','Sie','die Mäuse is meervoud → sie.'],
-  ['Hier ist das Kaninchen. ___ frisst Karotten.','Es','das Kaninchen → es.'],['Da ist der Vogel. ___ ist bunt.','Er','der Vogel → er.'],['Das ist Lisa. ___ wohnt in Bremen.','Sie','Lisa is een meisje.']
- ].forEach(([zin,a,uit],i)=>ap('pr'+(i+1),`Vul in: er, sie of es?${DE(zin)}`,a,['Er','Sie','Es','Ihr'].filter(x=>x!==a).map(x=>[x,PR[x]+' '+uit]),`${DE(zin.replace('___','<b>'+a+'</b>'))}${uit}`,
+  ['Hier ist das Kaninchen. ___ frisst Karotten.','Es','das Kaninchen → es.'],['Da ist der Vogel. ___ ist bunt.','Er','der Vogel → er.'],['Das ist Lisa. ___ wohnt in Bremen.','Sie','Lisa is een meisje.'],
+  ['Das ist die Schildkröte. ___ heißt Trude.','Sie','die Schildkröte → sie.'],['Das sind die Katzen. ___ heißen Mimi und Milo.','Sie','die Katzen is meervoud → sie.'],
+  ['Mein Lieblingstier ist der Tiger. ___ ist stark.','Er','der Tiger → er.'],['Woher kommt das Lama? Ich glaube, ___ kommt aus Südamerika.','es','das Lama → es. Hier midden in de zin: kleine letter.']
+ ].forEach(([zin,a,uit],i)=>ap('pr'+(i+1),`Vul in: er, sie of es?${DE(zin)}`,a,['Er','Sie','Es','Ihr'].map(x=>a===a.toLowerCase()?x.toLowerCase():x).filter(x=>x!==a).map(x=>[x,PR[x.charAt(0).toUpperCase()+x.slice(1)]+' '+uit]),`${DE(zin.replace('___','<b>'+a+'</b>'))}${uit}`,
    {q:`Welk woordje komt op de puntjes? Kijk naar der, die of das.${DE(zin)}`}));
  const NA='Na <b>sein</b> (ist, sind) staat de 1e naamval (Nominativ): Das ist ein Hund. Na <b>haben, mögen, es gibt</b> en andere werkwoorden met een lijdend voorwerp: Akkusativ. Alleen der-woorden veranderen: der → den, ein → einen, kein → keinen.';
  [['Das ist ___ Hund.','een','ein',[['einen','Na „Das ist” staat de Nominativ: ein Hund.'],['eine','der Hund: ein.']]],
@@ -641,12 +645,15 @@ Object.keys(VERBS2).forEach(v=>Q.push({id:'r2-'+v,o:'pv',nr:'Personalpronomen un
   ['Ich habe ___ Vogel.','geen','keinen',[['kein','haben + Akkusativ: der Vogel → keinen Vogel.'],['keine','der Vogel, geen die-woord.']]],
   ['Das ist ___ Lieblingstier.','mijn','mein',[['meine','das Lieblingstier: mein.'],['meinen','Na „Das ist” staat de Nominativ; en het is een das-woord.']]],
   ['Wie heißt ___ Katze?','jouw','deine',[['dein','die Katze: deine.'],['deinen','deinen is voor der-woorden in de Akkusativ.']]],
+  ['Ich habe ___ Katzen.','geen, meervoud','keine',[['keinen','Meervoud: keine, net als bij die-woorden.'],['kein','Meervoud: keine.']]],
+  ['Das ist ___ Kuli.','mijn','mein',[['meine','der Kuli: mein.'],['meinen','Na „Das ist” staat de Nominativ: mein Kuli.']]],
+  ['Das ist ___ Schere.','jouw','deine',[['dein','die Schere: deine.'],['deinen','deinen is voor der-woorden in de Akkusativ.']]],
   ['Ich habe ___ Schwester und ___ Bruder.','een, een','eine, einen',[['eine, ein','der Bruder in de Akkusativ: einen.'],['einen, einen','die Schwester: eine.']]],
  ].forEach(([zin,hint,a,f],i)=>ap('ar'+(i+1),`Vul in.${DE(zin)}<div class="nl">(${hint})</div>`,a,f,`${DE(zin.replace('___','<b>'+a.split(', ')[0]+'</b>').replace('___','<b>'+(a.split(', ')[1]||'')+'</b>'))}${NA}`,
    {q:`Welk woordje komt op de puntjes? Let op: Nominativ of Akkusativ?${DE(zin)}<div class="nl">(${hint})</div>`}));
  [['Der Hund','Der Hund frisst einen Salat.','Nominativ','Der Hund doet het: het onderwerp.'],['einen Salat','Der Hund frisst einen Salat.','Akkusativ','Wat frisst der Hund? einen Salat: het lijdend voorwerp.'],
   ['die Katze','Mein Lieblingstier ist die Katze.','Nominativ','Na sein staat de Nominativ, ook al staat het achteraan.'],['keinen Bruder','Ich habe keinen Bruder.','Akkusativ','Wat heb ik (niet)? Het lijdend voorwerp, en der → keinen laat het al zien.'],
-  ['viele Tiere','Im Zoo gibt es viele Tiere.','Akkusativ','es gibt + Akkusativ.'],['Meine Schwester','Meine Schwester mag Pferde.','Nominativ','Wie vindt paarden leuk? meine Schwester: het onderwerp.'],
+  ['viele Tiere','Im Zoo gibt es viele Tiere.','Akkusativ','es gibt + Akkusativ.'],['Katzen','Das sind Katzen.','Nominativ','Na sein (sind) staat de Nominativ. Meervoud zonder lidwoord: Das sind Katzen.'],['Meine Schwester','Meine Schwester mag Pferde.','Nominativ','Wie vindt paarden leuk? meine Schwester: het onderwerp.'],
  ].forEach(([deel,zin,a,uit],i)=>ap('nk'+(i+1),`Welke naamval is het onderstreepte deel?${DE(zin.replace(deel,U(deel)))}`,a,[[a==='Nominativ'?'Akkusativ':'Nominativ',uit]],
    `<b>${deel}</b> = ${a}. ${uit}<div class="why">Nominativ = onderwerp (en na sein). Akkusativ = lijdend voorwerp.</div>`,
    {q:`Is <b>${deel}</b> hier onderwerp (Nominativ) of lijdend voorwerp (Akkusativ)?${DE(zin)}`}));
@@ -661,15 +668,22 @@ const rmQ=(o,nr)=>{const p=twQ(o,nr);return (id,nl,de,f,sit,uit,alt)=>p(id,`Hoe 
  r('b3','Tot ziens! (beleefd)','Auf Wiedersehen!',[['Auf Widersehen!','Wiedersehen schrijf je met ie.'],['Tot Wiedersehen!','tot is Nederlands.'],['Bis Wiedersehen!','Het is Auf Wiedersehen.']],'Je neemt afscheid van de directeur.');
  r('b4','Doei, tot morgen!','Tschüs, bis morgen!',[['Tschüs, tot morgen!','tot = bis.'],['Tschüs, bis morgens!','morgens = ’s ochtends. Tot morgen = bis morgen.'],['Tschüs, bis Morgen!','morgen (de dag na vandaag) schrijf je met een kleine letter. der Morgen (de ochtend) met een hoofdletter.']],'Je gaat naar huis en zegt je vriendin gedag. Je ziet haar morgen weer.','',['Tschüss, bis morgen!']);
  r('b5','Hoe gaat het?','Wie geht’s?',[['Was geht’s?','Hoe = Wie.'],['Wie gehst du?','Zo zeg je het niet. Het is: Wie geht’s? (Wie geht es dir?)'],['Wie gaat es?','gaat is Nederlands.']],'Je ziet een vriend en wilt weten hoe het met hem is.','',["Wie geht's?",'Wie geht es dir?','Wie geht es?']);
+ r('b6','Goed, dank je. En met jou?','Danke, gut. Und dir?',[['Danke, gut. Und du?','Het boek leert: Und dir? (kort voor: Wie geht es dir?)'],['Danken, gut. Und dir?','Dank je = danke.'],['Danke, goed. Und dir?','goed = gut.']],'Een vriendin vraagt: „Hallo, wie geht’s?” Het gaat goed met je.','Zo staat het op SB blz. 12. Ook: Super, und dir? · Auch gut. · Na ja, es geht.',['Gut, danke. Und dir?','Danke, gut, und dir?']);
+ r('b7','Goedendag, mevrouw Born. Hoe gaat het met u?','Guten Tag, Frau Born, wie geht es Ihnen?',[['Guten Tag, Frau Born, wie geht es dir?','Tegen een volwassene zeg je u: Ihnen (met hoofdletter).'],['Guten Tag, Frau Born, wie geht es ihnen?','Ihnen (= u) schrijf je met een hoofdletter.'],['Gute Tag, Frau Born, wie geht es Ihnen?','der Tag: Guten Tag.']],'Je komt je docent, mevrouw Born, tegen.','Zo staat het op SB blz. 12. Het antwoord: Danke, gut. Und Ihnen?',['Guten Tag, Frau Born. Wie geht es Ihnen?']);
+ r('n4','Hoe heet u?','Wie heißen Sie?',[['Wie heißt Sie?','Bij Sie (u) hoort heißen.'],['Wie heißen sie?','Sie (u) schrijf je met een hoofdletter. sie = zij.'],['Wie heiße Sie?','heiße hoort bij ich.']],'Je vraagt een volwassene naar zijn naam.','Bij <b>Sie</b> (u) is het werkwoord gelijk aan de infinitief: Sie heißen, Sie wohnen, Sie kommen.');
+ r('n5','Waar komt u vandaan?','Woher kommen Sie?',[['Woher kommst Sie?','kommst hoort bij du. Bij Sie: kommen.'],['Wo kommen Sie?','Waarvandaan = Woher.'],['Woher Sie kommen?','In een W-vraag komt het werkwoord op plek 2.']],'Je vraagt een volwassene waar hij vandaan komt.');
+ r('n6','Waar woont u?','Wo wohnen Sie?',[['Wo wohnt Sie?','Bij Sie (u): wohnen.'],['Woher wohnen Sie?','Woher = waarvandaan, dat hoort bij kommen.'],['Wo wohnen sie?','Sie (u) met een hoofdletter.']],'Je vraagt een volwassene waar hij woont.');
  r('n1','Ik heet Noor.','Ich heiße Noor.',[['Ich heißt Noor.','Bij ich hoort heiße.'],['Ich bin heiße Noor.','Alleen: Ich heiße … (of: Ich bin Noor.)'],['Mein Name heißt Noor.','Het is Mein Name ist Noor.']],'Je stelt jezelf voor in de klas.','',['Ich bin Noor.','Mein Name ist Noor.']);
  r('n2','Ik woon in Utrecht.','Ich wohne in Utrecht.',[['Ich wohnst in Utrecht.','Bij ich hoort wohne.'],['Ich wohne aus Utrecht.','Wonen ín een stad: in.'],['Ich woone in Utrecht.','wohnen met h.']],'Iemand vraagt: „Wo wohnst du?”');
  r('n3','Ik kom uit Nederland.','Ich komme aus den Niederlanden.',[['Ich komme aus Niederlande.','die Niederlande is meervoud: aus den Niederlanden.'],['Ich komme von den Niederlanden.','Uit een land = aus.'],['Ich komme aus Nederland.','Nederland = die Niederlande.']],'Iemand vraagt: „Woher kommst du?”','',['Ich komme aus Holland.']);
  r('m1','Ik vind paarden leuk.','Ich mag Pferde.',[['Ich magst Pferde.','Bij ich: mag.'],['Ich möge Pferde.','mögen: ich mag.'],['Ich mag Pferden.','Meervoud: die Pferde.']],'Je vertelt wat je leuk vindt: paarden.');
  r('m2','Ik vind biologie niet leuk.','Ich mag Bio nicht.',[['Ich nicht mag Bio.','nicht staat niet vóór het werkwoord.'],['Ich mag Bio nichts.','nichts = niets. Niet = nicht.'],['Ich mögt Bio nicht.','Bij ich: mag.']],'Je vertelt dat je biologie niet leuk vindt.','nicht staat aan het eind: Ich mag Bio nicht.',['Ich mag Biologie nicht.']);
+ r('m4','Nee, ik vind biologie niet leuk, maar ik vind Duits leuk.','Nein, ich mag Bio nicht, aber ich mag Deutsch.',[['Nein, ich mag Bio nicht, aber mag ich Deutsch.','Na aber blijft de volgorde gewoon: aber ich mag …'],['Nein, ich mag nicht Bio, aber ich mag Deutsch.','nicht staat achter Bio: Ich mag Bio nicht.'],['Nein, ich mag kein Bio, aber ich mag Deutsch.','Het boek leert: Ich mag Bio nicht.']],'Iemand vraagt: „Magst du Bio?” Je vindt het niet leuk, Duits wel.','Zo staat het op SB blz. 20. Andere antwoorden: Ja. · Es geht.');
  r('m3','Wiskunde vind ik saai.','Mathe finde ich langweilig.',[['Mathe ich finde langweilig.','Het werkwoord staat op plek 2: Mathe finde ich …'],['Mathe finde ich langweilich.','langweilig schrijf je met g.'],['Mathe findet ich langweilig.','Bij ich: finde.']],'Je vertelt wat je van wiskunde vindt: saai.','',['Ich finde Mathe langweilig.']);
  r('v1','Dit is mijn vriendin Mia.','Das ist meine Freundin Mia.',[['Das ist mein Freundin Mia.','die Freundin: meine.'],['Das ist meine Freund Mia.','vriendin = die Freundin.'],['Das sind meine Freundin Mia.','Eén persoon: Das ist.']],'Je stelt je vriendin Mia voor.');
  r('v2','Hij is twaalf jaar oud.','Er ist zwölf Jahre alt.',[['Er hat zwölf Jahre alt.','Leeftijd gaat met sein: Er ist …'],['Er ist zwölf Jahren alt.','Het is Jahre, zonder n.'],['Er ist zwölf Jahre oud.','oud = alt.']],'Je vertelt hoe oud je broer is: 12.','',['Er ist zwölf.']);
  r('v3','Zij woont in Hamburg.','Sie wohnt in Hamburg.',[['Sie wohnst in Hamburg.','wohnst hoort bij du.'],['Er wohnt in Hamburg.','zij = sie.'],['Sie wohne in Hamburg.','wohne hoort bij ich.']],'Je vertelt waar je nicht woont: in Hamburg.');
+ r('v6','Dit is mijn vriend. Hij heet Joe. Hij komt uit Engeland.','Das ist mein Freund. Er heißt Joe. Er kommt aus England.',[['Das ist meine Freund. Er heißt Joe. Er kommt aus England.','der Freund: mein.'],['Das ist mein Freund. Er heißt Joe. Er kommt von England.','Uit een land = aus.'],['Das ist mein Freund. Er heißt Joe. Er kommst aus England.','Bij er: kommt.']],'Je stelt je vriend Joe uit Engeland voor.','Zo staat het op SB blz. 20.');
  r('v4','Dit zijn Tim en Jonas.','Das sind Tim und Jonas.',[['Das ist Tim und Jonas.','Twee personen: Das sind.'],['Das seid Tim und Jonas.','seid hoort bij ihr.'],['Dass sind Tim und Jonas.','das (dit) met één s.']],'Je stelt twee vrienden voor.');
  r('v5','Hij houdt van voetbal.','Er mag Fußball.',[['Er magt Fußball.','mögen: er mag, zonder -t.'],['Er mögt Fußball.','mögt hoort bij ihr.'],['Er mag Voetbal.','voetbal = Fußball.']],'Je vertelt wat je broer leuk vindt: voetbal.','',['Er spielt gern Fußball.']);
 }
@@ -681,6 +695,14 @@ const rmQ=(o,nr)=>{const p=twQ(o,nr);return (id,nl,de,f,sit,uit,alt)=>p(id,`Hoe 
  r('t5','Er zijn veel dieren in de dierentuin.','Im Zoo gibt es viele Tiere.',[['Im Zoo geben es viele Tiere.','Het is altijd es gibt.'],['Im Zoo es gibt viele Tiere.','Na Im Zoo komt het werkwoord op plek 2: gibt es.'],['Im Zoo gibt es viel Tiere.','Veel + meervoud: viele.']],'Je vertelt over de dierentuin: veel dieren.','',['Es gibt viele Tiere im Zoo.']);
  r('t6','Heb jij een huisdier?','Hast du ein Haustier?',[['Hast du einen Haustier?','das Haustier: ein.'],['Hat du ein Haustier?','Bij du: hast.'],['Du hast ein Haustier?','Bij een ja/nee-vraag staat het werkwoord vooraan.']],'Je interviewt een klasgenoot over huisdieren.');
  r('t7','Hoe heet jouw hond?','Wie heißt dein Hund?',[['Wie heißt deine Hund?','der Hund: dein.'],['Was heißt dein Hund?','Was heißt …? = Wat betekent …? Naar een naam vraag je met Wie.'],['Wie heiße dein Hund?','dein Hund = er: heißt.']],'Je wilt weten hoe de hond van je klasgenoot heet.');
+ r('t9','Waar komt de lama vandaan?','Woher kommt das Lama?',[['Wo kommt das Lama?','Waarvandaan = Woher.'],['Woher kommt der Lama?','Het is das Lama.'],['Woher kommst das Lama?','das Lama = es: kommt.']],'Je wilt weten uit welk land de lama komt.','Zo staat het op SB blz. 28.');
+ r('t10','Ik denk dat hij (de lama) uit Zuid-Amerika komt.','Ich glaube, es kommt aus Südamerika.',[['Ich glaube, er kommt aus Südamerika.','das Lama is een das-woord: es.'],['Ich glaube, es kommt von Südamerika.','Uit = aus.'],['Ich glaube, es kommst aus Südamerika.','Bij es: kommt.']],'Iemand vraagt: „Woher kommt das Lama?” Je denkt: Zuid-Amerika.','Zo staat het op SB blz. 28: Ich glaube, es kommt aus …',['Ich glaube, das Lama kommt aus Südamerika.']);
+ r('t11','Dat weet ik niet.','Das weiß ich nicht.',[['Das ich weiß nicht.','Het werkwoord staat op plek 2: Das weiß ich nicht.'],['Das weiß ich nichts.','nichts = niets. Niet = nicht.'],['Das wiss ich nicht.','Bij ich: weiß.']],'Iemand vraagt waar een dier vandaan komt, maar je weet het niet.');
+ r('t12','Mijn lievelingsdier is de tijger. Hij is sterk.','Mein Lieblingstier ist der Tiger. Er ist stark.',[['Mein Lieblingstier ist der Tiger. Es ist stark.','der Tiger: er.'],['Mein Lieblingstier ist den Tiger. Er ist stark.','Na sein: Nominativ, der Tiger.'],['Mein Lieblingstier ist der Tiger. Er ist sterk.','sterk = stark.']],'Iemand vraagt: „Was ist dein Lieblingstier?”','Zo staat het op SB blz. 28.');
+ r('t13','Ja, ik heb twee katten. Ze heten Pepi en Murri.','Ja, ich habe zwei Katzen. Sie heißen Pepi und Murri.',[['Ja, ich habe zwei Katze. Sie heißen Pepi und Murri.','Twee katten: meervoud, Katzen.'],['Ja, ich habe zwei Katzen. Sie heißt Pepi und Murri.','Twee katten = sie (meervoud): heißen.'],['Ja, ich habe zwei Katzen. Es heißen Pepi und Murri.','Meervoud = sie.']],'Iemand vraagt: „Hast du ein Haustier?” Je hebt twee katten, Pepi en Murri.','Zo staat het op SB blz. 28.');
+ r('t14','Nee, maar ik vind katten leuk.','Nein, aber ich mag Katzen.',[['Nein, aber mag ich Katzen.','Na aber blijft de volgorde gewoon: aber ich mag.'],['Nein, aber ich magst Katzen.','Bij ich: mag.'],['Nein, aber ich mag Katze.','Katten (meervoud) = Katzen.']],'Iemand vraagt: „Magst du Hunde?” Nee, maar katten wel.','Zo staat het op SB blz. 28.');
+ r('t15','Ik heb een konijn. Het heet Tori en is een jaar oud.','Ich habe ein Kaninchen. Es heißt Tori und ist ein Jahr alt.',[['Ich habe einen Kaninchen. Es heißt Tori und ist ein Jahr alt.','das Kaninchen: ein (alleen der-woorden krijgen -en).'],['Ich habe ein Kaninchen. Er heißt Tori und ist ein Jahr alt.','das Kaninchen: es.'],['Ich habe ein Kaninchen. Es heißt Tori und ist ein Jahre alt.','Eén jaar = ein Jahr.']],'Je beschrijft je konijn Tori van één jaar.','Zo staat het op SB blz. 28.');
+ r('t16','Ellie heeft een papegaai. Hij is vijf jaar oud en groen en rood.','Ellie hat einen Papagei. Er ist fünf Jahre alt und ist grün und rot.',[['Ellie hat ein Papagei. Er ist fünf Jahre alt und ist grün und rot.','der Papagei in de Akkusativ: einen.'],['Ellie habt einen Papagei. Er ist fünf Jahre alt und ist grün und rot.','Bij Ellie (sie): hat.'],['Ellie hat einen Papagei. Es ist fünf Jahre alt und ist grün und rot.','der Papagei: er.']],'Je vertelt na een interview over de papegaai van Ellie.','Zo staat het op SB blz. 28.',['Ellie hat einen Papagei. Er ist fünf Jahre alt, grün und rot.']);
  r('t8','Zij heeft geen huisdier.','Sie hat kein Haustier.',[['Sie hat nicht ein Haustier.','Geen + zelfstandig naamwoord = kein.'],['Sie hat keinen Haustier.','das Haustier: kein.'],['Sie habt kein Haustier.','Bij sie (één meisje): hat.']],'Je vertelt na het interview over Lisa: zij heeft geen huisdier.');
 }
 {const r=rmQ('rm3','Redemittel SB blz. 42');
@@ -693,24 +715,44 @@ const rmQ=(o,nr)=>{const p=twQ(o,nr);return (id,nl,de,f,sit,uit,alt)=>p(id,`Hoe 
  r('d6','’s Middags maak ik huiswerk.','Am Nachmittag mache ich Hausaufgaben.',[['Im Nachmittag mache ich Hausaufgaben.','Dagdeel = am: am Nachmittag.'],['Am Nachmittag ich mache Hausaufgaben.','Het werkwoord op plek 2.'],['Am Nachmittag macht ich Hausaufgaben.','Bij ich: mache.']],'Je vertelt wat je na school doet: huiswerk.',AM,['Nachmittags mache ich Hausaufgaben.','Ich mache am Nachmittag Hausaufgaben.']);
  r('d7','Op zaterdag en zondag heb ik vrij.','Am Samstag und am Sonntag habe ich frei.',[['Am Samstag und am Sonntag ich habe frei.','Het werkwoord op plek 2.'],['Im Samstag und im Sonntag habe ich frei.','Op een dag = am.'],['Am Zaterdag und am Sonntag habe ich frei.','zaterdag = Samstag.']],'Je vertelt over het weekend.',AM,['Am Samstag und Sonntag habe ich frei.','Am Wochenende habe ich frei.']);
  r('d8','Op woensdag heb ik vrije tijd.','Am Mittwoch habe ich Freizeit.',[['Am Mitwoch habe ich Freizeit.','Mittwoch met tt.'],['Am Mittwoch ich habe Freizeit.','Het werkwoord op plek 2.'],['Am Mittwoch habe ich Freizeiten.','Freizeit zonder -en.']],'Je vertelt dat je woensdagmiddag vrij bent.',AM,['Mittwochs habe ich Freizeit.']);
+ r('d9','Wanneer is de les afgelopen?','Wann ist der Unterricht zu Ende?',[['Wann der Unterricht ist zu Ende?','Het werkwoord op plek 2: Wann ist …'],['Wo ist der Unterricht zu Ende?','Wanneer = Wann.'],['Wann ist der Unterricht zu Einde?','einde = Ende.']],'Je wilt weten hoe laat de les ophoudt.','Zo staat het op SB blz. 42. Antwoord: Um 16 Uhr. / Um vier Uhr nachmittags.');
+ r('d10','Hoe laat kom je thuis?','Um wie viel Uhr kommst du nach Hause?',[['Um wie viel Uhr du kommst nach Hause?','Het werkwoord op plek 2.'],['Am wie viel Uhr kommst du nach Hause?','Om een tijd = um.'],['Um wie viel Uhr kommt du nach Hause?','Bij du: kommst.']],'Je wilt weten hoe laat je vriendin thuiskomt.','Zo staat het op SB blz. 42. Antwoord: Um fünf.',['Wann kommst du nach Hause?']);
+ r('d11','Op maandag, woensdag en vrijdag (elke week).','Montags, mittwochs und freitags.',[['Am Montags, am Mittwochs und am Freitags.','Of montags (zonder am), of am Montag (zonder s).'],['Im Montag, im Mittwoch und im Freitag.','Op een dag = am.'],['Montags, mitwochs und freitags.','mittwochs met tt.']],'Iemand vraagt: „Wann hast du Mathe?”','Zo staat het op SB blz. 42. Ook goed: Am Montag, am Mittwoch und am Freitag.',['Am Montag, am Mittwoch und am Freitag.']);
+ r('d12','Rond vier uur ben ik weer thuis.','Gegen vier Uhr bin ich wieder zu Hause.',[['Gegen vier Uhr ich bin wieder zu Hause.','Het werkwoord op plek 2.'],['Gegen vier Uhr bin ich wieder nach Hause.','Thuis zijn = zu Hause. nach Hause = naar huis.'],['Gegen vier Uhr habe ich wieder zu Hause.','Thuis zijn = zu Hause sein: bin.']],'Je vertelt hoe laat je ongeveer thuis bent.','gegen = rond, ongeveer (SB blz. 42).',['Gegen 16 Uhr bin ich wieder zu Hause.']);
  const DAG=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
  const tg=twQ('rm3','Wochentage und Tageszeiten');
  [['Mittwoch',3],['Freitag',5],['Samstag',6],['Montag',1]].forEach(([d,i],k)=>{const a='der '+DAG[i%7];
    tg('wt'+(k+1),`Welke dag komt na <b>der ${d}</b>?`,a,[DAG[(i+1)%7],DAG[(i+6)%7],DAG[(i+5)%7]].map(x=>['der '+x,`der ${x} is ${['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'][DAG.indexOf(x)]}.`]),
      `Na der ${d} komt <b>${a}</b>.<div class="why">Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag. Alle dagen zijn der-woorden.</div>`,
      {q:`Wat is het Duits voor <b>${['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'][i%7]}</b>?`},{tv:`Welke dag komt na der ${d}? Schrijf hem op met der.`})});
- const TZ=[['7.00 uur','am Morgen'],['10.00 uur','am Vormittag'],['12.00 uur','am Mittag'],['15.00 uur','am Nachmittag'],['20.00 uur','am Abend'],['3.00 uur','in der Nacht']];
+ const TZ=[['7.00 uur','am Morgen','morgens'],['10.00 uur','am Vormittag','vormittags'],['12.00 uur','am Mittag','mittags'],['15.00 uur','am Nachmittag','nachmittags'],['20.00 uur','am Abend','abends'],['3.00 uur','in der Nacht','nachts']];
  TZ.forEach(([t,a],k)=>{const fo=TZ.filter(x=>x[1]!==a).slice(k%2,k%2+3);
    tg('tz'+(k+1),`Welk dagdeel past bij <b>${t}</b>?`,a,fo.map(x=>[x[1],`${x[1]} is rond ${x[0]}.`]),
-     `${t} = <b>${a}</b><div class="why">am Morgen (vroeg) · am Vormittag (tot 12) · am Mittag (12 uur) · am Nachmittag (na 12) · am Abend · <b>in der Nacht</b> (die Nacht, dus niet am).</div>`,
-     {q:`Het is ${t}. Hoe zeg je in welk dagdeel dat is?`})});
+     `${t} = <b>${a}</b><div class="why">am Morgen (vroeg) · am Vormittag (tot 12) · am Mittag (12 uur) · am Nachmittag (na 12) · am Abend · <b>in der Nacht</b> (die Nacht, dus niet am). Ook goed (SB blz. 42): morgens, vormittags, mittags, nachmittags, abends, nachts.</div>`,
+     {q:`Het is ${t}. Hoe zeg je in welk dagdeel dat is?`},{tvAlt:[TZ[k][2]]})});
 }
 
+/* Tiere, SB blz. 21 (nummers zoals in het boek; het meervoud staat niet op de bladzijde en wordt niet overhoord) */
+const T21=[['das Känguru','de kangoeroe','die Kängurus'],['der Wellensittich','de parkiet','die Wellensittiche'],['der Hamster','de hamster','die Hamster'],['das Kamel','de kameel','die Kamele'],
+ ['der Kanarienvogel','de kanarie','die Kanarienvögel'],['die Möwe','de meeuw','die Möwen'],['die Kuh','de koe','die Kühe'],['der Wolf','de wolf','die Wölfe'],['die Katze','de kat','die Katzen'],
+ ['der Fisch','de vis','die Fische'],['die Spinne','de spin','die Spinnen'],['das Kaninchen','het konijn','die Kaninchen'],['die Antilope','de antilope','die Antilopen'],['das Pferd','het paard','die Pferde'],
+ ['der Hund','de hond','die Hunde'],['das Lama','de lama','die Lamas'],['der Bison','de bizon','die Bisons'],['der Tiger','de tijger','die Tiger'],['die Schildkröte','de schildpad','die Schildkröten'],
+ ['die Maus','de muis','die Mäuse'],['das Meerschweinchen','de cavia','die Meerschweinchen']];
+T21.forEach((v,i)=>{const [art,...r]=v[0].split(' '),n=r.join(' '),andere=['der','die','das'].filter(a=>a!==art);
+  const pool=shuf(T21.filter(w=>w!==v)).slice(0,3);
+  Q.push({id:'ti'+(i+1),o:'tiere',nr:'Tiere SB blz. 21 · nr. '+(i+1),q:`Wat is het Duits voor <b>${v[1]}</b>? Met der, die of das.`,a:v[0],
+    f:pool.map(w=>[w[0],`${w[0]} is ${w[1]}.`]),u:`${v[1]} = <b>${v[0]}</b>`,v:{q:`Wat betekent <b>${v[0]}</b>?`,a:v[1],f:pool.map(w=>[w[1],`Dat is ${w[0]}.`])}});
+  Q.push({id:'til'+(i+1),o:'tiere',nr:'Tiere SB blz. 21 · lidwoord',q:`der, die of das?${DE('___ '+n)}<div class="nl">(${v[1]})</div>`,a:art,
+    f:andere.map(a=>[a,`Het is ${art} ${n}. Leer het lidwoord altijd mee.`]),u:`<b>${v[0]}</b> = ${v[1]}. Over dit dier zeg je <b>${{der:'er',die:'sie',das:'es'}[art]}</b>.`,
+    v:{q:`Welk persoonlijk voornaamwoord gebruik je voor <b>${v[1]}</b> (${n})? Mein … ist süß. → ___ ist süß.`,a:{der:'er',die:'sie',das:'es'}[art],
+      f:['er','sie','es'].filter(x=>x!=={der:'er',die:'sie',das:'es'}[art]).map(x=>[x,`Het is ${art} ${n}, dus ${{der:'er',die:'sie',das:'es'}[art]}.`])}})});
+SECS.unshift({id:'tiere',par:'tw',nr:'T',name:'Tiere (SB blz. 21)',c:'--c3',sub:'21 dieren · Duits–Nederlands, Nederlands–Duits en der, die of das',
+  rules:[['Leer elk dier mét der, die of das','der Hund → er · die Katze → sie · das Pferd → es','']].concat(T21.map((v,i)=>[(i+1)+'. '+v[0],v[1],'']))});
 SECS.unshift(
  {id:'zahl',par:'tw',nr:'Z',name:'Zahlen bis 100',c:'--c1',sub:'SB blz. 16 en 17 · getallen in letters',
   rules:[['Eerst de eenheden, dan und, dan de tientallen','23 = dreiundzwanzig · 45 = fünfundvierzig','Alles aan elkaar, net als drieëntwintig'],
    ['Let op de spelling','dreißig (ß) · sechzehn, sechzig (zonder s) · siebzehn, siebzig (zonder en)','21 = einundzwanzig (zonder s)'],['100','hundert of einhundert','']]},
- {id:'pv',par:'tw',nr:'P',name:'Personalpronomen und Verben',c:'--c2',sub:'SB blz. 12 en 20 · ich, du, er … en rijtjes sein, heißen, wohnen, kommen, spielen',
+ {id:'pv',par:'tw',nr:'P',name:'Personalpronomen und Verben',c:'--c2',sub:'SB blz. 12 en 20 · ich, du, er … en rijtjes kommen, wohnen, machen, heißen, sein (mögen staat bij opdracht 7)',
   rules:[['Persoonlijk voornaamwoord','ich, du, er/sie/es, wir, ihr, sie/Sie','Sie met hoofdletter = u'],['Regelmatig','stam + e, st, t, en, t, en','wohnen: ich wohne, du wohnst, er wohnt …'],
    ['sein (onregelmatig)','ich bin, du bist, er ist, wir sind, ihr seid, sie sind','ihr seid met d'],['haben','ich habe, du hast, er hat, wir haben, ihr habt, sie haben','']]},
  {id:'wf',par:'tw',nr:'W',name:'W-Fragen und Antworten',c:'--c3',sub:'SB blz. 12 · vraagwoorden en de vraag bij een antwoord',
@@ -721,18 +763,27 @@ SECS.unshift(
   rules:[['der → er · die → sie · das → es','meervoud → sie','Das ist mein Pferd. Es ist groß.'],['Nominativ','onderwerp, en na sein: Das ist ein Hund.',''],
    ['Akkusativ','lijdend voorwerp, na haben, mögen, es gibt …','alleen der verandert: den, einen, keinen, meinen']]},
  {id:'rm1',par:'tw',nr:'R1',name:'Redemittel: begroeten, jezelf en anderen voorstellen',c:'--c6',sub:'SB blz. 12 en 20 · begrüßen, Name, Wohnort, was du magst, Personen vorstellen',
-  rules:[['Begroeten','Hallo! · Guten Morgen! · Guten Tag! · Guten Abend! · Wie geht’s?',''],['Afscheid','Tschüs! · Bis morgen! · Auf Wiedersehen!',''],
-   ['Jezelf voorstellen','Ich heiße … · Ich wohne in … · Ich komme aus … · Ich bin … Jahre alt.',''],['Wat je leuk vindt','Ich mag … · Ich mag … nicht. · … finde ich toll / langweilig.',''],['Iemand voorstellen','Das ist … · Er/Sie heißt … · Er/Sie wohnt in …','Das sind …']]},
+  rules:[['Begrüßen und verabschieden (blz. 12)','Guten Morgen. / Guten Tag. / Guten Abend. · Auf Wiedersehen. · Tschüs.','Hallo, wie geht’s? – Super, und dir? / Danke, gut, und dir? – Auch gut. / Na ja, es geht.'],
+   ['Met u (Sie)','Guten Tag, Frau Born, wie geht es Ihnen? – Danke, gut. Und Ihnen, Herr Haumann?',''],
+   ['Den Namen und den Wohnort sagen (blz. 12)','Wie heißt du? / Wie heißen Sie? · Wo wohnst du? / Wo wohnen Sie? · Woher kommst du? / Woher kommen Sie?','Ich heiße Carla. · Ich wohne in Barcelona. · Ich komme aus Spanien.'],
+   ['Sagen, was du magst (blz. 12 en 20)','Was magst du? – Ich mag Tennis und Judo. Ich mag auch …','Magst du Bio? – Ja. / Es geht. / Nein, ich mag Bio nicht, aber ich mag Deutsch.'],
+   ['Personen vorstellen (blz. 20)','Das ist mein Freund. Er heißt Joe. Er kommt aus England.','Das ist meine Freundin. Sie heißt Pia und sie wohnt in Bremen.']]},
  {id:'rm2',par:'tw',nr:'R2',name:'Redemittel: over dieren praten',c:'--c1',sub:'SB blz. 28 · Tiere beschreiben, Interviews machen und berichten',
-  rules:[['Een dier beschrijven','Mein Hund heißt … · Er ist … Jahre alt. · Er ist klein und braun. · Er mag …',''],['Interview','Hast du ein Haustier? · Wie heißt es? · Was ist dein Lieblingstier?',''],['Berichten','Lisa hat kein Haustier. Ihr Lieblingstier ist …','']]},
+  rules:[['Über Tiere sprechen','Woher kommt das Lama? – Ich glaube, es kommt aus … / Das weiß ich nicht.','Was ist dein Lieblingstier? – Mein Lieblingstier ist der Tiger. Er ist stark.'],
+   ['Interviews machen','Hast du ein Haustier? – Ja, ich habe zwei Katzen. Sie heißen Pepi und Murri. / Nein, ich habe kein Haustier.','Hast du einen Hund? – Nein, ich habe keinen Hund. · Magst du Hunde? – Nein, aber ich mag Katzen.'],
+   ['Berichten','Ellie hat einen Papagei. Er ist fünf Jahre alt und ist grün und rot. Er heißt Ara und ist sehr süß.',''],
+   ['Ein Tier beschreiben','Ich habe ein Kaninchen. Es heißt Tori und ist ein Jahr alt.','Ich habe eine Katze. Sie ist weiß. Sie …']]},
  {id:'rm3',par:'tw',nr:'R3',name:'Redemittel: tijden, dagen en je dag',c:'--c2',sub:'SB blz. 42 · Uhrzeiten, Tageszeiten, Wochentage, Tagesablauf',
-  rules:[['am + dag of dagdeel','am Montag · am Morgen · am Nachmittag','maar: in der Nacht'],['um + tijd','um halb acht · um Viertel nach acht',''],['Werkwoord op plek 2','Am Montag habe ich … · Um sieben Uhr stehe ich auf.',''],['Scheidbaar','aufstehen → Ich stehe um sieben Uhr auf.','']]});
+  rules:[['Tageszeiten','am Morgen / morgens · am Vormittag / vormittags · am Mittag / mittags','am Nachmittag / nachmittags · am Abend / abends · in der Nacht / nachts'],
+   ['Deinen Tagesablauf beschreiben','Wann beginnt der Unterricht? – Um halb neun. · Wann ist der Unterricht zu Ende? – Um 16 Uhr / Um vier Uhr nachmittags.','Um wie viel Uhr kommst du nach Hause? – Um fünf. · Wann hast du Mathe? – Montags, mittwochs und freitags. / Am Montag, am Mittwoch und am Freitag.'],
+   ['Position 2: Verb','Der Unterricht beginnt um 8 Uhr 30. · Montags und freitags habe ich Musik.','Wann hast du Mathe?'],
+   ['Präpositionen: Zeit','um acht · von Montag bis Freitag · am Samstag · gegen 16 Uhr (= rond)',''],['Uhrzeiten','zie Kapitel 4 · Uhrzeit: extra klokken','']]});
 SNAP.zahl=[['Waarom zeg je de eenheden eerst?','Net als in het Nederlands: drie-en-twintig = drei-und-zwanzig. Schrijf het als één woord.']];
 SNAP.jn=[['kein of nicht?','Staat er een zelfstandig naamwoord met ein of zonder lidwoord? Dan <b>kein</b>: Ich habe keinen Hund. Ich habe keine Zeit. Anders <b>nicht</b>: Er ist nicht groß. Ich wohne nicht in Berlin.']];
-SNAP.ap=[['Waarom ein bij „Das ist” en einen bij „Ich habe”?','Na <b>sein</b> (ist, sind) zeg je wat iets ís: dat is geen lijdend voorwerp, dus 1e naamval: Das ist <b>ein</b> Hund. Bij haben heb je iets: lijdend voorwerp, Akkusativ: Ich habe <b>einen</b> Hund.']];
+SNAP.ap=[['Hoe onthoud ik de Akkusativ?','Tip uit het boek (SB blz. 28): <b>Maskulinum mit -en</b>. Alleen bij der-woorden zie je de Akkusativ: einen Hund, keinen Hund, den Hund. Bij das, die en meervoud blijft alles hetzelfde: ein Pferd, eine Katze, — Katzen / keine Katzen.'],['Waarom ein bij „Das ist” en einen bij „Ich habe”?','Na <b>sein</b> (ist, sind) zeg je wat iets ís: dat is geen lijdend voorwerp, dus 1e naamval: Das ist <b>ein</b> Hund. Bij haben heb je iets: lijdend voorwerp, Akkusativ: Ich habe <b>einen</b> Hund.']];
 
 const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)'],['di 10 nov','Kapitel 4 Mein Tag: Arbeitsbuch blz. 32 en 39','opdracht 1a, 1b en 2a (blz. 32), woorden Deine Wörter 4 (blz. 39), extra klokken'],['za 14 nov','Toetsweek 2: stofoverzicht en Grammatikübersicht','Zahlen bis 100, Personalpronomen und Verben, W-Fragen, Ja/Nein-Fragen, Artikel en Nominativ/Akkusativ, Redemittel SB blz. 12, 20, 28 en 42']];
-const LIJST=[];[...W4A,...W4B,...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
+const LIJST=[];[...T21,...W4A,...W4B,...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
 return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Toetsweek 2 (SB blz. 12, 20, 28, 42) · Kapitel 4 Mein Tag (AB blz. 32 en 39) · Arbeitsbuch blz. 19, 24, 26 en 27 · Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
   leer:['tw','k4','ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
   custom:{rij:drawRij,zin:drawZin,volg:drawVolg},
