@@ -318,7 +318,7 @@ ul.kp label:has(input:checked){background:var(--okbg);border-color:var(--ok)}
 .build.ok{border:1.5px solid var(--ok);background:var(--okbg)} .build.bad{border:1.5px solid var(--bad);background:var(--badbg)}
 .build .leeg{color:var(--soft);padding:0 6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-.so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
+.stof summary{font-size:.8rem;color:var(--soft);cursor:pointer;margin-top:4px;white-space:normal} .so{display:flex;gap:6px;align-items:center;font-size:.8rem;font-weight:400;color:var(--soft);margin-top:4px;white-space:nowrap}.so input{width:auto;margin:0}
 .lrij{border-collapse:collapse;font-size:1rem;margin:4px 0}.lrij th,.lrij td{padding:3px 12px 3px 0;text-align:left}.lrij th{color:var(--soft);font-weight:600}
 .hwdelen{margin:0;padding-left:20px;display:grid;gap:4px}.hwdelen .sub{font-size:.85rem;margin-left:6px}
 /* open vraag in onderdelen */
@@ -404,7 +404,7 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611121945"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611141410"></script>
+<script src="oefen/engine.js?v=202611141500"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611111930"></script>
@@ -566,7 +566,7 @@ function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchool
   const m=R.length?Math.min(SET.bijMin,Math.floor(room/R.length/5)*5):0;
   R.forEach(x=>x.min=m);return R}
 /* beheersing: hoeveel van de paragrafen heeft ze met een 7 of hoger afgesloten? Dat maakt de toetsvoorbereiding korter */
-function beheersing(vid){const ps=Oefen.pars(vid),st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
+function beheersing(vid,t){const al=Oefen.pars(vid),ps=t&&t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al,st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
   const proef=(st.best||{}).toets,proefOk=proef!=null&&1+9*proef/100>=7,frac=ps.length?g/ps.length:0;
   return {g,n:ps.length,proefOk,f:Math.max(0.3,1-0.5*frac-(frac===1&&proefOk?0.2:0))}}
 let SCHED=null,SCHED_OUD=null;
@@ -602,7 +602,7 @@ function maakSchedule(van,credit){
   L.forEach(({v,t})=>{const z=zwaarT(v,t),vol=leertijd(v,t);
     /* de oefenapp hoort bij de eerstvolgende toets van dat vak; alleen daar telt beheersing mee */
     const app=APPS().includes(v.id)&&!eerste.has(v.id)&&t.datum>=today();if(app)eerste.add(v.id);
-    const bh=app&&VAKDATA[v.id].volledig!==false?beheersing(v.id):null;let tot=bh?Math.round(vol*bh.f/5)*5:vol,d=addDays(t.datum,-1),k=0;
+    const bh=app&&VAKDATA[v.id].volledig!==false?beheersing(v.id,t):null;let tot=bh?Math.round(vol*bh.f/5)*5:vol,d=addDays(t.datum,-1),k=0;
     (A._tot=A._tot||{})[v.id+'|'+t.id]={vol,tot,bh};tot=Math.max(0,tot-(credit[v.id+'|'+t.id]||0));
     while(tot>0&&k<70&&d>=van){const cap=(vrijDag(d)?0:vrijZa(d)?SET.maxDagWeekend:SET.maxDagSchool)-used(d);
       const room=Math.min(z?60:45,cap,tot);
@@ -828,7 +828,7 @@ function rVandaag(){
       <span class="row" style="margin-top:8px"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     if(b.hwt)return hwRow(b.hwt,b,false);
     if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
-      <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
+      <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}" data-tid="${esc(b.prep&&b.prep.tid||'')}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     return `<button class="blk${b.done?' done':''}" data-blk="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-soort="${b.soort}" ${canWrite?'':'disabled'}>
       <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`})(b)).join('')}</div>
   ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
@@ -851,7 +851,7 @@ function rVandaag(){
   const keys=new Set(L.map(e=>e.key));
   document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
     if(keys.has(k))delLog(dag,k);else addLog({d:dag,key:k,vak:b.dataset.vak,soort:b.dataset.soort,min:+b.dataset.min,t:Date.now()})});
-  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openVak(b.dataset.go,b.dataset.par||null,b.dataset.mode||null));
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openVak(b.dataset.go,b.dataset.par||null,b.dataset.mode||null,b.dataset.tid||null));
   document.querySelectorAll('[data-hwapp]').forEach(b=>b.onclick=e=>{e.stopPropagation();openHw(b.dataset.hwapp)});
   document.querySelectorAll('[data-afw]').forEach(b=>b.onclick=e=>{e.stopPropagation();afwijzen(b.dataset.afwd,b.dataset.afw)});
   document.querySelectorAll('[data-hwt]').forEach(b=>b.onclick=()=>{const id=b.dataset.hwt,e=hwLog(id);
@@ -954,7 +954,9 @@ function rOefenen(){
   document.querySelectorAll('#v-oefenen [data-sprint]').forEach(b=>b.onclick=()=>openSprint(b.dataset.sprint));
 }
 function show(t){tab=t;try{localStorage.setItem('tab',tab)}catch(e){};document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));['vandaag','oefenen','cijfers','week'].forEach(x=>$('#v-'+x).hidden=x!==tab)}
-function openVak(id,par,mode){fromSprint=false;show('oefenen');Oefen.vakHome($('#v-oefenen'),id,par,mode)}
+/* toetsvoorbereiding: geef de toets mee (stof en voldoende-grens uit Cijfers, afspraak 14 nov) */
+function openVak(id,par,mode,tid){fromSprint=false;show('oefenen');const v=vakOf(id),t=tid&&v&&(v.toetsen||[]).find(x=>x.id===tid);
+  Oefen.vakHome($('#v-oefenen'),id,par,mode,t?{naam:t.naam,stof:t.stof||[],norm:t.norm}:null)}
 function openSprint(kind){fromSprint=true;show('oefenen');Oefen.sprint($('#v-oefenen'),kind,SET.sprintMin*60)}
 const saveT={};
 function oefenCtx(){return {
@@ -1013,6 +1015,7 @@ function rCijfers(){
   </div>`;
   document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet(['doel']);render()});
   document.querySelectorAll('#v-cijfers details.tt').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.v):open.delete(d.dataset.v)});
+  document.querySelectorAll('#v-cijfers details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
 }
 function vakHtml(v,c,i){
   const s=status(c,SET.doel);
@@ -1020,7 +1023,7 @@ function vakHtml(v,c,i){
   const dis=canWrite?'':'disabled';
   const rows=(v.toetsen||[]).map(t=>{const cf=num(t.cijfer);return `<tr>
     <td class="p">P${esc(t.periode)}</td>
-    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}</td>
+    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}${t.datum&&cf==null&&window.VAKDATA&&VAKDATA[v.id]?stofHtml(v,t,dis):''}</td>
     <td><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" value="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}></td>
     <td><input class="in w${t.wegingOnzeker?' q':''}" id="w-${v.id}-${t.id}" inputmode="decimal" data-v="${v.id}" data-t="${t.id}" data-f="weging" value="${esc(t.weging)}" aria-label="Weging ${esc(t.naam)}" ${dis}></td>
     <td><input class="in${cf!=null&&cf<5.5?' low':''}" id="c-${v.id}-${t.id}" inputmode="decimal" placeholder="–" data-v="${v.id}" data-t="${t.id}" data-f="cijfer" value="${esc(t.cijfer??'')}" aria-label="Cijfer ${esc(t.naam)}" ${dis}></td>
@@ -1093,6 +1096,14 @@ function rWeek(){
   const va=$('#vk-add');if(va)va.onclick=()=>{const L=vks();L.push({van:today(),tot:today(),naam:'Vrije dag'});SCHED=null;saveSet(['vakanties']);render()};
 }
 
+/* stof in de app per toets (afspraak 14 nov): welke onderdelen van de oefenapp op de toets komen, en vanaf hoeveel procent het voldoende is.
+   Zonder vinkjes: alles. De toetsvoorbereiding laat dan alleen die onderdelen zien en de proeftoets kiest alleen daaruit. */
+const STOF_OPEN=new Set();
+function stofHtml(v,t,dis){const D=VAKDATA[v.id],ps=Oefen.pars(v.id),st=(t.stof||[]).filter(p=>ps.includes(p));
+  return `<details class="stof" data-k="${v.id}|${t.id}" ${STOF_OPEN.has(v.id+'|'+t.id)?'open':''}><summary>Stof in de app: ${st.length?st.length+' van '+ps.length+' onderdelen':'alles'}${t.norm?` · voldoende bij ${esc(t.norm)}%`:''}</summary>
+    <div class="stack" style="gap:4px;margin-top:6px">${ps.map(p=>`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stof" data-p="${esc(p)}" ${st.includes(p)?'checked':''} ${dis}> ${esc(D.PN&&D.PN[p]||p)}</label>`).join('')}
+    <label class="so">Voldoende bij <input class="in" style="width:4em" inputmode="numeric" placeholder="55" data-v="${v.id}" data-t="${t.id}" data-f="norm" value="${esc(t.norm??'')}" ${dis}>% goed</label>
+    <span class="sub" style="font-size:.8rem;white-space:normal">Niets aangevinkt = alle onderdelen. Leeg = gewoon cijfer (55% goed is een 6).</span></div></details>`}
 /* ---------- invoer cijfers ---------- */
 $('#v-cijfers').addEventListener('change',e=>{
   const el=e.target;if(!el.dataset.f||!el.dataset.v)return;
@@ -1100,6 +1111,8 @@ $('#v-cijfers').addEventListener('change',e=>{
   if(el.dataset.f==='lesuren'){const n=num(el.value);v.lesuren=n==null?null:Math.max(0,Math.round(n));saveVak(v);render();return}
   const t=v.toetsen.find(x=>x.id===el.dataset.t);if(!t)return;
   const f=el.dataset.f;let val=f==='stofOnbekend'?!!el.checked:el.value.trim();
+  if(f==='stof'){const p=el.dataset.p,s=new Set(t.stof||[]);if(el.checked)s.add(p);else s.delete(p);if(s.size)t.stof=[...s];else delete t.stof;SCHED=null;saveVak(v);render();return}
+  if(f==='norm'){const n=num(val);if(val===''||n==null)delete t.norm;else if(n>0&&n<100)t.norm=Math.round(n);else{el.value=t.norm??'';stateEl.textContent='Vul een percentage tussen 1 en 99 in.';return}SCHED=null;saveVak(v);render();return}
   if(f==='stofOnbekend'){SCHED=null;if(!val)delete t.stofOnbekend;else t.stofOnbekend=true;saveVak(v);render();return}
   if(f==='weging'||f==='cijfer'){const n=num(val);
     if(val!==''&&(n==null||n<0||(f==='cijfer'&&(n<1||n>10)))){el.value=t[f]??'';stateEl.textContent='Vul een cijfer tussen 1 en 10 in.';return}

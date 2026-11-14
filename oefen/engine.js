@@ -41,7 +41,11 @@ window.Oefen=(()=>{
   const pars=()=>[...new Set(V.SECS.filter(s=>s.par!=='mix').map(s=>s.par))];
   const leerPars=()=>V.leer||pars();
   const parIds=p=>V.Q.filter(q=>secOf(q.o).par===p).map(q=>q.id);
-  const cijfer=(g,t)=>Math.round((1+9*g/t)*10)/10;
+  /* NORM (14 nov): voldoende-grens van de toets waarvoor ze nu oefent, bijv. 0.75 bij een D-toets (75% goed = 6,0). Zonder: 1 + 9 × percentage. */
+  let NORM=null,TSTOF=null;
+  const cijfer=(g,t)=>{const p=t?g/t:0;return Math.round((NORM?(p>=NORM?6+4*(p-NORM)/(1-NORM):1+5*p/NORM):1+9*p)*10)/10};
+  /* bij toetsvoorbereiding met stof (TSTOF): foute vragen alleen uit die stof */
+  const WR=()=>TSTOF?ST.wrong.filter(id=>V.Q.some(q=>q.id===id)):ST.wrong;
   const f1=n=>n.toFixed(1).replace('.',',');
   const save=()=>Oefen.ctx.save(vid);
   /* wanneer is een toets gemaakt? rid = Date.now() in base 36 (afspraak 12 nov: datum en tijd bij de paragraaftoets en proeftoets).
@@ -56,7 +60,7 @@ window.Oefen=(()=>{
      extra = het huiswerk dat nu open staat: dat is meteen aan de beurt. */
   const vw=(id,extra)=>window.Gate?Gate.view(id,extra):VAKDATA[id];
   function load(id,extra){vid=id;VF=VAKDATA[id];ST=Oefen.ctx.state(id);V=vw(id,extra);QM=Object.fromEntries(VF.Q.map(q=>[q.id,q]));
-    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});geenPogingHerstel();}
+    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};NORM=null;TSTOF=null;ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});geenPogingHerstel();}
   /* geen poging (afspraak 14 nov): 'ik kan nu niet vertalen' werd zelf goed gerekend. Zo'n antwoord telt altijd als fout.
      Alleen korte antwoorden die over de vraag zelf gaan (kan niet, weet niet, lukt niet, later, ?), zodat een echte vertaling
      als 'ik kan niet zwemmen' niet wordt afgekeurd. */
@@ -118,8 +122,10 @@ window.Oefen=(()=>{
       <ol class="pl">${begVan(focusPar).length?`<li><button class="link" id="bh-beg">Begrippen-kaartjes van deze paragraaf</button> (${begVan(focusPar).length})</li>`:''}<li>Oefen de onderdelen: ${V.SECS.filter(x=>x.par===focusPar).map(x=>`<button class="link" data-s="${x.id}">${x.name}</button>`).join(', ')}. Bij elk onderdeel staan eerst de regels.</li><li>Sluit af met de <button class="link" id="bh-pt">${ttNodig(focusPar)?'tussentoets':'paragraaftoets'}</button>${ttNodig(focusPar)?' (meerkeuze). Bij een 7 gaat de paragraaftoets open, zonder keuzes':''}. Bij een 7 of hoger krijgt de paragraaf een vinkje.</li>${xLi}</ol>
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
-      <p>${ok.length} van ${leerPars().length} paragrafen gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
-      <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${ST.wrong.length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li>${xLi}</ol></div>`:''}
+      ${TSTOF?`<p><b>${esc(TSTOF.naam||'Deze toets')}</b> gaat over: ${pars().map(p=>esc(V.PN[p]||p)).join(', ')}. Alleen dat staat hieronder; de rest van ${esc(V.naam)} komt later.</p>`:''}
+      ${NORM?`<p>Voldoende = <b>${Math.round(NORM*100)}% goed</b>. In de proeftoets van 20 vragen is dat ${Math.ceil(NORM*20)} goed. De cijfers in de app rekenen ook zo.</p>`:''}
+      <p>${ok.length} van ${leerPars().length} ${TSTOF?'onderdelen':'paragrafen'} gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
+      <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${WR().length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li>${xLi}</ol></div>`:''}
     <div class="stack"><button class="btn" id="kort">Korte ronde (8 vragen)</button>
       ${V.BEG.length?`<button class="sec" id="kaart"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen-kaartjes</b><small>${V.BEG.length} kaartjes${ST.wrongB.length?' · '+ST.wrongB.length+' nog lastig':''}</small></span></button>`:''}</div>
     ${pars().map(p=>`<div class="stack${focusPar===p?' focus':''}" id="par-${p.replace('.','-')}"><span class="tag">${V.PN[p]||p}${focusPar===p?' · hier ben je':''}</span>${begVan(p).length?`<button class="sec" data-bp="${p}"><span class="sq" style="background:var(--c6)">B</span><span><b>Begrippen van deze paragraaf</b><small>${begVan(p).length} kaartjes</small></span></button>`:''}${V.SECS.filter(s=>s.par===p).map(secBtn).join('')}${isB(p)?basisCards(p):ptCard(p)+(tvVak()&&tvParIds(p).length?`<button class="sec" data-tvp="${p}"><span class="sq" style="background:var(--line)">✎</span><span><b>Toetsvorm</b><small>5 vragen zonder opties en zonder hulp: zelf uitwerken op papier, dan nakijken</small></span></button>`:'')}</div>`).join('')}
@@ -128,7 +134,7 @@ window.Oefen=(()=>{
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
       <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer${keren((ST.toetsR||{}).rondes,x=>f1(cijfer(x.g,x.t)))}</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%'+voorl((ST.toetsR||{}).rondes):''}</span></button>
-      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${ST.wrong.length}</span><span><b>Mijn foute vragen</b><small>${ST.wrong.length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,ST.wrong.length)}.`:'Nog niets fout gedaan'}</small></span></button>
+      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${WR().length}</span><span><b>Mijn foute vragen</b><small>${WR().length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,WR().length)}.`:'Nog niets fout gedaan'}${TSTOF&&ST.wrong.length>WR().length?` · ${ST.wrong.length-WR().length} uit andere stof komen na de toets weer`:''}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
     </div>
     ${V.log&&V.log.length?`<div class="card"><span class="tag">Huiswerk in deze app</span><ul class="log">${V.log.map(l=>`<li><b>${l[0]}</b> ${l[1]}: ${l[2]}</li>`).join('')}</ul></div>`:''}`;
@@ -146,12 +152,12 @@ window.Oefen=(()=>{
     if(q('#bh-her'))q('#bh-her').onclick=()=>start('oefen',herhaalIds(focusPar),'Herhaalronde · '+(V.PN[focusPar]||focusPar));
     if(q('#bh-x'))q('#bh-x').onclick=()=>{const al=V.Q.filter(x=>secOf(x.o).par===X.par&&x.t!=='open').map(x=>x.id),fout=shuf(al.filter(id=>ST.wrong.includes(id)));
       start('oefen',[...fout,...shuf(al.filter(id=>!fout.includes(id)))].slice(0,X.n),X.titel)};
-    if(q('#tv-f'))q('#tv-f').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
+    if(q('#tv-f'))q('#tv-f').onclick=()=>{if(WR().length)start('fout',shuf(WR()),'Mijn foute vragen')};
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
     if(q('#tvboek'))q('#tvboek').onclick=()=>start('tvorm',tvIds(),'Oefentoets uit het boek');
     el.querySelectorAll('[data-tvp]').forEach(b=>b.onclick=()=>start('tvorm',tvParIds(b.dataset.tvp),'Toetsvorm '+(V.PN[b.dataset.tvp]||b.dataset.tvp),null,b.dataset.tvp));
-    el.querySelector('#fouten').onclick=()=>{if(ST.wrong.length)start('fout',shuf(ST.wrong),'Mijn foute vragen')};
+    el.querySelector('#fouten').onclick=()=>{if(WR().length)start('fout',shuf(WR()),'Mijn foute vragen')};
     el.querySelector('#spiek').onclick=()=>spiek();
     if(q('#b-diag'))q('#b-diag').onclick=()=>start('diag',shuf(diagIds(B.par)),'Instaptoets rekenregels',null,B.par);
     if(q('#b-dag'))q('#b-dag').onclick=()=>start('oefen',dagIds(B.par),'Rekenregels van vandaag',null,B.par);
@@ -227,7 +233,7 @@ window.Oefen=(()=>{
     <div class="stack"><button class="btn" id="tbbegin">Begin de terugblik</button><button class="btn ghost" id="tbterug">Terug</button></div>`;
     el.querySelector('#back').onclick=home;el.querySelector('#tbterug').onclick=home;
     el.querySelector('#tbbegin').onclick=()=>{ST.tbIntro=1;save();verder()};scrollTo(0,0)}
-  function kortIds(){const f=shuf(ST.wrong).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
+  function kortIds(){const f=shuf(WR()).slice(0,4);return shuf([...f,...shuf(V.Q.map(q=>q.id).filter(id=>!f.includes(id))).slice(0,8-f.length)])}
   function toetsIds(){const pick=[];V.SECS.filter(x=>x.par!=='mix'&&!basisSec(x.id)).forEach(x=>{const l=shuf(V.Q.filter(q=>q.o===x.id));if(l.length)pick.push(l[0].id)});const rest=shuf(V.Q.filter(q=>!basisSec(q.o)).map(q=>q.id).filter(id=>!pick.includes(id)));return shuf([...pick,...rest.slice(0,Math.max(0,20-pick.length))]).slice(0,Math.max(20,pick.length))}
   /* tussentoets (afspraak 9 nov): per paragraaf eerst 6 meerkeuzevragen. Een 7 of hoger zet de paragraaftoets (zonder keuzes) open.
      Is de paragraaftoets al eens gehaald, of heeft de paragraaf te weinig meerkeuzevragen, dan is er geen tussentoets nodig. */
@@ -1035,7 +1041,14 @@ window.Oefen=(()=>{
     /* inzet voor de ouder: samenvatting van een dag, en de hele pagina */
     inzetSamen(dag){const V2=inzetDag(dag);return {vakken:V2.map(v=>({id:v.id,naam:v.D.naam,n:v.n,goed:v.goed,snel:v.snel,zelf:v.zelf})),n:V2.reduce((a,v)=>a+v.n,0),goed:V2.reduce((a,v)=>a+v.goed,0),snel:V2.reduce((a,v)=>a+v.snel,0),zelf:V2.reduce((a,v)=>a+v.zelf,0)}},
     inzet:inzetView,
-    vakHome(target,id,par,mode){el=target;load(id);focusPar=par||null;focusMode=mode||null;home()},
+    /* t = de toets waarvoor ze oefent (alleen bij mode 'toets'): {naam, stof:[par], norm:75} */
+    vakHome(target,id,par,mode,t){el=target;load(id);focusPar=par||null;focusMode=mode||null;
+      if(mode==='toets'&&t){const n=Number(t.norm);NORM=n>0&&n<100?n/100:null;
+        const ok=new Set((t.stof||[]).filter(p=>pars().includes(p)));
+        if(ok.size){TSTOF={naam:t.naam};const S=V.SECS.filter(s=>ok.has(s.par)),sid=new Set(S.map(s=>s.id));
+          V=Object.assign({},V,{SECS:S,Q:V.Q.filter(q=>sid.has(q.o)),BEG:(V.BEG||[]).filter(b=>ok.has(b[2])),leer:V.leer&&V.leer.filter(p=>ok.has(p)),
+            dicht:V.dicht&&V.dicht.filter(x=>ok.has(x.s.par)),extra:V.extra&&ok.has(V.extra.par)?V.extra:null})}}
+      home()},
     huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwTotaal(id,H){const D=VAKDATA[id];if(!D)return 0;const so=x=>D.SECS.find(s=>s.id===x)||{},want=(H.opg||[]).map(Number),ids=new Set();
       D.Q.forEach(q=>{const n=nrNum(q);if(n&&want.includes(n[0])&&(!H.par||so(q.o).par===H.par))ids.add(q.id)});
