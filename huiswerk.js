@@ -69,6 +69,9 @@ window.HUISWERK=[
   /* dinsdag 17 november */
   {id:'2026-11-17-na',d:'2026-11-17',vak:'natuurkunde',t:'L5.06',wat:['Lezen 5.3 en practicum H5P3 Melk of praatje?','Maken ✎ o.30, 31, 33-35','Maken ★ o.33-37','Voorbereiding H5P3'],min:40,app:'na',par:'5.3',opg:[30,31,33,34,35,36,37]},
   {id:'2026-11-17-wi',d:'2026-11-17',vak:'wiskunde',t:'Herhalen H3.3 en H3.4',wat:['Herhalen H3.3 blz 76 en H3.4 blz 80','# In de app','Open §3.3 en §3.4 hieronder en sluit af met de paragraaftoets. Dit herhalen komt in plaats van bijhouden.'],min:40,app:'wi',par:'3.3',geenBij:true,lpar:['3.3','3.4']},
+  {id:'2026-11-17-gr',d:'2026-11-17',vak:'grieks',t:'Opdr. 37, 38, 39, 41 en 42 (les 10)',wat:['# Leerwerk','Zie D-toets (dinsdag 17 november)','# Maakwerk','Opdr. 37, 38, 39, 41 en 42 (HB pp. 40-41)','# Meenemen','Argo Tekstboek en Argo Hulpboek','Schrift en schrijfmateriaal'],min:35,app:'gr',par:'hb10',opg:[37,38,39,41,42]},
+  /* woensdag 18 november */
+  {id:'2026-11-18-ne',d:'2026-11-18',vak:'nederlands',t:'Spelling §4 en voorzetselvoorwerp',wat:['Spelling §4: opdracht 1 t/m 4 (blz. 254-255)','Ook Voorzetselvoorwerp (p. 215): opdracht 2 en 4 t/m 6 moet af zijn','De docent controleert het huiswerk in de les.','# Uit het boek','Spelling §4 en het voorzetselvoorwerp staan nog niet in de app: maak de opdrachten in je boek of schrift.'],min:40},
   /* donderdag 19 november: toets USO leesvaardigheid Nederlands (vaardighedentoets, geen stof). Toetsdatum hoort in Cijfers. */
   {id:'2026-11-19-ne',d:'2026-11-19',vak:'nederlands',t:'Voorbereiden toets USO leesvaardigheid',wat:['Dit is een vaardighedentoets: er is geen stof om te leren.','Kijk opnieuw naar de gemaakte opdrachten in het hoofdstuk Meer dan lezen en oefen zo nodig nog een keer.'],min:30},
   /* vrijdag 27 november: inleveren vlog PO Frans (in het document staat 2027, bedoeld is 2026) */
