@@ -381,6 +381,9 @@ textarea.nk-opm{min-height:56px;height:56px}
 .volg .volgk:disabled{opacity:1}.volg .volgk.ok{border-color:var(--ok);background:var(--okbg)}.volg .volgk.bad{border-color:var(--bad);background:var(--badbg)}
 .pt-k{font-size:.85rem;color:var(--soft)} .sec.pt:disabled{cursor:not-allowed;opacity:.75} .iz-snel{color:var(--warn);font-weight:700} .iz-let{box-shadow:inset 4px 0 0 var(--warn)} .iz-t{font-size:.85rem;color:var(--soft)} .iz-r>summary{cursor:pointer;list-style-position:outside}
 .blk.schuif{opacity:.75}.blk.schuif .ck{font-weight:700}
+.stof .so{white-space:normal;align-items:flex-start}.stof .so input[type=checkbox]{margin-top:2px}
+ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;white-space:normal;color:var(--ink);line-height:1.35}ul.pto li{margin:3px 0}ul.pto .pa{display:block;color:var(--ok);font-size:.8rem}
+.ptob{display:block;margin-top:4px}.toets details.stof{margin-top:2px}
 </style>
 
 </head>
@@ -403,8 +406,9 @@ textarea.nk-opm{min-height:56px;height:56px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611141540"></script>
+<script src="pto.js?v=202611141930"></script>
 <script src="oefen/gate.js?v=202611091610"></script>
-<script src="oefen/engine.js?v=202611141510"></script>
+<script src="oefen/engine.js?v=202611141930"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611111930"></script>
@@ -657,7 +661,8 @@ function blokken(s){
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
   prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
-    ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,prep:{vid:p.v.id,tid:p.t.id,zwaar:p.zwaar},vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
+    const pto=window.ptoVan?ptoVan(p.v.id,p.t):null;
+    ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,prep:{vid:p.v.id,tid:p.t.id,zwaar:p.zwaar},pto,vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
       titel:`${p.v.naam}: ${app?'toetsvoorbereiding in de app':'leren'} voor ${p.t.naam}${ps.length>1?` · blok ${i+1} van ${ps.length}`:''}`,
       uit:`Toets over ${p.n} ${p.n===1?'dag':'dagen'} (${nice(p.t.datum)})${p.zwaar?' · extra tijd: '+((num(p.t.weging)??1)>=3?'telt '+p.t.weging+'× mee':'je moet hier omhoog'):''}. `+
         (bh?`Je beheerst ${bh.g} van de ${bh.n} paragrafen${bh.proefOk?' en je proeftoets is voldoende':''}. Daardoor is je toetsvoorbereiding ${Math.round(info.tot/60*10)/10} in plaats van ${Math.round(info.vol/60*10)/10} uur. De tijd telt vanzelf mee.`
@@ -836,10 +841,10 @@ function rVandaag(){
     if(b.auto==='sprint')return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span><span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
       <span class="row" style="margin-top:8px"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     if(b.hwt)return hwRow(b.hwt,b,false);
-    if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>
+    if(b.auto)return `<div class="blk${b.done?' done':''}"><span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.pto?ptoDet(b.vak,null,'Wat er op de toets komt (PTO)',b.pto,b.key):''}
       <span class="row" style="margin-top:8px"><button class="btn" data-go="${b.auto}" data-par="${esc(b.par||'')}" data-mode="${b.mode||''}" data-tid="${esc(b.prep&&b.prep.tid||'')}">${b.done?'Nog meer oefenen':'Start'}</button><span class="sub">${b.ok?'goedgekeurd':b.prog+' / '+b.min+' min'}</span></span>${gk}</span><span class="mn">${b.min} min</span></div>`;
     return `<button class="blk${b.done?' done':''}" data-blk="${b.key}" data-min="${b.min}" data-vak="${b.vak}" data-soort="${b.soort}" ${canWrite?'':'disabled'}>
-      <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`})(b)).join('')}</div>
+      <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.pto?`<small class="ptob">Op de toets volgens het PTO: ${b.pto.stof.map(x=>esc(x.t)).join(' · ')}</small>`:''}${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`})(b)).join('')}</div>
   ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
   ${extra.length?`<div class="card stack"><span class="tag">Zelf gelogd</span>${extra.map(e=>`<div class="row" style="justify-content:space-between"><span><b>${esc(vakOf(e.vak)?.naam||'Huiswerk')}</b> · ${esc(e.soort==='huiswerk'?'huiswerk gemaakt':e.soort==='leren'?'geleerd':e.soort)}</span><span><b>${e.min} min</b> ${canWrite?`<button class="x" data-dellog="${esc(e.key)}" aria-label="Verwijder">×</button>`:''}</span></div>`).join('')}</div>`:''}
   ${canWrite?`<details class="card"><summary style="cursor:pointer;font-weight:700">Iets anders gedaan? Zelf tijd toevoegen</summary>
@@ -852,10 +857,11 @@ function rVandaag(){
     if(!L2.length)return '';let last='';
     return `<div class="card stack"><span class="tag">Huiswerk dat eraan komt</span><span class="sub" style="font-size:.9rem">Vooruitwerken mag: vink af wat al af is, dan staat het later niet meer open.</span>${L2.map(h=>{const kop=h.d!==last?`<div class="hwdag">${nice(h.d).replace(/^./,c=>c.toUpperCase())}</div>`:'';last=h.d;return kop+hwRow(h,null,true)}).join('')}</div>`})()}
   <div class="card"><span class="tag">Toetsen die eraan komen</span>
-    ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee${k.t.stofOnbekend?' · stof nog niet bekend, nog niet ingepland':''}</small></span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
+    ${komend.length?komend.slice(0,8).map(k=>`<div class="toets">${chip(k.v)}<span class="tx">${esc(k.t.naam)}<br><small class="sub">${nice(k.t.datum)} · telt ${esc(k.t.weging)}× mee${k.t.stofOnbekend?' · stof nog niet bekend, nog niet ingepland':''}</small>${ptoDet(k.v.id,k.t,'Wat je moet kennen (PTO)')}</span><span class="cd">${k.n===0?'vandaag':k.n===1?'morgen':'over '+k.n+' d'}</span></div>`).join('')
       :`<p class="sub" style="margin-top:6px">Nog geen toetsdata ingevuld.</p>`}
   </div>
   <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Je begint met opwarmen: een rekensprint en 5 sommen rekenregels. Heb je huiswerk voor een vak dat in de app zit, dan doe je eerst 3 snelle vragen uit eerdere stof, en daarna oefen je 20 minuten dezelfde paragraaf in de app: zo blijft het hangen. Blokken in de app vinken zichzelf af: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; ${SET.maxDagWeekend>0?`op vrijdag en zaterdag is het plan ${SET.maxDagWeekend} minuten`:'op vrijdag en zaterdag is één sprint genoeg'}. In de vakantie staat je reeks op pauze.</span></div>`;
+  document.querySelectorAll('#v-vandaag details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
   $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
   const keys=new Set(L.map(e=>e.key));
   document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
@@ -965,7 +971,7 @@ function rOefenen(){
 function show(t){tab=t;try{localStorage.setItem('tab',tab)}catch(e){};document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));['vandaag','oefenen','cijfers','week'].forEach(x=>$('#v-'+x).hidden=x!==tab)}
 /* toetsvoorbereiding: geef de toets mee (stof en voldoende-grens uit Cijfers, afspraak 14 nov) */
 function openVak(id,par,mode,tid){fromSprint=false;show('oefenen');const v=vakOf(id),t=tid&&v&&(v.toetsen||[]).find(x=>x.id===tid);
-  Oefen.vakHome($('#v-oefenen'),id,par,mode,t?{naam:t.naam,stof:t.stof||[],norm:t.norm}:null)}
+  Oefen.vakHome($('#v-oefenen'),id,par,mode,t?{naam:t.naam,stof:t.stof||[],norm:t.norm,pto:window.ptoVan?ptoVan(id,t):null}:null)}
 function openSprint(kind){fromSprint=true;show('oefenen');Oefen.sprint($('#v-oefenen'),kind,SET.sprintMin*60)}
 const saveT={};
 function oefenCtx(){return {
@@ -1032,7 +1038,7 @@ function vakHtml(v,c,i){
   const dis=canWrite?'':'disabled';
   const rows=(v.toetsen||[]).map(t=>{const cf=num(t.cijfer);return `<tr>
     <td class="p">P${esc(t.periode)}</td>
-    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}${t.datum&&cf==null&&window.VAKDATA&&VAKDATA[v.id]?stofHtml(v,t,dis):''}</td>
+    <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}${cf==null?ptoDet(v.id,t,'Wat er getoetst wordt (PTO)'):''}${t.datum&&cf==null&&window.VAKDATA&&VAKDATA[v.id]?stofHtml(v,t,dis):''}</td>
     <td><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" value="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}></td>
     <td><input class="in w${t.wegingOnzeker?' q':''}" id="w-${v.id}-${t.id}" inputmode="decimal" data-v="${v.id}" data-t="${t.id}" data-f="weging" value="${esc(t.weging)}" aria-label="Weging ${esc(t.naam)}" ${dis}></td>
     <td><input class="in${cf!=null&&cf<5.5?' low':''}" id="c-${v.id}-${t.id}" inputmode="decimal" placeholder="–" data-v="${v.id}" data-t="${t.id}" data-f="cijfer" value="${esc(t.cijfer??'')}" aria-label="Cijfer ${esc(t.naam)}" ${dis}></td>
@@ -1107,7 +1113,10 @@ function rWeek(){
 
 /* stof in de app per toets (afspraak 14 nov): welke onderdelen van de oefenapp op de toets komen, en vanaf hoeveel procent het voldoende is.
    Zonder vinkjes: alles. De toetsvoorbereiding laat dan alleen die onderdelen zien en de proeftoets kiest alleen daaruit. */
-const STOF_OPEN=new Set();
+var STOF_OPEN=new Set();
+/* wat er volgens het PTO getoetst wordt (afspraak 14 nov): in Cijfers, bij de toetsen op Vandaag en bij de toetsvoorbereiding */
+function ptoDet(vid,t,kop,P,key){P=P||(window.ptoVan&&t?ptoVan(vid,t):null);if(!P)return '';const k='pto|'+(key||vid+'|'+(t&&t.id));
+  return `<details class="stof" data-k="${esc(k)}" ${STOF_OPEN.has(k)?'open':''}><summary>${esc(kop)}</summary>${ptoLijst(P)}<span class="sub" style="font-size:.8rem;white-space:normal;display:block">De docent geeft de echte toetsstof in de les; staat daar iets anders, dan geldt dat.</span></details>`}
 function stofHtml(v,t,dis){const D=VAKDATA[v.id],ps=Oefen.pars(v.id),st=(t.stof||[]).filter(p=>ps.includes(p));
   return `<details class="stof" data-k="${v.id}|${t.id}" ${STOF_OPEN.has(v.id+'|'+t.id)?'open':''}><summary>Stof in de app: ${st.length?st.length+' van '+ps.length+' onderdelen':'alles'}${t.norm?` · voldoende bij ${esc(t.norm)}%`:''}</summary>
     <div class="stack" style="gap:4px;margin-top:6px">${ps.map(p=>`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stof" data-p="${esc(p)}" ${st.includes(p)?'checked':''} ${dis}> ${esc(D.PN&&D.PN[p]||p)}</label>`).join('')}

@@ -42,7 +42,7 @@ window.Oefen=(()=>{
   const leerPars=()=>V.leer||pars();
   const parIds=p=>V.Q.filter(q=>secOf(q.o).par===p).map(q=>q.id);
   /* NORM (14 nov): voldoende-grens van de toets waarvoor ze nu oefent, bijv. 0.75 bij een D-toets (75% goed = 6,0). Zonder: 1 + 9 × percentage. */
-  let NORM=null,TSTOF=null;
+  let NORM=null,TSTOF=null,PTOT=null;
   const cijfer=(g,t)=>{const p=t?g/t:0;return Math.round((NORM?(p>=NORM?6+4*(p-NORM)/(1-NORM):1+5*p/NORM):1+9*p)*10)/10};
   /* bij toetsvoorbereiding met stof (TSTOF): foute vragen alleen uit die stof */
   const WR=()=>TSTOF?ST.wrong.filter(id=>V.Q.some(q=>q.id===id)):ST.wrong;
@@ -60,7 +60,7 @@ window.Oefen=(()=>{
      extra = het huiswerk dat nu open staat: dat is meteen aan de beurt. */
   const vw=(id,extra)=>window.Gate?Gate.view(id,extra):VAKDATA[id];
   function load(id,extra){vid=id;VF=VAKDATA[id];ST=Oefen.ctx.state(id);V=vw(id,extra);QM=Object.fromEntries(VF.Q.map(q=>[q.id,q]));
-    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};NORM=null;TSTOF=null;ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});geenPogingHerstel();}
+    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};NORM=null;TSTOF=null;PTOT=null;ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});geenPogingHerstel();}
   /* geen poging (afspraak 14 nov): 'ik kan nu niet vertalen' werd zelf goed gerekend. Zo'n antwoord telt altijd als fout.
      Alleen korte antwoorden die over de vraag zelf gaan (kan niet, weet niet, lukt niet, later, ?), zodat een echte vertaling
      als 'ik kan niet zwemmen' niet wordt afgekeurd. */
@@ -123,6 +123,7 @@ window.Oefen=(()=>{
       <p class="sub" style="font-size:.9rem">De tijd telt vanzelf mee.</p></div>`:''}
     ${tv?`<div class="card stack plan"><span class="tag">Toetsvoorbereiding</span>
       ${TSTOF?`<p><b>${esc(TSTOF.naam||'Deze toets')}</b> gaat over: ${pars().map(p=>esc(V.PN[p]||p)).join(', ')}. Alleen dat staat hieronder; de rest van ${esc(V.naam)} komt later.</p>`:''}
+      ${PTOT&&window.ptoLijst?`<p><b>Wat er op ${esc(PTOT.naam||'de toets')} komt</b> (volgens het PTO):</p>${ptoLijst(PTOT.P)}<p class="sub" style="font-size:.9rem;margin:0">${PTOT.P.stof.some(s=>s.app)?'Wat met ✓ staat, oefen je hier in de app. De rest leer je uit je boek, schrift en de hand-outs.':'Dit staat nog niet in de app: leer het uit je boek, schrift en de hand-outs.'} De docent geeft de echte toetsstof in de les; staat daar iets anders, dan geldt dat.</p>`:''}
       ${NORM?`<p>Voldoende = <b>${Math.round(NORM*100)}% goed</b>. In de proeftoets van 20 vragen is dat ${Math.ceil(NORM*20)} goed. De cijfers in de app rekenen ook zo.</p>`:''}
       <p>${ok.length} van ${leerPars().length} ${TSTOF?'onderdelen':'paragrafen'} gehaald. Hoe meer je beheerst, hoe korter je toetsvoorbereiding wordt.</p>
       <ol class="pl"><li>Eerst <button class="link" id="tv-f">je foute vragen</button> (${WR().length})</li><li>Dan de paragraaftoetsen zonder vinkje</li><li>Alles gehaald? Maak de <button class="link" id="tv-t">proeftoets</button>.</li>${xLi}</ol></div>`:''}
@@ -1055,7 +1056,7 @@ window.Oefen=(()=>{
     inzet:inzetView,
     /* t = de toets waarvoor ze oefent (alleen bij mode 'toets'): {naam, stof:[par], norm:75} */
     vakHome(target,id,par,mode,t){el=target;load(id);focusPar=par||null;focusMode=mode||null;
-      if(mode==='toets'&&t){const n=Number(t.norm);NORM=n>0&&n<100?n/100:null;
+      if(mode==='toets'&&t){const n=Number(t.norm);NORM=n>0&&n<100?n/100:null;PTOT=t.pto?{naam:t.naam,P:t.pto}:null;
         const ok=new Set((t.stof||[]).filter(p=>pars().includes(p)));
         if(ok.size){TSTOF={naam:t.naam};const S=V.SECS.filter(s=>ok.has(s.par)),sid=new Set(S.map(s=>s.id));
           V=Object.assign({},V,{SECS:S,Q:V.Q.filter(q=>sid.has(q.o)),BEG:(V.BEG||[]).filter(b=>ok.has(b[2])),leer:V.leer&&V.leer.filter(p=>ok.has(p)),
