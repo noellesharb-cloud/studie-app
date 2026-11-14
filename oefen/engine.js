@@ -69,13 +69,20 @@ window.Oefen=(()=>{
     return GEEN2.test(t)&&nWoord(t)<=8&&nWoord(t)<Math.max(4,nWoord(q?modelTxt(q):'')*0.5)}
   const isVertaal=q=>!!q&&(/^Vertal/.test(String(q.nr||''))||/^Vertaal/.test(schoon(q.q)));
   /* een vertaling van een paar woorden die ze toch helemaal goed rekent: de ouder ziet hem gemarkeerd */
-  const kortVertaal=(j,q)=>{const t=String(j||'').trim();return isVertaal(q)&&!!t&&t!=='(op papier)'&&nWoord(t)<Math.max(3,nWoord(modelTxt(q))*0.35)};
+  const kortVertaal=(j,q)=>{const t=String(j||'').trim();return isVertaal(q)&&!!t&&t!=='(op papier)'&&nWoord(t)<Math.max(3,nWoord(modelTxt(q))*0.25)};
   /* eerder zelf goed gerekend zonder echt antwoord: alsnog fout (alleen op haar eigen apparaat) */
   function geenPogingHerstel(){if(Oefen.ctx.ouder&&Oefen.ctx.ouder())return;let n=0;
     (ST.inzet||[]).forEach(r=>(r.q||[]).forEach(x=>{const Q=QM[x.i];if(!Q||!x.ok||!(x.f||'').includes('z')||!geenPoging(x.j,Q))return;
       x.ok=0;x.ga=1;n++;if(!ST.wrong.includes(x.i))ST.wrong.push(x.i);if(ST.sr)delete ST.sr[x.i];
       const a=r.hw&&ST.hwAns&&ST.hwAns[r.hw]&&ST.hwAns[r.hw][x.i];if(a)a.ok=false}));
     if(n)save()}
+  /* open vragen en vertalingen (afspraak 14 nov): wat ze in een toets zelf goed rekent, gaat naar de ouder om na te kijken */
+  const openNaarOuder=()=>!!(R.exam&&R.rid&&Oefen.ctx.nakijk);
+  function openNakijk(q,jij){R.nk=(R.nk||0)+1;const t=String(jij||'').trim(),papier=!t||t==='(op papier)';
+    Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
+      vraag:schoon(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,'')).slice(0,600),
+      jij:(papier?'(niets getypt: staat in haar schrift)':t+(kortVertaal(t,q)?'\n(maar een paar woorden getypt: de rest staat volgens haar in haar schrift)':'')).slice(0,800),
+      goed:schoon(goedTxt(q)).slice(0,800)})}
   function done(){Oefen.cur=null}
 
   /* ---------- startscherm van een vak ---------- */
@@ -702,10 +709,10 @@ window.Oefen=(()=>{
       box.querySelector('#koklaar').onclick=()=>{R.zelf=1;
         const open=keus.findIndex(v=>v===null);if(open>=0){err2.textContent=`Kies eerst bij onderdeel ${open+1}: goed, half of mis.`;box.querySelector(`.ko-k[data-i="${open}"]`).scrollIntoView({behavior:smooth,block:'center'});return}
         const ok=keus.every(v=>v===2),fout=keus.map((v,i)=>v<2?i:-1).filter(i=>i>=0);
-        if(ok)delete ST.koMis[q.id];else ST.koMis[q.id]=fout;save();
+        if(ok)delete ST.koMis[q.id];else ST.koMis[q.id]=fout;save();const nk=ok&&openNaarOuder();if(nk)openNakijk(q,antw.map((t,i)=>(i+1)+'. '+t).join('\n'));
         box.querySelector('#kb').remove();box.querySelectorAll('.ko-keus button,.ko-chk button').forEach(b=>b.disabled=true);
         const lijst=fout.map(i=>`onderdeel ${i+1} (${keus[i]===1?'half':'mis'})`).join(', ');
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Elk onderdeel klopte, met de kern en de reden erbij.</div>'
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Elk onderdeel klopte, met de kern en de reden erbij.'+(nk?' Je ouder kijkt dit antwoord nog na.':'')+'</div>'
           :`<div class="fb bad"><div class="head">Nog niet helemaal</div>Je miste ${lijst}. Lees bij die onderdelen het modelpunt nog eens: wat is de reden, en welk begrip hoort erbij? Schrijf het goede antwoord in je schrift.</div>`,antw.map((t,i)=>(i+1)+'. '+t).join('\n'))};
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
@@ -725,8 +732,8 @@ window.Oefen=(()=>{
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
       const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb'),jij=el.querySelector('#ans').value.trim(),geen=geenPoging(jij,q);
       const upd=()=>{okb.disabled=!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
-      const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>'
+      const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);const nk=ok&&openNaarOuder();if(nk)openNakijk(q,jij);
+        finishCustom(q,it,ok,ok?`<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.${nk?' Je ouder kijkt dit antwoord nog na'+(jij&&!kortVertaal(jij,q)?'.':': bewaar je schrift.'):''}</div>`
           :geen?`<div class="fb bad"><div class="head">Telt als fout</div>Eerlijk dat je dat opschrijft. Zonder ${isVertaal(q)?'vertaling':'antwoord'} telt hij als fout, en hij komt terug bij Mijn foute vragen. Schrijf het voorbeeld nu over in je schrift en probeer hem straks zelf.</div>`
           :'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>',jij||'(op papier)')};
       if(geen){box.querySelector('#kb').innerHTML=`<p class="sub" style="margin:0">Je schreef dat het nu niet lukt. Dan is er niets om goed te rekenen.</p><button class="btn" id="vrd">Verder</button>`;
