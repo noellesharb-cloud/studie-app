@@ -727,6 +727,7 @@ window.Oefen=(()=>{
     el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
       const box=el.querySelector('#kp');
       box.innerHTML=`<div class="tip stack"><b>Modelantwoord: vink aan wat jij ook had</b>
+        <span class="sub" style="font-size:.9rem"><b>Goed = elk punt staat erin. Bijna is nog niet helemaal.</b> In andere woorden mag, maar het moet hetzelfde zeggen. Mist er een stukje, of klopt een detail niet? Vink dat punt dan niet aan.</span>
         <ul class="kp">${(tvVak()?[...q.k,'Mijn reden zegt iets nieuws: ik herhaal niet alleen de vraag']:q.k).map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
         ${q.vb?`<div class="card stack"><b>${q.vb.length>1?'Voorbeeldantwoorden (twee kanten, allebei goed)':'Voorbeeldantwoord'}</b>${q.vb.map(x=>`<p>${fmt(x)}</p>`).join('')}</div>`:''}
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
