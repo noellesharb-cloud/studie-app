@@ -56,7 +56,26 @@ window.Oefen=(()=>{
      extra = het huiswerk dat nu open staat: dat is meteen aan de beurt. */
   const vw=(id,extra)=>window.Gate?Gate.view(id,extra):VAKDATA[id];
   function load(id,extra){vid=id;VF=VAKDATA[id];ST=Oefen.ctx.state(id);V=vw(id,extra);QM=Object.fromEntries(VF.Q.map(q=>[q.id,q]));
-    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});}
+    ST.best=ST.best||{};ST.wrong=(ST.wrong||[]).filter(x=>QM[x]);ST.wrongB=ST.wrongB||[];ST.ptoets=ST.ptoets||{};ST.hw=ST.hw||{};if(ST.sr)Object.keys(ST.sr).forEach(k=>{if(!QM[k])delete ST.sr[k]});geenPogingHerstel();}
+  /* geen poging (afspraak 14 nov): 'ik kan nu niet vertalen' werd zelf goed gerekend. Zo'n antwoord telt altijd als fout.
+     Alleen korte antwoorden die over de vraag zelf gaan (kan niet, weet niet, lukt niet, later, ?), zodat een echte vertaling
+     als 'ik kan niet zwemmen' niet wordt afgekeurd. */
+  const nWoord=t=>(String(t||'').match(/[\p{L}\p{N}]+/gu)||[]).length;
+  const GEEN1=/^(\?+|-+|\.+|x+|\/|0|nvt|n\.?v\.?t\.?|idk|ik weet het niet|weet ik niet|weet niet|weet het niet|geen idee|later|straks|morgen|skip|niks|niets|leeg)$/;
+  const GEEN2=/\b(kan|kon)\b(\s+\S+){0,3}?\s+niet(\s+(vertalen|doen|maken|vinden|lezen|beantwoorden|nu|meer))?$|\b(lukt|lukte|snap|snapte|begrijp|begreep|weet|wist)\b.*\bniet\b|\bgeen (idee|tijd|zin|flauw idee)\b|\b(doe|maak|vertaal|schrijf)\b.*\b(later|morgen|straks)\b|\bweet ik (veel|niet)\b|\bniet (vertaald|gemaakt|gedaan)\b/;
+  const modelTxt=q=>schoon(goedTxt(q));
+  function geenPoging(j,q){const t=String(j||'').toLowerCase().replace(/[!.,;:]+$/,'').replace(/\s+/g,' ').trim();
+    if(!t||t==='(op papier)')return false;if(GEEN1.test(t))return true;
+    return GEEN2.test(t)&&nWoord(t)<=8&&nWoord(t)<Math.max(4,nWoord(q?modelTxt(q):'')*0.5)}
+  const isVertaal=q=>!!q&&(/^Vertal/.test(String(q.nr||''))||/^Vertaal/.test(schoon(q.q)));
+  /* een vertaling van een paar woorden die ze toch helemaal goed rekent: de ouder ziet hem gemarkeerd */
+  const kortVertaal=(j,q)=>{const t=String(j||'').trim();return isVertaal(q)&&!!t&&t!=='(op papier)'&&nWoord(t)<Math.max(3,nWoord(modelTxt(q))*0.35)};
+  /* eerder zelf goed gerekend zonder echt antwoord: alsnog fout (alleen op haar eigen apparaat) */
+  function geenPogingHerstel(){if(Oefen.ctx.ouder&&Oefen.ctx.ouder())return;let n=0;
+    (ST.inzet||[]).forEach(r=>(r.q||[]).forEach(x=>{const Q=QM[x.i];if(!Q||!x.ok||!(x.f||'').includes('z')||!geenPoging(x.j,Q))return;
+      x.ok=0;x.ga=1;n++;if(!ST.wrong.includes(x.i))ST.wrong.push(x.i);if(ST.sr)delete ST.sr[x.i];
+      const a=r.hw&&ST.hwAns&&ST.hwAns[r.hw]&&ST.hwAns[r.hw][x.i];if(a)a.ok=false}));
+    if(n)save()}
   function done(){Oefen.cur=null}
 
   /* ---------- startscherm van een vak ---------- */
@@ -596,8 +615,8 @@ window.Oefen=(()=>{
           ${jij?`<div><span class="sub">Jij schreef</span><div class="aw-jij">${esc(jij).replace(/\n/g,'<br>')}</div></div>`:''}
           <div><span class="sub">Het goede antwoord</span><div class="res">${goedHtml}</div></div>
           <span class="sub" style="font-size:.88rem">${V.reken===false&&V.woorden?'Goed is alleen goed als het helemaal klopt. Een spelfout of een verkeerde uitgang is op de toets ook fout. Iets anders opgeschreven dat óók goed is, mag wel.':'Goed is goed als jouw antwoord hetzelfde zegt, ook in andere woorden. Mist er een deel, dan is het fout.'}</span></div>
-          <div class="row" id="kb"><button class="btn ghost" id="okb">Mijn antwoord is goed</button><button class="btn ghost" id="nob">Mijn antwoord is fout</button></div>`;
-        box.querySelector('#okb').onclick=()=>klaar(true,jij);box.querySelector('#nob').onclick=()=>klaar(false,jij);
+          <div class="row" id="kb">${geenPoging(jij,q)?'<span class="sub">Je schreef dat je het niet weet. Dan telt hij als fout.</span><button class="btn ghost" id="nob">Verder</button>':'<button class="btn ghost" id="okb">Mijn antwoord is goed</button><button class="btn ghost" id="nob">Mijn antwoord is fout</button>'}</div>`;
+        const okb=box.querySelector('#okb');if(okb)okb.onclick=()=>klaar(true,jij);box.querySelector('#nob').onclick=()=>klaar(false,jij);
         box.scrollIntoView({behavior:smooth,block:'start'})};
       const klaar=(ok,jij)=>{R.zelf=1;const kb=box.querySelector('#kb');if(kb)kb.remove();
         if(ok&&Oefen.ctx.nakijk&&R.rid){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
@@ -704,11 +723,18 @@ window.Oefen=(()=>{
         <ul class="kp">${(tvVak()?[...q.k,'Mijn reden zegt iets nieuws: ik herhaal niet alleen de vraag']:q.k).map((k,i)=>`<li><label><input type="checkbox" data-i="${i}"><span>${fmt(k)}</span></label></li>`).join('')}</ul></div>
         ${q.vb?`<div class="card stack"><b>${q.vb.length>1?'Voorbeeldantwoorden (twee kanten, allebei goed)':'Voorbeeldantwoord'}</b>${q.vb.map(x=>`<p>${fmt(x)}</p>`).join('')}</div>`:''}
         <div class="row" id="kb"><button class="btn" id="okb">Ik had alles</button><button class="btn ghost" id="nob">Nog niet helemaal</button></div>`;
-      const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb');
+      const kb=[...box.querySelectorAll('input[type=checkbox]')],okb=box.querySelector('#okb'),jij=el.querySelector('#ans').value.trim(),geen=geenPoging(jij,q);
       const upd=()=>{okb.disabled=!kb.every(x=>x.checked)};kb.forEach(x=>x.onchange=upd);upd();
       const klaar=ok=>{R.zelf=1;box.querySelector('#kb').remove();kb.forEach(x=>x.disabled=true);
-        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>':'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>',el.querySelector('#ans').value.trim()||'(op papier)')};
-      okb.onclick=()=>klaar(true);box.querySelector('#nob').onclick=()=>klaar(false);
+        finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Je had alle punten.</div>'
+          :geen?`<div class="fb bad"><div class="head">Telt als fout</div>Eerlijk dat je dat opschrijft. Zonder ${isVertaal(q)?'vertaling':'antwoord'} telt hij als fout, en hij komt terug bij Mijn foute vragen. Schrijf het voorbeeld nu over in je schrift en probeer hem straks zelf.</div>`
+          :'<div class="fb bad"><div class="head">Nog niet helemaal</div>Lees het modelantwoord goed door en onthoud de punten die je miste.</div>',jij||'(op papier)')};
+      if(geen){box.querySelector('#kb').innerHTML=`<p class="sub" style="margin:0">Je schreef dat het nu niet lukt. Dan is er niets om goed te rekenen.</p><button class="btn" id="vrd">Verder</button>`;
+        kb.forEach(x=>x.disabled=true);box.querySelector('#vrd').onclick=()=>klaar(false)}
+      else{okb.onclick=()=>{if(!kortVertaal(jij,q))return klaar(true);
+          box.querySelector('#kb').innerHTML=`<p style="margin:0">Je typte maar een paar woorden. Staat je hele vertaling in je schrift?</p><div class="row"><button class="btn ghost" id="jaS">Ja, hij staat helemaal in mijn schrift</button><button class="btn ghost" id="neeS">Nee, nog niet helemaal</button></div>`;
+          box.querySelector('#jaS').onclick=()=>klaar(true);box.querySelector('#neeS').onclick=()=>klaar(false)};
+        box.querySelector('#nob').onclick=()=>klaar(false)}
       box.scrollIntoView({behavior:smooth,block:'start'})};
     scrollTo(0,0);
   }
@@ -941,11 +967,13 @@ window.Oefen=(()=>{
   function snelX(D,Q,x){const som=isSom(D,Q);if((x.f||'').includes('h'))return x.s<3*((Q&&Q.st&&Q.st.length)||1)+6;
     return x.w!=null&&(x.f||'').includes('z')?x.w<(som?30:8):x.s<(som?12:3)}
   const nietTeZien=x=>(x.f||'').includes('z')&&x.ok&&(!x.j||x.j==='(op papier)');
+  /* zelf goed gerekend, maar geen echt antwoord (of een vertaling van een paar woorden), of door de app alsnog fout gezet */
+  const geenAntw=(Q,x)=>x.ga||((x.f||'').includes('z')&&x.ok&&!!Q&&(geenPoging(x.j,Q)||kortVertaal(x.j,Q)));
   function inzetDag(dag){return VAKN().map(id=>{const D=VAKDATA[id],st=Oefen.ctx.state(id),QX=Object.fromEntries(D.Q.map(q=>[q.id,q]));
     const rs=(st.inzet||[]).filter(r=>r.d===dag).sort((a,b)=>a.t0-b.t0);
     const xs=rs.flatMap(r=>r.q.map(x=>({x,Q:QX[x.i]}))).filter(o=>o.Q),eerst=xs.filter(o=>!(o.x.f||'').includes('r'));
     return {id,D,st,QX,rs,n:eerst.length,goed:eerst.filter(o=>o.x.ok).length,snel:xs.filter(o=>snelX(D,o.Q,o.x)).length,
-      zelf:xs.filter(o=>nietTeZien(o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
+      zelf:xs.filter(o=>nietTeZien(o.x)).length,ga:xs.filter(o=>geenAntw(o.Q,o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
   const tijd=t=>{const d=new Date(t);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
   const secTxt=s=>s<60?s+' s':s<3600?Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''):'meer dan een uur';
   const MODEN={stap:'Huiswerk',tvorm:'Huiswerk, zelf op papier',oefen:'Oefenen',ptoets:'Paragraaftoets',ttoets:'Tussentoets',toets:'Proeftoets',fout:'Foute vragen',opwarm:'Opwarmen',diag:'Instaptoets'};
@@ -953,17 +981,17 @@ window.Oefen=(()=>{
     const V2=inzetDag(dag),hwOud=(o.hw||[]).map(h=>{const D=VAKDATA[h.app];if(!D)return null;const st=Oefen.ctx.state(h.app),A=(st.hwAns||{})[h.id];
       if(!A||!Object.keys(A).length||(st.inzet||[]).some(r=>r.hw===h.id&&r.d===dag))return null;return {h,D,A,QX:Object.fromEntries(D.Q.map(q=>[q.id,q]))}}).filter(Boolean);
     const vraagTxt=(Q,x)=>x.q?esc(x.q):fmt(String(Q.tv||Q.q).replace(/<button[\s\S]*?<\/button>/g,''));
-    const kaart=(D,Q,x)=>{const sn=snelX(D,Q,x),f=x.f||'',nz=nietTeZien(x),goed=x.a!=null?esc(x.a):fmt(goedTxt(Q));
+    const kaart=(D,Q,x)=>{const sn=snelX(D,Q,x),f=x.f||'',nz=nietTeZien(x),ga=geenAntw(Q,x),goed=x.a!=null?esc(x.a):fmt(goedTxt(Q));
       const extra=[f.includes('r')?'herkansing':'',f.includes('v')?'in andere woorden of met andere getallen':'',f.includes('h')?'met stap-voor-stap-hulp':'',
         x.e?x.e+(x.e===1?' stap':' stappen')+' eerst fout':'',f.includes('z')?'zelf nagekeken':''].filter(Boolean);
-      return `<div class="card stack antw ${x.ok?'aw-ok':'aw-bad'}${sn||nz?' iz-let':''}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,x)}</div>
+      return `<div class="card stack antw ${x.ok?'aw-ok':'aw-bad'}${sn||nz||ga?' iz-let':''}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,x)}</div>
         <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${x.j?fmt(esc(x.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${x.ok?'✓':'✗'}</b></div></div>
         ${x.ok?'':`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${goed}</div></div>`}
-        <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}</div></div>`};
+        <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}${ga?(x.ga?' · <b>zelf goed gerekend zonder echt antwoord; de app heeft hem alsnog fout gezet</b>':geenPoging(x.j,Q)?' · <b>zelf goed gerekend zonder echt antwoord</b>':' · <b>zelf goed gerekend, maar maar een paar woorden getypt: kijk in haar schrift</b>'):''}</div></div>`};
     const ronde=(v,r)=>{const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok).length;
-      const sn=xs.filter(x=>snelX(v.D,v.QX[x.i],x)).length,nz=xs.filter(nietTeZien).length,let_=sn||nz;
+      const sn=xs.filter(x=>snelX(v.D,v.QX[x.i],x)).length,nz=xs.filter(nietTeZien).length,ga=xs.filter(x=>geenAntw(v.QX[x.i],x)).length,let_=sn||nz||ga;
       return `<details class="card iz-r"${let_?' open':''}><summary>${(L=>`<b>${esc(L)}</b>${(t=>t&&t!==L?' · '+esc(t):'')(String(r.ti||'').replace(/^Huiswerk:\s*/,''))}`)(r.hw?'Huiswerk':MODEN[r.m]||'Oefenen')}
-        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}</span></summary>
+        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}${ga?` · ${ga} zonder echt antwoord`:''}</span></summary>
         <div class="stack" style="margin-top:10px">${xs.map(x=>kaart(v.D,v.QX[x.i],x)).join('')}</div></details>`};
     const tot=V2.reduce((a,v)=>a+v.n,0),totS=V2.reduce((a,v)=>a+v.snel,0),totZ=V2.reduce((a,v)=>a+v.zelf,0);
     el.innerHTML=`${top('Terug','Inzet')}
@@ -971,8 +999,9 @@ window.Oefen=(()=>{
     <details class="tip"><summary style="cursor:pointer"><b>Hoe lees je dit?</b></summary><div class="stack" style="margin-top:8px"><span>Per vak elke ronde in de app, met haar antwoorden en hoe lang ze over elke vraag deed. Bij meerkeuze moet ze altijd iets kiezen; een vraag overslaan kan niet. Wel kan ze snel gokken: dat zie je aan de tijd.</span>
       <span><b class="iz-snel">Snel</b> betekent: sneller dan je nodig hebt om de vraag echt te maken (een som binnen 12 seconden; met stap-voor-stap-hulp minder dan 3 seconden per stap; op papier de uitwerking al binnen 30 seconden geopend; een andere vraag binnen 3 seconden). Dat hoeft niet fout te zijn: een vraag die ze goed kent, gaat ook snel.</span>
       <span>Bij <b>zelf op papier</b> ziet de app haar uitwerking niet. Sinds 12 november moet ze daar altijd eerst haar eindantwoord intypen; een getal of formule kijkt de app dan zelf na. Bij een antwoord in woorden kijkt ze zelf na: wat ze typte, staat hier. Oudere antwoorden zonder iets ingetypt staan erbij met 'kijk in haar schrift'.</span>
+      <span>Schrijft ze bij een open vraag of vertaling iets als 'ik kan dit nu niet', dan kan ze hem sinds 14 november niet meer zelf goed rekenen: hij telt als fout. Eerdere gevallen zet de app alsnog fout en ze staan hier gemarkeerd. Een vertaling van maar een paar woorden die ze goed rekende, staat er ook gemarkeerd bij.</span>
       <span>Rondes met iets opvallends staan open. Een oranje streep markeert de vraag.</span></div></details>
-    ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}</p></div>`:''}
+    ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}${(t=>t?` ${t} zelf goed gerekend zonder echt antwoord.`:'')(V2.reduce((a,v)=>a+v.ga,0))}</p></div>`:''}
     ${V2.map(v=>`<h3 style="margin:16px 0 6px">${esc(v.D.naam)}</h3>
       <p class="sub" style="margin:0 0 8px;font-size:.9rem">${o.min&&o.min[v.id]?`${Math.round(o.min[v.id])} min actief in de app · `:''}${v.n} ${v.n===1?'vraag':'vragen'}, ${v.goed} in één keer goed${v.snel?` · <span class="iz-snel">${v.snel} snel</span>`:''}</p>
       <div class="stack">${v.rs.map(r=>ronde(v,r)).join('')}</div>`).join('')}
