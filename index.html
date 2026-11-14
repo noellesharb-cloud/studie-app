@@ -714,11 +714,20 @@ const gehaaldNu=s=>blokStatus(s).filter(b=>!b.later).every(b=>b.done);
 /* een dag die gehaald was, blijft gehaald: ook als het plan later verandert (nieuwe toets, minder leertijd).
    Alleen als jij als ouder iets afwijst, vervalt die stempel. */
 const stempel=s=>logDag(s).some(e=>e.key==='dag-gehaald');
-const gehaald=s=>(s<today()&&stempel(s))||gehaaldNu(s);
+/* dagen vóór 5 nov hebben geen stempel (die bestaat sinds 4 nov 21:40). Ze werden elke keer opnieuw berekend met het plan van nu,
+   en vielen af zodra er nieuwe toetsen of nieuw huiswerk bijkwamen (14 nov: reeks van 13 naar 10). Ze waren gehaald en blijven dat. */
+const VOOR_STEMPEL='2026-11-05';
+const gehaald=s=>(s<today()&&(stempel(s)||s<VOOR_STEMPEL))||gehaaldNu(s);
 function stempelBij(){if(!canWrite||!db||vrijDag(today()))return;const d=today(),nu=gehaaldNu(d),st=stempel(d);
   if(nu&&!st){const BS=blokStatus(d),prep={};
     BS.filter(b=>b.prep).forEach(b=>{const id=b.prep.vid+'|'+b.prep.tid,m=b.echt?b.min:(b.prog||0);
       prep[id]=prep[id]||{vid:b.prep.vid,tid:b.prep.tid,zwaar:b.prep.zwaar,min:0};prep[id].min+=m});
+    /* oefentijd in de app bovenop de blokken van dat vak (bijv. natuurkunde geoefend terwijl het plan van die dag veranderde):
+       telt als toetsvoorbereiding voor de eerstvolgende toets van dat vak, zodat het plan daarna korter wordt (afspraak 14 nov) */
+    const res=hwReserve(d,BS);APPS().forEach(vid=>{const need=(res[vid]||0)+BS.filter(b=>b.auto===vid).reduce((a,b)=>a+(b.min||0),0),
+      over=Math.floor(autoMin(d,vid)-need);if(over<5)return;
+      const t=(vakOf(vid)?.toetsen||[]).filter(t=>t.datum&&t.datum>d&&num(t.cijfer)==null&&!t.stofOnbekend).sort((a,b)=>a.datum<b.datum?-1:1)[0];if(!t)return;
+      const id=vid+'|'+t.id;prep[id]=prep[id]||{vid,tid:t.id,zwaar:zwaarT(vakOf(vid),t),min:0};prep[id].min+=over});
     addLog({d,key:'dag-gehaald',vak:'hw',soort:'stempel',min:0,t:Date.now(),keys:BS.map(b=>b.key),prep:Object.values(prep)},true);SCHED=null}
   else if(!nu&&st){delLog(d,'dag-gehaald',true);SCHED=null}}
 const NIETMEE=['vraag','stempel','afgewezen','opwarm','doorgeschoven'];
@@ -1135,7 +1144,9 @@ const GELADEN={};
 $('#herlaad').onclick=()=>{try{flushAct()}catch(e){};$('#herlaad').textContent='Bezig…';setTimeout(()=>location.reload(),1500)};
 function render(){
   SCHED=null;SCHED_OUD=null;
-  if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen)stempelBij();
+  /* fout gevonden 14 nov: stempelBij draaide ook als de instellingen nog niet binnen waren. Dan gold de standaard (vrijdag/zaterdag
+     alleen een sprint), was de zaterdag 'niet af' en werd de stempel van vandaag gewist. Daarna werd de dag opnieuw gepland. */
+  if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen&&GELADEN.set)stempelBij();
   verwerkNakijk();
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
   ['vandaag','oefenen','cijfers','week'].forEach(t=>$('#v-'+t).hidden=t!==tab);
