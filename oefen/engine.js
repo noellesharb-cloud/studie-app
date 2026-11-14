@@ -287,7 +287,13 @@ window.Oefen=(()=>{
     const b3=el.querySelector('#b3');if(b3)b3.onclick=()=>kStart(shuf(V.BEG.filter(b=>ST.wrongB.includes(b[0]))),false);
     scrollTo(0,0);
   }
-  function kStart(stack,rev){K={stack:stack.slice(),rev,tot:stack.length,done:0,first:{}};kaart()}
+  function kStart(stack,rev){K={stack:stack.slice(),rev,tot:stack.length,done:0,first:{},t0:Date.now(),ik:'k'+Date.now().toString(36)};kaart()}
+  /* kaartjes in de inzet (afspraak 14 nov): per kaartje het begrip, na hoeveel seconden ze omdraaide (w) en of ze 'wist ik' koos */
+  function kaartRec(t,ok,her){if(Oefen.ctx.ouder&&Oefen.ctx.ouder())return;
+    const I=ST.inzet=ST.inzet||[],nu=Date.now(),sec=x=>Math.round(Math.max(0,Math.min(x,3600000))/1000);
+    let r=I.find(x=>x.k===K.ik);if(!r){r={k:K.ik,d:dagStr(new Date(K.t0)),m:'kaart',ti:K.rev?'omgekeerd: uitleg → begrip':'',n:K.tot,t0:K.t0,q:[]};I.push(r)}
+    const x={i:'kaart',b:schoon(t).slice(0,80),ok:ok?1:0,s:sec(nu-(K.tc||nu)),w:sec((K.tfl||nu)-(K.tc||nu))};if(her)x.f='r';
+    r.q.push(x);r.t1=nu;save()}
   function kaart(){
     if(!K.stack.length){const good=Object.values(K.first).filter(x=>x).length;
       el.innerHTML=`<span class="tag">Begrippen-kaartjes</span><div class="card stack"><div class="score">${good} / ${K.tot}</div><p>meteen geweten.</p></div>
@@ -298,11 +304,11 @@ window.Oefen=(()=>{
     <div class="bar"><i style="width:${Math.round(K.done/K.tot*100)}%"></i></div>
     <button class="card flip" id="fl">${K.rev?`<span>${front}</span>`:`<b>${front}</b>`}<span class="sub">Tik om om te draaien</span></button>
     <div class="row" id="kb" hidden><button class="btn" id="wel" style="flex:1">Wist ik</button><button class="btn ghost" id="niet" style="flex:1">Wist ik nog niet</button></div>`;
-    const fl=el.querySelector('#fl');
-    fl.onclick=()=>{fl.innerHTML=K.rev?`<span class="why">${front}</span><b>${back}</b>`:`<b>${front}</b><span>${back}</span>`;el.querySelector('#kb').hidden=false;fl.onclick=null};
+    const fl=el.querySelector('#fl');K.tc=Date.now();K.tfl=null;
+    fl.onclick=()=>{K.tfl=Date.now();fl.innerHTML=K.rev?`<span class="why">${front}</span><b>${back}</b>`:`<b>${front}</b><span>${back}</span>`;el.querySelector('#kb').hidden=false;fl.onclick=null};
     el.querySelector('#stop').onclick=kaartMenu;
-    el.querySelector('#wel').onclick=()=>{if(!(t in K.first))K.first[t]=true;ST.wrongB=ST.wrongB.filter(x=>x!==t);save();K.stack.shift();K.done++;kaart()};
-    el.querySelector('#niet').onclick=()=>{if(!(t in K.first))K.first[t]=false;if(!ST.wrongB.includes(t))ST.wrongB.push(t);save();K.stack.push(K.stack.shift());kaart()};
+    el.querySelector('#wel').onclick=()=>{kaartRec(t,true,t in K.first);if(!(t in K.first))K.first[t]=true;ST.wrongB=ST.wrongB.filter(x=>x!==t);save();K.stack.shift();K.done++;kaart()};
+    el.querySelector('#niet').onclick=()=>{kaartRec(t,false,t in K.first);if(!(t in K.first))K.first[t]=false;if(!ST.wrongB.includes(t))ST.wrongB.push(t);save();K.stack.push(K.stack.shift());kaart()};
     scrollTo(0,0);
   }
 
@@ -993,7 +999,7 @@ window.Oefen=(()=>{
     const rs=(st.inzet||[]).filter(r=>r.d===dag).sort((a,b)=>a.t0-b.t0);
     const xs=rs.flatMap(r=>r.q.map(x=>({x,Q:QX[x.i]}))).filter(o=>o.Q),eerst=xs.filter(o=>!(o.x.f||'').includes('r'));
     return {id,D,st,QX,rs,n:eerst.length,goed:eerst.filter(o=>o.x.ok).length,snel:xs.filter(o=>snelX(D,o.Q,o.x)).length,
-      zelf:xs.filter(o=>nietTeZien(o.x)).length,ga:xs.filter(o=>geenAntw(o.Q,o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
+      zelf:xs.filter(o=>nietTeZien(o.x)).length,kaart:rs.filter(r=>r.m==='kaart').reduce((a,r)=>a+r.q.filter(x=>!(x.f||'').includes('r')).length,0),ga:xs.filter(o=>geenAntw(o.Q,o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
   const tijd=t=>{const d=new Date(t);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
   const secTxt=s=>s<60?s+' s':s<3600?Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''):'meer dan een uur';
   const MODEN={stap:'Huiswerk',tvorm:'Huiswerk, zelf op papier',oefen:'Oefenen',ptoets:'Paragraaftoets',ttoets:'Tussentoets',toets:'Proeftoets',fout:'Foute vragen',opwarm:'Opwarmen',diag:'Instaptoets'};
@@ -1009,7 +1015,12 @@ window.Oefen=(()=>{
         ${!x.ok?`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${goed}</div></div>`
           :f.includes('z')?`<div class="aw-r"><span class="aw-l">In de app</span><div class="res">${goed}</div></div>`:''}
         <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}${ga?(x.ga?' · <b>zelf goed gerekend zonder echt antwoord; de app heeft hem alsnog fout gezet</b>':geenPoging(x.j,Q)?' · <b>zelf goed gerekend zonder echt antwoord</b>':' · <b>zelf goed gerekend, maar maar een paar woorden getypt: kijk in haar schrift</b>'):''}</div></div>`};
-    const ronde=(v,r)=>{const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok).length;
+    const kRonde=r=>{const xs=r.q||[],e=xs.filter(x=>!(x.f||'').includes('r')),wist=e.filter(x=>x.ok).length,sn=e.filter(x=>x.w<2).length;
+      return `<details class="card iz-r"${sn?' open':''}><summary><b>Begrippen-kaartjes</b>${r.ti?' · '+esc(r.ti):''}
+        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${e.length} van ${r.n} kaartjes bekeken, ${wist} keer meteen 'wist ik'${sn?` · <span class="iz-snel">${sn} binnen 2 s omgedraaid</span>`:''}</span></summary>
+        <table class="tbl" style="width:100%;margin-top:8px;font-size:.92rem">${xs.map(x=>`<tr${x.w<2?' class="iz-snel"':''}><td>${esc(x.b)}${(x.f||'').includes('r')?' <span class="sub">(nog een keer)</span>':''}</td><td style="white-space:nowrap">${x.ok?'wist ik':'nog niet'}</td><td class="sub" style="white-space:nowrap">${x.w} s</td></tr>`).join('')}</table>
+        <p class="sub" style="font-size:.85rem;margin:6px 0 0">De seconden = hoe lang het kaartje voor haar lag voordat ze het omdraaide. 'Wist ik' kiest ze zelf.</p></details>`};
+    const ronde=(v,r)=>{if(r.m==='kaart')return kRonde(r);const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok).length;
       const sn=xs.filter(x=>snelX(v.D,v.QX[x.i],x)).length,nz=xs.filter(nietTeZien).length,ga=xs.filter(x=>geenAntw(v.QX[x.i],x)).length,let_=sn||nz||ga;
       return `<details class="card iz-r"${let_?' open':''}><summary>${(L=>`<b>${esc(L)}</b>${(t=>t&&t!==L?' · '+esc(t):'')(String(r.ti||'').replace(/^Huiswerk:\s*/,''))}`)(r.hw?'Huiswerk':MODEN[r.m]||'Oefenen')}
         <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}${ga?` · ${ga} zonder echt antwoord`:''}</span></summary>
@@ -1022,10 +1033,11 @@ window.Oefen=(()=>{
       <span>Bij <b>zelf op papier</b> ziet de app haar uitwerking niet. Sinds 12 november moet ze daar altijd eerst haar eindantwoord intypen; een getal of formule kijkt de app dan zelf na. Bij een antwoord in woorden kijkt ze zelf na: wat ze typte, staat hier. Oudere antwoorden zonder iets ingetypt staan erbij met 'kijk in haar schrift'.</span>
       <span>Schrijft ze bij een open vraag of vertaling iets als 'ik kan dit nu niet', dan kan ze hem sinds 14 november niet meer zelf goed rekenen: hij telt als fout. Eerdere gevallen zet de app alsnog fout en ze staan hier gemarkeerd. Een vertaling van maar een paar woorden die ze goed rekende, staat er ook gemarkeerd bij.</span>
       <span>Bij een vraag die ze <b>zelf nakeek</b> staat het antwoord uit de app eronder, ook als ze hem goed rekende. Zo kun je ze naast elkaar leggen; in andere woorden kan ook goed zijn.</span>
+      <span>Sinds 14 november staan ook de <b>begrippen-kaartjes</b> erin: welk begrip, hoe lang ze keek voordat ze omdraaide, en of ze 'wist ik' koos. Binnen 2 seconden omdraaien is te snel om het begrip echt eerst zelf te bedenken.</span>
       <span>Rondes met iets opvallends staan open. Een oranje streep markeert de vraag.</span></div></details>
     ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}${(t=>t?` ${t} zelf goed gerekend zonder echt antwoord.`:'')(V2.reduce((a,v)=>a+v.ga,0))}</p></div>`:''}
     ${V2.map(v=>`<h3 style="margin:16px 0 6px">${esc(v.D.naam)}</h3>
-      <p class="sub" style="margin:0 0 8px;font-size:.9rem">${o.min&&o.min[v.id]?`${Math.round(o.min[v.id])} min actief in de app · `:''}${v.n} ${v.n===1?'vraag':'vragen'}, ${v.goed} in één keer goed${v.snel?` · <span class="iz-snel">${v.snel} snel</span>`:''}</p>
+      <p class="sub" style="margin:0 0 8px;font-size:.9rem">${o.min&&o.min[v.id]?`${Math.round(o.min[v.id])} min actief in de app · `:''}${v.n} ${v.n===1?'vraag':'vragen'}, ${v.goed} in één keer goed${v.kaart?` · ${v.kaart} begrippen-kaartjes`:''}${v.snel?` · <span class="iz-snel">${v.snel} snel</span>`:''}</p>
       <div class="stack">${v.rs.map(r=>ronde(v,r)).join('')}</div>`).join('')}
     ${hwOud.length?`<h3 style="margin:16px 0 6px">Huiswerk, nog zonder tijden</h3><p class="sub" style="font-size:.9rem;margin:0 0 8px">Tijden bewaart de app pas sinds 12 november. Hier zie je wel haar eerste antwoord op elke vraag.</p>
       ${hwOud.map(({h,D,A,QX})=>{const ids=Object.keys(A).filter(i=>QX[i]),g=ids.filter(i=>A[i].ok).length;
