@@ -749,8 +749,14 @@ window.Oefen=(()=>{
   /* ---------- huiswerk uit het boek: precies de opgaven van die dag, stap voor stap ---------- */
   /* haar eerste antwoord per huiswerkvraag, voor het overzicht 'Antwoorden voor je schrift' (ST.hwAns[huiswerk][vraag] = {j, ok, v?}) */
   const schoon=x=>String(x??'').includes('<svg')?'(plaatje)':String(x??'').replace(/<button[\s\S]*?<\/button>/g,'').replace(/<br\s*\/?>/g,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&#36;/g,'$').replace(/&amp;/g,'&').replace(/[ \t]+/g,' ').trim();
+  /* plaatjes als antwoord (14 nov): bewaar welke keuze ze maakte (p = 'a' of index in q.f), zodat de ouder het plaatje ziet */
+  const svgOf=x=>String(Array.isArray(x)?x[0]:x??'');
+  const plaatjeNr=(q,jij)=>{if(!q||!String(jij??'').includes('<svg'))return null;const j=String(jij);
+    if(svgOf(q.a)===j)return 'a';const i=(q.f||[]).findIndex(f=>svgOf(f)===j);return i>=0?i:null};
+  const plaatjeHtml=(Q,p)=>{if(!Q||p==null)return '';const raw=p==='a'?Q.a:(Q.f||[])[p];return raw==null?'':`<div class="aw-pl">${fmt(svgOf(raw))}</div>`};
+  const plaatjeWaarom=(Q,p)=>{const f=Q&&p!=null&&p!=='a'&&(Q.f||[])[p];return Array.isArray(f)&&f[1]?`<div class="sub" style="font-size:.9rem">${fmt(f[1])}</div>`:''};
   function hwRec(q,it,jij,ok){if(!R.hw)return;const A=ST.hwAns=ST.hwAns||{},m=A[R.hw]=A[R.hw]||{};
-    m[q.id]=it&&it.alt?{ok:!!ok,v:1}:{j:schoon(jij),ok:!!ok};
+    m[q.id]=it&&it.alt?{ok:!!ok,v:1}:{j:schoon(jij),ok:!!ok};const pn=!(it&&it.alt)&&plaatjeNr(q,jij);if(pn!=null&&pn!==false)m[q.id].p=pn;
     const ks=Object.keys(A).sort();ks.slice(0,Math.max(0,ks.length-15)).forEach(k=>delete A[k])}
   /* ---------- inzet, voor de ouder (afspraak 12 nov): per ronde elk antwoord en hoe lang ze erover deed.
      ST.inzet = [{k, d, m:mode, ti:titel, hw, n:aantal vragen, t0, t1, q:[{i:vraag-id, ok, s:seconden, w?:seconden tot ze de uitwerking
@@ -763,7 +769,7 @@ window.Oefen=(()=>{
     if(!(q.id in R.first))srRec(q.id,ok&&!R.helped[q.id]&&!R.stepErr[q.id]);
     R.ik=R.ik||nu.toString(36);let r=I.find(x=>x.k===R.ik);
     if(!r){r={k:R.ik,d:dagStr(new Date(R.tStart||nu)),m:R.mode,ti:schoon(R.title||'').slice(0,120),hw:R.hw||null,n:R.total,t0:R.tStart||nu,q:[]};I.push(r)}
-    const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,140)},f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
+    const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,140)},pn=!(it.alt||q.gen)&&plaatjeNr(q,jij);if(pn!=null&&pn!==false)x.p=pn;const f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
     if(f)x.f=f;if(R.tRev)x.w=sec(R.tRev-(R.t0||nu));if(R.stepErr[q.id])x.e=R.stepErr[q.id];
     if(it.alt||q.gen){x.q=schoon(q.tv||q.q).slice(0,300);x.a=schoon(goedTxt(q)).slice(0,140)}
     r.q.push(x);r.t1=nu;
@@ -816,7 +822,7 @@ window.Oefen=(()=>{
     const uitwHtml=(q,open)=>hasSt(q)?`<details class="aw-uw"${open?' open':''}><summary>${open?'De uitwerking':'Bekijk de uitwerking'}</summary>${uitw(q)}</details>`:'';
     const kaart=id=>{const q=QM[id],r=m[id],goed=fmt(goedTxt(q));
       if(!r)return `<div class="card stack antw"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div><div class="aw-r"><span class="aw-l">Antwoord</span><div class="res">${goed}</div></div>${uitwHtml(q,false)}</div>`;
-      const jij=r.v?'<span class="sub">In de app kreeg je deze vraag in andere woorden.</span>':fmt(esc(r.j||'')).replace(/\n/g,'<br>')||'<span class="sub">(leeg)</span>';
+      const jij=r.v?'<span class="sub">In de app kreeg je deze vraag in andere woorden.</span>':r.p!=null?plaatjeHtml(q,r.p):fmt(esc(r.j||'')).replace(/\n/g,'<br>')||'<span class="sub">(leeg)</span>';
       return `<div class="card stack antw ${r.ok?'aw-ok':'aw-bad'}"><span class="tag">${nrTag(q)}</span><div class="sub">${vraag(q)}</div>
         <div class="aw-r"><span class="aw-l">Jij</span><div class="aw-jij">${jij} <b class="aw-m">${r.ok?'✓':'✗'}</b></div></div>
         ${r.ok&&!r.v?'':`<div class="aw-r"><span class="aw-l">${r.ok?'Antwoord':'Verbetering'}</span><div class="res aw-pen">${goed}</div></div>`}${uitwHtml(q,!r.ok)}</div>`};
@@ -993,7 +999,7 @@ window.Oefen=(()=>{
       const extra=[f.includes('r')?'herkansing':'',f.includes('v')?'in andere woorden of met andere getallen':'',f.includes('h')?'met stap-voor-stap-hulp':'',
         x.e?x.e+(x.e===1?' stap':' stappen')+' eerst fout':'',f.includes('z')?'zelf nagekeken':''].filter(Boolean);
       return `<div class="card stack antw ${x.ok?'aw-ok':'aw-bad'}${sn||nz||ga?' iz-let':''}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,x)}</div>
-        <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${x.j?fmt(esc(x.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${x.ok?'✓':'✗'}</b></div></div>
+        <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${x.p!=null&&Q?plaatjeHtml(Q,x.p):x.j?fmt(esc(x.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${x.ok?'✓':'✗'}</b>${x.ok?'':plaatjeWaarom(Q,x.p)}</div></div>
         ${!x.ok?`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${goed}</div></div>`
           :f.includes('z')?`<div class="aw-r"><span class="aw-l">In de app</span><div class="res">${goed}</div></div>`:''}
         <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}${ga?(x.ga?' · <b>zelf goed gerekend zonder echt antwoord; de app heeft hem alsnog fout gezet</b>':geenPoging(x.j,Q)?' · <b>zelf goed gerekend zonder echt antwoord</b>':' · <b>zelf goed gerekend, maar maar een paar woorden getypt: kijk in haar schrift</b>'):''}</div></div>`};
@@ -1019,7 +1025,7 @@ window.Oefen=(()=>{
       ${hwOud.map(({h,D,A,QX})=>{const ids=Object.keys(A).filter(i=>QX[i]),g=ids.filter(i=>A[i].ok).length;
         return `<details class="card iz-r" open><summary><b>${esc(D.naam)}</b> · ${esc(h.t||'huiswerk')}<span class="sub" style="display:block;font-size:.9rem">${g} van ${ids.length} in één keer goed</span></summary><div class="stack" style="margin-top:10px">${ids.map(i=>{const Q=QX[i],a=A[i];
           return `<div class="card stack antw ${a.ok?'aw-ok':'aw-bad'}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,{})}</div>
-          <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${a.v?'<span class="sub">(kreeg de vraag in andere woorden)</span>':a.j?fmt(esc(a.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${a.ok?'✓':'✗'}</b></div></div>
+          <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${a.v?'<span class="sub">(kreeg de vraag in andere woorden)</span>':a.p!=null?plaatjeHtml(Q,a.p):a.j?fmt(esc(a.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${a.ok?'✓':'✗'}</b></div></div>
           ${a.ok?'':`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${fmt(goedTxt(Q))}</div></div>`}</div>`}).join('')}</div></details>`}).join('')}`:''}
     ${!V2.length&&!hwOud.length?'<div class="card">Op deze dag heeft ze niets in de app gemaakt.</div>':''}
     <div class="stack" style="margin-top:12px"><button class="btn ghost" id="izterug">Terug</button></div>`;
