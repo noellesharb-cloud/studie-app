@@ -49,7 +49,8 @@ const LOG=[
  ['Dag 5','vr 6 nov','Opdracht T2 (wortelformules, bij §3.5; in SOMtoday T1) en opdracht R1 (lijn door twee punten, bij §3.1) van Teams'],
  ['Dag 6','di 10 nov','Voorkennis klas 1 (toetsstof TW2): H8.1 rekenen met variabelen, 8.2 haakjes wegwerken, 8.3 ontbinden in factoren, 8.4 merkwaardige producten'],
  ['Dag 6','di 10 nov','7 stappenplan van Van Neck (lijn door twee punten, voorbeeld 2) en beginopdracht versie A en B'],
- ['Dag 6','di 10 nov','Extra opdrachten H3 van Teams: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (huiswerk voor donderdag 12 november)']
+ ['Dag 6','di 10 nov','Extra opdrachten H3 van Teams: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (huiswerk voor donderdag 12 november)'],
+ ['Dag 7','za 14 nov','Uitwerkingen van Van Neck (Teams, 12 nov) verwerkt: 71a met zijn notatie, 71b en 71c met x → ∞ en schetsen, kruislings vermenigvuldigen bij verhoudingstabellen (E5)']
 ];
 
 /* ---------- onderdelen ---------- */
@@ -120,6 +121,7 @@ const SECS=[
    ['Je mag twee hele kolommen optellen of aftrekken','3 kg = € 4,50 en 5 kg = € 7,50, dus 8 kg = € 12',''],
    ['Nooit een los getal erbij of eraf','Van 6 naar 10 schriften is niet "4 erbij" in de prijs',''],
    ['Handige aanpak: eerst naar 1, dan naar wat je zoekt','Bij 1 weet je hoeveel het per stuk is',''],
+   ['Kruislings vermenigvuldigen: in twee kolommen is linksboven × rechtsonder = linksonder × rechtsboven','Kolommen $4 | 3$ en $12 | ?$: $4 · ? = 3 · 12 = 36$, dus $? = 36 : 4 = 9$','Staat niet in het boek; Van Neck heeft het in de les uitgelegd. Je gebruikt het veel in klas 3 t/m 6.'],
    ['Snelheid: km/h naar m/s is delen door 3,6','76 km/h = 76 000 m per 3600 s ≈ 21,1 m/s','']]},
  {id:'kw',par:'3.2',nr:'6',name:'Kwadratische formules',c:'--c1',sub:'a, b en c; dal- of bergparabool',
   rules:[
@@ -251,6 +253,9 @@ const GBP=(f,pts)=>plot({x:[-4,4],y:[-10,4],ux:22,uy:11,sy:2,fns:[{f}],pts,label
 const GE8=(f,pts)=>plot({x:[-4,3],y:[-12,8],ux:22,uy:8,sy:4,gy:2,fns:[{f}],pts,label:'parabool'});
 const GT1=(f,dir,pts)=>plot({x:[-4,4],y:[-10,1],u:20,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const GR68=(f,from,pts)=>plot({x:[-3,12],y:[-1,8],u:14,fns:[{f,from}],pts,label:'wortelgrafiek'});
+/* schets zoals Van Neck hem maakt: geen getallen, wel het randpunt, de lijn y = 400 en eventueel x = 2 */
+const SCH71=(f,o)=>plot({x:[-4,10],y:[-4,10],u:9,sx:99,sy:99,gx:99,gy:99,fns:[{f,from:o.from,to:o.to},{f:()=>6,c:'as',lab:[-3.9,6.6,'y = 400']}],va:o.x2?[2]:[],pts:[o.rp],max:150,label:'schets'})+(o.x2?'<div style="font-size:.8em">stippellijn: $x = 2$</div>':'');
+const SCH_A=x2=>SCH71(x=>2*Math.sqrt(x+1)-1,{from:-1,rp:[-1,-1],x2}),SCH_B=x2=>SCH71(x=>3-1.5*Math.sqrt(3-x),{to:3,rp:[3,3],x2}),SCH_C=x2=>SCH71(x=>8+Math.sqrt(x-4),{from:4,rp:[4,8],x2});
 const GR70=(f,dir,pts)=>plot({x:[-8,6],y:[-1,9],u:14,fns:[dir==='L'?{f,to:2}:{f,from:2}],pts,label:'wortelgrafiek'});
 const G78=(f,pts)=>plot({x:[-2,5],y:[-5,9],u:16,fns:[{f}],pts,label:'parabool'});
 const G81=plot({x:[-5,4],y:[-4,6],u:22,fns:[{f:x=>(x+3)*(x-1),lab:[-3.9,5.2,'A']},{f:x=>(x+1)*(x-3),c:'ln2',lab:[-1.7,5.2,'B']},{f:x=>5-x*x,c:'ln3',lab:[0.4,5.4,'C']}],label:'drie parabolen A, B en C'});
@@ -546,6 +551,10 @@ const Q=[
  denk:'m/s betekent: meters per seconde. Zet een half uur om in seconden.',
  st:[S('Een half uur in seconden.','30 · 60 = 1800 seconden'),S('Meters gedeeld door seconden.','$4200 : 1800 ≈ 2,3$ m/s')],
  a:'ongeveer 2,3 m/s',f:[['140 m/s','Dat is $4200 : 30$: meters per minuut. Je hebt seconden nodig: 1800.'],['8,4 m/s','Dat is de snelheid in km/h (4,2 km in een half uur).']]},
+{id:'verh15',o:'verh',nr:'Van Neck',q:'Vul de verhoudingstabel in met kruislings vermenigvuldigen.'+tbl([6,15],[4,'?'],['aantal','prijs (€)']),
+ denk:'Linksboven × rechtsonder = linksonder × rechtsboven.',
+ st:[S('Kruislings.','$6 · ? = 4 · 15 = 60$'),S('Delen door 6.','$? = 60 : 6 = 10$'),S('Controle: per stuk.','$4 : 6 = [[2|3]]$ en $15 · [[2|3]] = 10$ ✓')],
+ a:'€ 10',f:[['€ 22,50','Je hebt $6 · 15 : 4$ gedaan. Kruislings: $6 · ? = 4 · 15$, dus $? = 60 : 6$.'],['€ 13','Je hebt 9 opgeteld (van 6 naar 15). In een verhoudingstabel tel je geen los getal op.']]},
 {id:'verh14',o:'verh',nr:'R5 III',q:'De tweede skiër gaat gemiddeld 76 km/h.<br>Wat is dat in m/s?',
  denk:'76 km in 1 uur. Zet km om in meters en een uur in seconden.',
  st:[S('76 km in meters.','76 000 m'),S('1 uur in seconden.','3600 seconden'),S('Delen.','$76 000 : 3600 ≈ 21,1$ m/s')],
@@ -1185,23 +1194,25 @@ const Q=[
  a:GR70(x=>Math.sqrt(2-x)+5,'L'),f:[[GR70(x=>Math.sqrt(x-2)+5,'R'),'Deze loopt naar rechts. Bij $√{2 - x}$ mag x niet groter zijn dan 2.'],[GR70(x=>5-Math.sqrt(2-x),'L'),'Deze daalt naar links. Bij $+ √{…}$ wordt y groter dan 5.']]},
 {id:'rand17',o:'rand',nr:'71a',q:'Bepaal het randpunt van $y = √{3x + 2} - 1$.',
  denk:'$3x + 2 = 0$. Los op met de balansmethode.',
- st:[S('$3x + 2 = 0$.','$3x = -2$'),S('Delen door 3.','$x = -[[2|3]]$'),S('Vul in.','$√{0} - 1 = -1$')],
+ st:[S('$x_{rp}$: onder de wortel 0.','$3x + 2 = 0$ &nbsp;|$-2$|<br>$3x = -2$ &nbsp;|$: 3$|<br>$x = -[[2|3]]$'),S('$y_{rp}$: vul $x_{rp}$ in.','$y = √{3 · -[[2|3]] + 2} - 1 = √{-[[6|3]] + 2} - 1 = √{0} - 1 = -1$'),S('Randpunt.','$(-[[2|3]], -1)$')],
  a:'$(-[[2|3]], -1)$',f:[['$(-2, -1)$','$3x = -2$: je moet nog delen door 3.'],['$([[2|3]], -1)$','$3x + 2 = 0$ geeft $3x = -2$, dus x is negatief.']]},
 {id:'rand18',o:'rand',nr:'71a',q:'Bepaal het randpunt van $y = 12 - 8√{5 - 2x}$.',
  denk:'$5 - 2x = 0$.',
- st:[S('$5 - 2x = 0$.','$2x = 5$, dus $x = 2,5$'),S('Vul in.','$12 - 8·0 = 12$')],
+ st:[S('$x_{rp}$: onder de wortel 0.','$5 - 2x = 0$ &nbsp;|$-5$|<br>$-2x = -5$ &nbsp;|$: -2$|<br>$x = [[-5|-2]] = [[5|2]] = 2[[1|2]]$'),S('$y_{rp}$: vul $x_{rp}$ in.','$y = 12 - 8√{5 - 2 · 2[[1|2]]} = 12 - 8√{0} = 12 - 0 = 12$'),S('Randpunt.','$(2[[1|2]], 12)$')],
  a:'$(2[[1|2]], 12)$',f:[['$(-2[[1|2]], 12)$','$5 - 2x = 0$ geeft $2x = 5$, dus $x = +2,5$.'],['$(2[[1|2]], 4)$','$8√{0} = 0$, dus $y = 12$.']]},
 {id:'rand19',o:'rand',nr:'71a',q:'Bepaal het randpunt van $y = √{[[1|7]]x - 9} + 1000$.',
  denk:'$[[1|7]]x - 9 = 0$.',
- st:[S('$[[1|7]]x = 9$.','keer 7: $x = 63$'),S('Vul in.','$√{0} + 1000 = 1000$')],
+ st:[S('$x_{rp}$: onder de wortel 0.','$[[1|7]]x - 9 = 0$ &nbsp;|$+9$|<br>$[[1|7]]x = 9$ &nbsp;|$: [[1|7]]$, dat is $× [[7|1]]$|<br>$x = 9 × 7 = 63$'),S('$y_{rp}$: vul $x_{rp}$ in.','$y = √{[[1|7]] · 63 - 9} + 1000 = √{9 - 9} + 1000 = √{0} + 1000 = 1000$'),S('Randpunt.','$(63, 1000)$')],
  a:'$(63, 1000)$',f:[['$(1[[2|7]], 1000)$','$[[1|7]]x = 9$: je moet keer 7 doen, niet delen door 7.'],['$(63, 0)$','$√{0} + 1000 = 1000$.']]},
 {id:'rand20',o:'rand',nr:'71b',q:'Welke grafieken snijden de lijn $y = 400$?<br>A $y = √{3x + 2} - 1$ &nbsp; B $y = 12 - 8√{5 - 2x}$ &nbsp; C $y = √{[[1|7]]x - 9} + 1000$',
- denk:'Kijk naar het randpunt. Gaat de grafiek vanaf daar omhoog of omlaag?',
- st:[S('A begint bij $y = -1$ en gaat omhoog (er staat $+√{…}$).','A komt wel bij 400'),S('B begint bij $y = 12$ en gaat omlaag (er staat $-8√{…}$).','B komt nooit bij 400'),S('C begint bij $y = 1000$ en gaat omhoog.','C komt nooit bij 400')],
+ denk:'Zo doet Van Neck het: neem het randpunt uit 71a en kijk wat y doet als x heel groot wordt ($x → ∞$). Maak dan een schets.',
+ st:[S('A: randpunt $(-[[2|3]], -1)$. Als $x → ∞$, dan $y = √{∞} - 1 = ∞$: de grafiek stijgt eindeloos.','A snijdt $y = 400$ wel'+SCH_A()),
+  S('B: randpunt $(2[[1|2]], 12)$. $x → ∞$ mag niet: dan staat er $√{-∞}$, kleiner dan 0 onder de wortel. Neem dus $x → -∞$ (een groot min-getal): $y = 12 - 8√{∞} = -∞$, de grafiek daalt eindeloos.','$y = 400$ ligt boven het randpunt en de grafiek daalt, dus B snijdt niet'+SCH_B()),
+  S('C: randpunt $(63, 1000)$ ligt al boven $y = 400$. Als $x → ∞$, dan $y = √{∞} + 1000 = ∞$: de grafiek stijgt.','C begint al boven 400 en stijgt, dus C snijdt niet'+SCH_C())],
  a:'Alleen A',f:[['A en C','C begint bij 1000 en gaat omhoog. Hij komt nooit zo laag als 400.'],['Geen enkele','A begint bij $-1$ en stijgt steeds verder. Hij komt dus ooit bij 400.']]},
 {id:'rand21',o:'rand',nr:'71c',q:'Welke grafieken snijden de lijn $x = 2$?<br>A $y = √{3x + 2} - 1$ &nbsp; B $y = 12 - 8√{5 - 2x}$ &nbsp; C $y = √{[[1|7]]x - 9} + 1000$',
  denk:'Mag je $x = 2$ invullen? Kijk naar de randpunten: $-[[2|3]]$, $2[[1|2]]$ en 63.',
- st:[S('A bestaat voor $x ≥ -[[2|3]]$.','2 mag'),S('B bestaat voor $x ≤ 2[[1|2]]$.','2 mag'),S('C bestaat voor $x ≥ 63$.','2 mag niet')],
+ st:[S('A begint bij $x = -[[2|3]]$ en loopt naar rechts.','2 ligt rechts van $-[[2|3]]$: A snijdt $x = 2$'+SCH_A(1)),S('B begint bij $x = 2[[1|2]]$ en loopt naar links.','2 ligt links van $2[[1|2]]$: B snijdt $x = 2$'+SCH_B(1)),S('C begint pas bij $x = 63$ en loopt naar rechts.','C snijdt $x = 2$ niet'+SCH_C(1))],
  a:'A en B',f:[['Alle drie','C bestaat pas vanaf $x = 63$.'],['Alleen A','B bestaat voor $x ≤ 2,5$. Daar hoort 2 bij.']]},
 {id:'rand22',o:'rand',nr:'72a',q:'Voor de kijkafstand geldt $k = √{12,7h}$, met k in km en h de ooghoogte in m.<br>Wat is de kijkafstand bij een ooghoogte van 175 cm? Rond af op één decimaal.',
  denk:'h moet in meters: 175 cm = 1,75 m.',
@@ -1384,11 +1395,11 @@ const Q=[
  a:'Boven en onder met hetzelfde getal vermenigvuldigen of delen, en kolommen optellen of aftrekken',f:[['Boven en onder hetzelfde getal optellen of aftrekken','$2 : 4$ wordt met $+1$ $3 : 5$. Dat is een andere verhouding. Optellen mag alleen met hele kolommen.'],['Alleen vermenigvuldigen; delen mag niet','Delen mag ook: dat is vermenigvuldigen met een breuk. Juist naar 1 delen is vaak handig.']]},
 {id:'e5b1',o:'verh',nr:'Extra opdracht E5b (links)',q:'Vul de verhoudingstabel verder in.'+tbl(['?',4,5,'?',12],[0,'?',1,2,'?']),
  denk:'Bij $x = 5$ hoort $y = 1$. Dus y is steeds $x : 5$.',
- st:[S('$y = 0$:','$x = 0$'),S('$x = 4$:','$4 : 5 = [[4|5]]$'),S('$y = 2$ (2 keer zo veel als 1):','$x = 10$'),S('$x = 12$:','$12 : 5 = 2[[2|5]]$')],
+ st:[S('$y = 0$:','$x = 0$'),S('$x = 4$:','$4 : 5 = [[4|5]]$'),S('$y = 2$ (2 keer zo veel als 1):','$x = 10$'),S('$x = 12$:','$12 : 5 = 2[[2|5]]$'),S('Of kruislings vermenigvuldigen, bijvoorbeeld bij $x = 12$ met de kolom $5 | 1$:','$5 · y = 1 · 12$, dus $y = [[12|5]] = 2[[2|5]]$')],
  a:tbl([0,4,5,10,12],[0,'$[[4|5]]$',1,2,'$2[[2|5]]$']),f:[[tbl([0,4,5,10,12],[0,'$[[5|4]]$',1,2,'$2[[2|5]]$']),'$5 → 1$ is delen door 5. Dus $4 : 5 = [[4|5]]$, niet $[[5|4]]$.'],[tbl([0,4,5,7,12],[0,'$[[4|5]]$',1,2,'$2[[2|5]]$']),'Je hebt bij $y = 2$ opgeteld (+1, +2). In een verhoudingstabel vermenigvuldig je: $y$ 2 keer zo groot, dus $x = 10$.']]},
 {id:'e5b2',o:'verh',nr:'Extra opdracht E5b (rechts)',q:'Vul de verhoudingstabel verder in.'+tbl([-3,1,'?',10,12],['?','?',-4,'?',-8]),
  denk:'Bij $x = 12$ hoort $y = -8$. Dus $y = -[[8|12]]x = -[[2|3]]x$.',
- st:[S('Constante.','$-8 : 12 = -[[2|3]]$'),S('$x = -3$:','$-[[2|3]]·-3 = 2$'),S('$x = 1$:','$-[[2|3]]$'),S('$y = -4$:','$x = -4 : -[[2|3]] = 6$ (de helft van 12)'),S('$x = 10$:','$-[[2|3]]·10 = -6[[2|3]]$'),S('Let op.','In de antwoorden van de docent staat bij $x = -3$: $-2$, en bij $y = -4$: $-[[3|5]]$. Controleer zelf: $6 · -[[2|3]] = -4$ ✓. Vraag het na als je twijfelt.')],
+ st:[S('Constante.','$-8 : 12 = -[[2|3]]$'),S('$x = -3$:','$-[[2|3]]·-3 = 2$'),S('$x = 1$:','$-[[2|3]]$'),S('$y = -4$:','$x = -4 : -[[2|3]] = 6$ (de helft van 12)'),S('$x = 10$:','$-[[2|3]]·10 = -6[[2|3]]$'),S('Of kruislings vermenigvuldigen met de kolom $12 | -8$, bijvoorbeeld bij $y = -4$:','$12 · -4 = -8 · x$, dus $-48 = -8x$ en $x = 6$'),S('Let op.','In de antwoorden én in de uitwerking van Van Neck (Teams, 12 nov) staat bij $x = -3$: $-2$, en bij $y = -4$: $x = -[[3|5]]$. Controleer zelf met kruislings vermenigvuldigen: $12 · y = -8 · -3 = 24$, dus $y = 2$; en $6 · -[[2|3]] = -4$ ✓. Vraag het na als je twijfelt.')],
  a:tbl([-3,1,6,10,12],[2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),f:[[tbl([-3,1,6,10,12],[-2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),'Min keer min is plus: $-[[2|3]]·-3 = +2$.'],[tbl([-3,1,'$-[[3|5]]$',10,12],[2,'$-[[2|3]]$',-4,'$-6[[2|3]]$',-8]),'Controle: $-[[3|5]]·-[[2|3]]$ is positief, geen $-4$. $-4$ is de helft van $-8$, dus $x$ is de helft van 12.'],[tbl([-3,1,6,10,12],['$4[[1|2]]$','$-1[[1|2]]$',-4,'$-15$',-8]),'Dat is $x : y$ in plaats van $y : x$. De constante is $-8 : 12 = -[[2|3]]$.']]},
 {id:'e6a',o:'rev',nr:'Extra opdracht E6a',q:'y is recht evenredig met x. De evenredigheidsconstante is $1[[1|2]]$. Maak een tabel voor x = 0 t/m 6.',
  denk:'$y = 1[[1|2]]x$. Elke stap in x komt er $1[[1|2]]$ bij.',
