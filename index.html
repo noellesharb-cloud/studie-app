@@ -656,7 +656,7 @@ function blokken(s){
     B.push({key:'hwt-'+h.id,vak:v?v.id:'hw',soort:'huiswerk',hwt:h,min:h.min||0,titel:`${v?v.naam:h.vak}: ${h.t}`,uit:''});
     const b=BH.find(x=>x.h===h);
     if(b){const V=VAKDATA[b.vid];B.push({key:'bij-'+b.vid,vak:b.vid,soort:'bijhouden',auto:b.vid,mode:'bijhouden',min:b.min,par:b.par,
-      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de terugblik (een paar vragen oude stof, ongeveer 5 minuten), dan de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, na de ${b.h.min} minuten van je huiswerk in de app. Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
+      titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de terugblik (een paar vragen oude stof, ongeveer 5 minuten), dan de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, zodra de tijd voor je huiswerk in de app erop zit (wat je vandaag echt aan je huiswerk deed, hooguit ${b.h.min} minuten). Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
   const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
   const SC=schedule();
@@ -688,8 +688,14 @@ const autoMin=(s,vid)=>logDag(s).filter(e=>e.soort==='oefenen'&&e.vak===vid).red
 const HWRES_VAN='2026-11-10';
 function hwReserve(s,B){const R={};if(s<HWRES_VAN)return R;
   B.forEach(b=>{const h=b.hwt;if(!h||!h.app||!window.VAKDATA||!VAKDATA[h.app]||h.klaar)return;const n=Oefen.hwStand(h.app,h.id);if(!n)return;
-    const e=hwLog(h.id);if(e&&e.d!==s)return;const tot=Oefen.hwTotaal(h.app,h)||n;R[h.app]=(R[h.app]||0)+Math.round((h.min||0)*Math.min(1,n/tot))});
+    const e=hwLog(h.id);if(e&&e.d!==s)return;const tot=Oefen.hwTotaal(h.app,h)||n,plan=Math.round((h.min||0)*Math.min(1,n/tot));
+    /* 15 nov: niet meer dan ze die dag echt aan dit huiswerk in de app deed (bijhouden bleef op 0 staan als het huiswerk sneller ging
+       of deels op een andere dag was gemaakt). Tijd per vraag uit de inzet, per vraag hooguit 5 minuten. */
+    const echt=s<HWECHT_VAN?plan:hwTijdApp(h.app,h.id,s);R[h.app]=(R[h.app]||0)+Math.min(plan,echt)});
   return R}
+const HWECHT_VAN='2026-11-15';
+function hwTijdApp(vid,key,s){const I=((OEF[vid]||{}).inzet)||[];
+  return Math.round(I.filter(r=>r.hw===key&&r.d===s).reduce((a,r)=>a+(r.q||[]).reduce((b,x)=>b+Math.min(x.s||0,300),0),0)/60)}
 /* status van elk blok: zelf afgevinkt, of vanzelf gehaald met oefentijd */
 function blokStatus(s){
   const B=blokken(s),L=logDag(s),keys=new Set(L.map(e=>e.key)),need=hwReserve(s,B),sprint=L.some(e=>e.soort==='sprint'),dagOk=keys.has('ok-dag');
