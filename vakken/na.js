@@ -1729,6 +1729,6 @@ const SPRINT=[
  ()=>{const m=R(1,5),d=R(1,8)*10;return {q:`$${m}$ kg water, $${d}$ °C warmer ($c = 4,2$). Warmte = … kJ`,a:+(m*4.2*d).toFixed(1),e:'kJ'}},
  ()=>{const g=R(1,10)*10;return {q:`$${g}$ g ijs smelten (334 kJ/kg). Warmte = … kJ`,a:+(g/1000*334).toFixed(2),e:'kJ'}}
 ];
-return {id:'na',naam:'Natuurkunde',afk:'NA',kop:'Hoofdstuk 3 en 5 Warmte',SECS,SNAP,BEG,Q,snapHtml,sprint:SPRINT,
+return {pracSlot:true,id:'na',naam:'Natuurkunde',afk:'NA',kop:'Hoofdstuk 3 en 5 Warmte',SECS,SNAP,BEG,Q,snapHtml,sprint:SPRINT,
  PN:{'h3':'Hoofdstuk 3 Stoffen (uit je schrift)','5.1':'§5.1 Warmte en temperatuur','5.2':'§5.2 Warmtetransport','5.3':'§5.3 Verbranden en blussen','5.4':'§5.4 Chemische reacties','5.5':'§5.5 Klimaatverandering','prac':'Practica','mix':'Door elkaar'}};
 })();

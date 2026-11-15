@@ -45,7 +45,7 @@ window.Oefen=(()=>{
   let NORM=null,TSTOF=null,PTOT=null;
   const cijfer=(g,t)=>{const p=t?g/t:0;return Math.round((NORM?(p>=NORM?6+4*(p-NORM)/(1-NORM):1+5*p/NORM):1+9*p)*10)/10};
   /* bij toetsvoorbereiding met stof (TSTOF): foute vragen alleen uit die stof */
-  const WR=()=>TSTOF?ST.wrong.filter(id=>V.Q.some(q=>q.id===id)):ST.wrong;
+  const WR=()=>TSTOF||V!==VF?ST.wrong.filter(id=>V.Q.some(q=>q.id===id)):ST.wrong;
   const f1=n=>n.toFixed(1).replace('.',',');
   const save=()=>Oefen.ctx.save(vid);
   /* wanneer is een toets gemaakt? rid = Date.now() in base 36 (afspraak 12 nov: datum en tijd bij de paragraaftoets en proeftoets).
@@ -196,7 +196,8 @@ window.Oefen=(()=>{
     const vers=q=>!ids.has(q.id),inP=V.Q.filter(q=>secOf(q.o).par===p);
     add(shuf(ST.wrong.filter(x=>inP.some(q=>q.id===x)&&!ids.has(x))).slice(0,3));
     add(shuf(inP.filter(vers).map(q=>q.id)));
-    const eerder=leerPars().filter(x=>x!==p);add(shuf(V.Q.filter(q=>eerder.includes(secOf(q.o).par)&&vers(q)).map(q=>q.id)));
+    /* alleen paragrafen vóór deze (15 nov: er kwam stof bij die ze nog niet had) */
+    const lp=leerPars(),ip=lp.indexOf(p),eerder=ip<0?lp.filter(x=>x!==p):lp.slice(0,ip);add(shuf(V.Q.filter(q=>eerder.includes(secOf(q.o).par)&&vers(q)).map(q=>q.id)));
     add(shuf(inP.map(q=>q.id)));return shuf(R)}
   /* ---------- terugblik (afspraak 13 nov): oude stof komt terug op groeiende tussenpozen, door elkaar.
      ST.sr[vraag-id] = [stap, dag waarop hij terug mag komen]. In één keer goed zonder hulp: een stap verder (3, 7, 14, 30 dagen).

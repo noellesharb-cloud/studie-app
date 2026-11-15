@@ -35,18 +35,34 @@ window.Gate=(()=>{
     const V=VAKDATA[vid];let best=null;
     hws(vid).forEach(h=>{const ids=idsVan(V,h);if(V.Q.some(q=>q.o===secId&&ids.has(q.id))&&(!best||h.d<best))best=h.d});
     return best}
+  /* Practica (afspraak 15 nov 2026): een vraag met een practicumcode in nr (H5PB, H5P3, H5P12 …) komt pas in vrij oefenen
+     als een huiswerk van dat vak de code noemt (in t of wat) en uiterlijk morgen af moet, of als ze dat huiswerk al opende.
+     Alleen voor vakken met pracSlot:true. pracGedaan:['H5PB'] in het vak zet een practicum open dat in de les is gedaan zonder huiswerk. */
+  const PRAC=/\bH\d+P[0-9A-Z]+\b/;
+  const pracCode=q=>{const m=String(q.nr||'').match(PRAC);return m?m[0]:null};
+  const hwsVak=V=>(window.HUISWERK||[]).filter(h=>h.app===V.id||String(h.vak||'').toLowerCase()===String(V.naam||'').toLowerCase());
+  const noemt=(h,c)=>new RegExp('\\b'+c+'\\b').test([h.t||'',...(h.wat||[])].join(' '));
+  function pracOpen(V,c,extra){if((V.pracGedaan||[]).includes(c))return true;
+    const hw=((window.Oefen&&Oefen.ctx&&Oefen.ctx.state)?Oefen.ctx.state(V.id):{}).hw||{},m=morgen();
+    return hwsVak(V).some(h=>noemt(h,c)&&(h.d<=m||h.id===extra||(hw[h.id]&&hw[h.id].length)))}
+  function pracKomt(V,c){const ds=hwsVak(V).filter(h=>noemt(h,c)).map(h=>h.d).sort();return ds[0]||null}
   /* het vak zoals het vrij oefenen het mag zien */
   function view(vid,extra){
-    const V=VAKDATA[vid];if(!V||!V.gate)return V;
+    const V=VAKDATA[vid];if(!V||!V.gate&&!V.pracSlot)return V;
     const hw=((window.Oefen&&Oefen.ctx&&Oefen.ctx.state)?Oefen.ctx.state(vid):{}).hw||{};
     const k=[vid,extra||'',morgen(),...hws(vid).filter(h=>hw[h.id]&&hw[h.id].length).map(h=>h.id)].join('|');
     if(!VIEW.has(k)){if(VIEW.size>50)VIEW.clear();VIEW.set(k,view0(vid,extra))}
     return VIEW.get(k)}
   function view0(vid,extra){
     const V=VAKDATA[vid];
-    const b=beh(vid,extra),Q=V.Q.filter(q=>b.has(q.id)),inQ=new Set(Q.map(q=>q.o));
-    const SECS=V.SECS.filter(s=>inQ.has(s.id)),pars=new Set(SECS.map(s=>s.par));
-    const dicht=V.SECS.filter(s=>!inQ.has(s.id)).map(s=>({s,d:komt(vid,s.id)}));
+    const b=V.gate?beh(vid,extra):new Set(V.Q.map(q=>q.id)),dc=new Map();
+    if(V.pracSlot)V.Q.forEach(q=>{const c=pracCode(q);if(!c)return;if(!dc.has(c))dc.set(c,pracOpen(V,c,extra));if(!dc.get(c))b.delete(q.id)});
+    const Q=V.Q.filter(q=>b.has(q.id)),inQ=new Set(Q.map(q=>q.o)),heeftQ=new Set(V.Q.map(q=>q.o));
+    /* zonder gate blijven onderdelen zonder eigen vragen (zoals 'door elkaar') gewoon staan */
+    const SECS=V.SECS.filter(s=>inQ.has(s.id)||!V.gate&&!heeftQ.has(s.id)),pars=new Set(SECS.map(s=>s.par));
+    const dicht=V.SECS.filter(s=>!SECS.includes(s)).map(s=>{let d=V.gate?komt(vid,s.id):null;
+      if(!d&&V.pracSlot){const cs=[...new Set(V.Q.filter(q=>q.o===s.id).map(pracCode).filter(Boolean))];d=cs.map(c=>pracKomt(V,c)).filter(Boolean).sort()[0]||null}
+      return {s,d}});
     return Object.assign({},V,{Q,SECS,BEG:(V.BEG||[]).filter(x=>pars.has(x[2])),leer:V.leer?V.leer.filter(p=>pars.has(p)):V.leer,dicht})}
   return {aan,beh,view,komt,morgen}
 })();
