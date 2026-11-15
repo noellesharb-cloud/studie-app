@@ -587,8 +587,12 @@ window.Oefen=(()=>{
   /* Nederlandse voornaamwoorden: 'wij moeten' = 'we moeten' (fout 13 nov: 'Wij moeten' werd fout gerekend bij δεῖ ἡμᾶς) */
   const NL_VNW={wij:'we',zij:'ze',jij:'je',mij:'me'};
   const tvLos=(x,hl)=>tvNorm(x,hl).normalize('NFD').replace(/[̄̆]/g,'').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/(^| )(wij|zij|jij|mij)(?= |$)/gi,(m,a,w)=>a+(w[0]===w[0].toUpperCase()?NL_VNW[w.toLowerCase()][0].toUpperCase()+NL_VNW[w.toLowerCase()].slice(1):NL_VNW[w.toLowerCase()])).trim();
-  function tvMatch(t,goed){
-    const heel=x=>goed.some(a=>tvLos(a)===tvLos(x)),hlOk=x=>!V.hoofdletters||goed.some(a=>tvLos(a,1)===tvLos(x,1));
+  /* lidwoord vrij (15 nov 2026, 'de zee' werd fout bij ἡ θάλαττα = zee): bij een vertaling naar het Nederlands
+     telt een Nederlands lidwoord vooraan niet mee, mag erbij of mag weg: 'de zee' = 'zee'. */
+  const NL_NAAR=/^(wat betekent|vertaal|wat is het nederlands voor|wat is de betekenis)/i;
+  const zonderLw=(x,hl)=>tvLos(x,hl).replace(/^(de|het|een|t) (?=\S)/i,'');
+  function tvMatch(t,goed,lw){
+    const heel=x=>goed.some(a=>tvLos(a)===tvLos(x)||(lw&&zonderLw(a)===zonderLw(x))),hlOk=x=>!V.hoofdletters||goed.some(a=>tvLos(a,1)===tvLos(x,1)||(lw&&zonderLw(a,1)===zonderLw(x,1)));
     if(heel(t))return hlOk(t)?'goed':'bijna';
     /* een deel van de betekenissen opgeschreven ('uit, weg van' bij 'uit, weg van, van'): goed als elk deel klopt */
     const dl=String(t).split(/\s*[,;]\s*/).filter(Boolean);
@@ -648,7 +652,7 @@ window.Oefen=(()=>{
         ins.forEach((x,j)=>{x.classList.add(lv[j]==='goed'?'ok':'bad');if(lv[j]!=='goed')x.insertAdjacentHTML('afterend',`<small class="tv-c">→ ${q.tvA[j]}</small>`)});
         const ok=lv.every(x=>x==='goed');
         return finishCustom(q,it,ok,ok?'<div class="fb ok"><div class="head">Goed!</div>Alles zelf goed opgeschreven.</div>':`<div class="fb bad"><div class="head">Niet goed</div>De rode vakjes kloppen niet. Het goede antwoord staat erachter.${lv.includes('bijna')?' Soms is het maar één letter, een hoofdletter of een accent, maar op de toets is dat ook fout.':''}${ul?`<div>${ul}</div>`:''}</div>`,jij)}
-      const t=ins[0].value.trim(),lv=t?tvMatch(t,tvGoed(q)):null;
+      const t=ins[0].value.trim(),lv=t?tvMatch(t,tvGoed(q),NL_NAAR.test(schoon(q.tv||q.q))):null;
       if(lv==='goed'){ins[0].classList.add('ok');return finishCustom(q,it,true,`<div class="fb ok"><div class="head">Goed!</div>${ul||''}</div>`,t)}
       if(hard&&lv==='mis'){ins[0].classList.add('bad');return finishCustom(q,it,false,`<div class="fb bad"><div class="head">Fout</div><div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>${uitleg}</div>`,t)}
       if(lv==='bijna'){ins[0].classList.add('bad');return finishCustom(q,it,false,`<div class="fb bad"><div class="head">Bijna, maar fout</div>Alleen ${V.hoofdletters?'een hoofdletter, ':''}een umlaut of een accent is anders. Op de toets is dat ook fout.<div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>${uitleg}</div>`,t)}
