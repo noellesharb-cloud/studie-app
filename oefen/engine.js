@@ -1098,6 +1098,9 @@ window.Oefen=(()=>{
     inzet:inzetView,
     /* t = de toets waarvoor ze oefent (alleen bij mode 'toets'): {naam, stof:[par], norm:75} */
     vakHome(target,id,par,mode,t){el=target;load(id);focusPar=par||null;focusMode=mode||null;
+      /* één cijferschaal (16 nov): ook via het tabblad Oefenen de voldoende-grens van de eerstvolgende toets van dit vak.
+         Eerst gaf dezelfde proeftoets via Oefenen 9,1 en via toetsvoorbereiding (voldoende bij 75%) 8,4. */
+      {const n=Number(Oefen.ctx.norm&&Oefen.ctx.norm(id));if(n>0&&n<100)NORM=n/100}
       if(mode==='toets'&&t){const n=Number(t.norm);NORM=n>0&&n<100?n/100:null;PTOT=t.pto?{naam:t.naam,P:t.pto}:null;
         const ok=new Set((t.stof||[]).filter(p=>pars().includes(p)));
         if(ok.size){TSTOF={naam:t.naam};const S=V.SECS.filter(s=>ok.has(s.par)),sid=new Set(S.map(s=>s.id));

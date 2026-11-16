@@ -420,7 +420,7 @@ ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;whit
 <script src="huiswerk.js?v=202611161730"></script>
 <script src="pto.js?v=202611141930"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611162130"></script>
+<script src="oefen/engine.js?v=202611162140"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>
@@ -998,6 +998,8 @@ function oefenCtx(){return {
   ouder:()=>isOuder(),
   save:id=>{if(isOuder())return;clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
   metToets:id=>heeftToets(id,today()),
+  /* voldoende-grens (%) van de eerstvolgende toets met datum en zonder cijfer, zodat elk cijfer in de app dezelfde schaal heeft */
+  norm:id=>{const s=today(),ts=(vakOf(id)?.toetsen||[]).filter(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>=0).sort((a,b)=>a.datum<b.datum?-1:1);return ts.length?ts[0].norm:null},
   nakijk:it=>{if(isOuder()||!db)return;const id=`${it.vak}-${it.rid}-${it.qid}`.replace(/[^\w-]/g,'_'),body=Object.assign({},it,{d:today(),t:Date.now(),oordeel:null});
     NK[id]=body;write(()=>db.collection('nakijk').doc(id).set(body))},
   wacht:vid=>nkOpen().filter(x=>x.vak===vid&&Date.now()-(x.t||0)<NK_DAGEN*864e5).map(x=>x.rid),
