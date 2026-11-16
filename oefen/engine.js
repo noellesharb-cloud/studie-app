@@ -478,7 +478,9 @@ window.Oefen=(()=>{
     let x=m[1];if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^\-?\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,'');
     const n=Number(x);return isFinite(n)?n:null};
   const tvVak=()=>V.reken!==false;
-  function tvorm(q,it){if(!tvVak()||!hasSt(q)||q.type||q.t==='open'||q.in||it.retry)return false;
+  /* kiezen hoort bij de vraag (welke tabel, welke grafiek lijkt op de jouwe): dan blijven de keuzes, ook in de toetsvorm (16 nov) */
+  const kiesVraag=q=>q.mc||String(q.a??'').includes('<svg')||/^(bij )?welke (tabel|grafiek)/i.test(String(q.q??'').trim());
+  function tvorm(q,it){if(!tvVak()||!hasSt(q)||q.type||q.t==='open'||q.in||it.retry||kiesVraag(q))return false;
     if(R.mode==='tvorm'||R.mode==='ptoets'||R.mode==='toets')return true;
     return !R.exam&&!['stap','opwarm','diag','fout'].includes(R.mode)&&(ST.ok||[]).includes(q.id)}
   /* formules nakijken (afspraak 12 nov): 'y = -2x + 5', 'a = -2 en b = 5', 'y = 3/4x + 2' of '12 3/19'. Beide kanten worden
@@ -519,33 +521,57 @@ window.Oefen=(()=>{
         if(r===true)return true;if(r===null)best=null}
       return best}
     return {kan,check}})();
+  /* Antwoord dat een tabel is (tbl() in wi.js): in de toetsvorm vult ze de y-rij in vakjes in (afspraak 16 nov: een tabel typen in een tekstvak kan niet). */
+  function tabelUit(a){const S=String(a??'');if(!/<table class="tb">/.test(S))return null;
+    const rows=S.match(/<tr>[\s\S]*?<\/tr>/g);if(!rows||rows.length!==2)return null;
+    const cel=r=>[...r.matchAll(/<t[dh]>([\s\S]*?)<\/t[dh]>/g)].map(m=>m[1]);
+    const r0=cel(rows[0]),r1=cel(rows[1]);if(r0.length!==r1.length||r0.length<2)return null;
+    return {kop:r0,y:r1}}
+  /* getal uit een tabelcel of uit wat ze typt: 7,07  -1/8  -2 1/2  $-2[[1|2]]$  −6. Een streepje (–) = bestaat niet. */
+  function celWaarde(v){let t=String(v??'').replace(/\$/g,'').replace(/<[^>]+>/g,'').replace(/[−‒]/g,'-').trim();
+    if(t==='')return NaN;
+    if(/^(–|-|—|\/|x|kan niet|bestaat niet|geen)$/i.test(t))return '–';
+    t=t.replace(/\[\[(-?\d+)\|(\d+)\]\]/g,' $1/$2').trim();
+    let m=t.match(/^(-?)\s*(\d+)\s+(\d+)\s*\/\s*(\d+)$/);if(m)return (m[1]?-1:1)*(+m[2]+m[3]/m[4]);
+    m=t.match(/^(-?)\s*(\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)$/);if(m)return (m[1]?-1:1)*parseFloat(m[2].replace(',','.'))/parseFloat(m[3].replace(',','.'));
+    t=t.replace(/\s/g,'');return /^-?\d+(?:[.,]\d+)?$/.test(t)?Number(t.replace(',','.')):null}
   function askToets(q,it,s){
     /* soort antwoord: een getal (de app kijkt na), een formule (de app kijkt na), of iets anders (zelf nakijken).
        Afspraak 12 nov: ze typt altijd eerst haar eindantwoord, ook als de app het niet kan nakijken. Zo kan ze niet doorklikken
        en ziet de ouder in het overzicht wat ze opschreef. */
-    const g=eindGetal(q.a),fm=g==null&&FM.kan(q.a),soort=g!=null?'getal':fm?'formule':'tekst';
+    const TB=tabelUit(q.a),g=TB?null:eindGetal(q.a),fm=!TB&&g==null&&FM.kan(q.a),soort=TB?'tabel':g!=null?'getal':fm?'formule':'tekst';
     el.innerHTML=`${kop(it,q,s,false)}
-    <div class="card stack"><span class="tag">Toetsvorm</span><p>${soort!=='tekst'?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':R.exam?' Zo gaat het ook op de echte toets.':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
-      ${soort==='getal'?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`
+    <div class="card stack"><span class="tag">Toetsvorm</span><p>${soort==='tabel'?'Maak de tabel eerst op papier, zoals op de toets. Neem hem daarna over in de vakjes hieronder.':soort!=='tekst'?'Werk de vraag helemaal uit op papier, zoals op de toets: met formule, invullen, uitkomst en eenheid.':'Schrijf je antwoord op papier, zoals op de toets: in hele zinnen, met de reden erbij.'}${R.mode==='tvorm'?'':R.exam?' Zo gaat het ook op de echte toets.':' Deze had je eerder al goed, dus nu zonder hulp.'}</p>
+      ${soort==='tabel'?`<label class="sub">Vul de tabel in zoals in je schrift. Een breuk typ je als 3/4 of 2 1/2, een kommagetal met een komma. Bestaat een waarde niet, typ dan een streepje (-).</label>
+        <div class="tw"><table class="tb tvt"><tr><th>${fmt(TB.kop[0])}</th>${TB.kop.slice(1).map(v=>`<td>${fmt(v)}</td>`).join('')}</tr><tr><th>${fmt(TB.y[0])}</th>${TB.y.slice(1).map((v,i)=>`<td><input class="cell tvc" data-i="${i}" autocomplete="off" spellcheck="false" aria-label="waarde ${i+1}"></td>`).join('')}</tr></table></div>`
+        :soort==='getal'?`<label class="sub" for="ta">Je eindantwoord (alleen het getal):</label><div class="row"><input id="ta" class="cell" style="width:160px;font-size:1.15rem" inputmode="decimal" autocomplete="off" aria-label="Eindantwoord"></div>`
         :soort==='formule'?`<label class="sub" for="ta">Je eindantwoord, zoals in je schrift (bijvoorbeeld y = -2x + 5; een breuk typ je als 3/4, een kommagetal met een komma):</label><input id="ta" class="cell" style="width:100%;max-width:320px;font-size:1.1rem;text-align:left" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Eindantwoord">`
         :`<label class="sub" for="ta">Je antwoord in het kort (wat je onderaan in je schrift hebt staan):</label><textarea id="ta" class="ta" rows="2" spellcheck="false" aria-label="Je antwoord"></textarea>`}
       <p class="ko-err" id="taerr" role="alert"></p>
       <button class="btn" id="see">Klaar: laat de uitwerking zien</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelectorAll('details.denk').forEach(d=>d.remove());
     el.querySelector('#stop').onclick=stopRonde;
+    const tcs=[...el.querySelectorAll('.tvc')];if(tcs.length){tcs.forEach((c,i)=>c.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();(tcs[i+1]||el.querySelector('#see')).focus()}});tcs[0].focus()}
     const ti=el.querySelector('#ta');if(ti){if(ti.tagName==='INPUT')ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('#see').click()}};ti.focus()}
     el.querySelector('#see').onclick=()=>{
-      const typed=ti?ti.value.trim():'';
-      if(!typed){el.querySelector('#taerr').textContent='Typ eerst je eindantwoord. Daarna zie je de uitwerking en kun je kijken of het klopte.';ti.focus();return}
+      let typed=ti?ti.value.trim():'';
+      if(soort==='tabel'){const leeg=tcs.find(c=>!c.value.trim());if(leeg){el.querySelector('#taerr').textContent='Vul eerst alle vakjes van de tabel in. Daarna zie je de uitwerking en kun je kijken of het klopte.';leeg.focus();return}
+        typed=TB.kop.slice(1).map((x,i)=>schoon(fmt(x))+': '+tcs[i].value.trim()).join(' | ')}
+      else if(!typed){el.querySelector('#taerr').textContent='Typ eerst je eindantwoord. Daarna zie je de uitwerking en kun je kijken of het klopte.';ti.focus();return}
       R.tRev=R.tRev||Date.now();
       let goed=null;
       if(soort==='getal'){const tn=eindGetal(typed),tl=lees(typed);goed=isFinite(tl)?zelfde(tl,g):tn!=null?zelfde(tn,g):FM.check(q.a,typed)===true}
       else if(soort==='formule')goed=FM.check(q.a,typed);
-      ti.readOnly=true;if(goed!=null)ti.classList.add(goed?'ok':'bad');el.querySelector('#taerr').textContent='';
+      else if(soort==='tabel'){let alle=true,twijfel=false;tcs.forEach((c,i)=>{const w=celWaarde(TB.y[i+1]),j=celWaarde(c.value);c.readOnly=true;
+          let ok=null;if(w==='–')ok=j==='–';else if(typeof w==='number'&&isFinite(w))ok=typeof j==='number'&&zelfde(j,w);
+          if(ok===null)twijfel=true;else{c.classList.add(ok?'ok':'bad');if(!ok)alle=false}});
+        goed=!alle?false:twijfel?null:true}
+      if(ti){ti.readOnly=true;if(goed!=null)ti.classList.add(goed?'ok':'bad')}el.querySelector('#taerr').textContent='';
       el.querySelector('#see').remove();
       const box=el.querySelector('#kp');
       box.innerHTML=`${goed===true?'<div class="fb ok"><div class="head">Je eindantwoord klopt.</div>Kijk nu of je uitwerking ook klopt.</div>'
           :goed===false?`<div class="fb bad"><div class="head">Je eindantwoord klopt niet.</div>Het antwoord is ${fmt(q.a)}. Zoek in de uitwerking waar het misging.</div>`
+          :soort==='tabel'?`<div class="fb"><div class="head">Vergelijk je tabel zelf</div>Niet elk vakje kon de app nakijken. Het antwoord is ${fmt(q.a)}</div>`
           :soort==='formule'?`<div class="fb"><div class="head">Vergelijk je antwoord zelf</div>De app kan je schrijfwijze niet precies nakijken (bijvoorbeeld een afgerond getal). Het antwoord is ${fmt(q.a)}.</div>`:''}
         <div class="tip stack"><b>${soort!=='tekst'?'De uitwerking: vink aan welke stappen jij ook goed op papier had':'Het antwoord: vink aan welke punten jij ook had'}</b>
         <ul class="kp">${q.st.map((x,i)=>`<li><label><input type="checkbox" data-i="${i}"><span><span class="why">${fmt(x.t)}</span>${x.s?`<br><b>${fmt(x.s)}</b>`:''}</span></label></li>`).join('')}</ul>
