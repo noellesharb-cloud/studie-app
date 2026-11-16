@@ -385,6 +385,17 @@ textarea.nk-opm{min-height:56px;height:56px}
 ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;white-space:normal;color:var(--ink);line-height:1.35}ul.pto li{margin:3px 0}ul.pto .pa{display:block;color:var(--ok);font-size:.8rem}
 .ptob{display:block;margin-top:4px}.toets details.stof{margin-top:2px}
 .tvt th,.tvt td{padding:4px 3px}.tvt input.cell{width:52px}
+/* vooruitgang bij paragraaftoets en proeftoets (16 nov) */
+.vg{display:inline-flex;align-items:flex-end;gap:6px;height:58px;margin:8px 0 2px;vertical-align:bottom}
+.vg-k{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:30px}
+.vg-b{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--ok);opacity:.55}
+.vg-b.laag{background:var(--bad)}
+.vg-k.nu .vg-b{opacity:1}
+.vg-c{font-size:.75rem;color:var(--soft);font-variant-numeric:tabular-nums;margin-top:2px;line-height:1}
+.vg-k.nu .vg-c{color:var(--ink);font-weight:700}
+.vg-op{color:var(--ok);font-weight:700;font-size:.9rem}
+.vg-z{color:var(--soft);font-size:.9rem}
+.sec.fout-klaar{border-color:var(--c1)}
 </style>
 
 </head>
@@ -409,7 +420,7 @@ ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;whit
 <script src="huiswerk.js?v=202611161730"></script>
 <script src="pto.js?v=202611141930"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611161940"></script>
+<script src="oefen/engine.js?v=202611162130"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>

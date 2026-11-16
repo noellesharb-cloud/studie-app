@@ -52,8 +52,17 @@ window.Oefen=(()=>{
      Zij ziet de laatste keer, de ouder elke keer met het cijfer. */
   const DGN=['zo','ma','di','wo','do','vr','za'],MND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
   const wanneer=rid=>{const t=parseInt(rid,36);if(!isFinite(t)||t<1.6e12)return '';const d=new Date(t);return `${DGN[d.getDay()]} ${d.getDate()} ${MND[d.getMonth()]} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`};
+  /* vooruitgang (afspraak 16 nov): elke keer als staafje met het cijfer, oud links en nieuw rechts, plus wat er veranderde.
+     c(x) geeft het cijfer als getal. Zij ziet de laatste keer, de ouder elke keer met datum en tijd. */
   const keren=(rs,c)=>{rs=(rs||[]).filter(x=>wanneer(x.rid));if(!rs.length)return '';const ouder=Oefen.ctx.ouder&&Oefen.ctx.ouder(),l=rs[rs.length-1];
-    return ouder?`<br><span class="pt-k">Gemaakt: ${rs.slice().reverse().map(x=>`${wanneer(x.rid)} (${c(x)})`).join(' · ')}</span>`:`<br><span class="pt-k">Laatst gemaakt: ${wanneer(l.rid)}</span>`};
+    const cs=rs.map(c),n=cs.length,laatst=cs[n-1];
+    const bars=`<span class="vg" aria-label="Cijfers: ${cs.map(f1).join(', ')}">${rs.map((x,i)=>`<span class="vg-k${i===n-1?' nu':''}" title="${wanneer(x.rid)}"><span class="vg-b${cs[i]>=5.5?'':' laag'}" style="height:${Math.max(8,Math.round((cs[i]-4)/6*100))}%"></span><span class="vg-c">${f1(cs[i])}</span></span>`).join('')}</span>`;
+    let zin='';
+    if(n>1){const d=Math.round((laatst-cs[n-2])*10)/10,eerste=cs[0],max=Math.max(...cs);
+      zin=d>0?`<span class="vg-op">▲ ${f1(d)} hoger dan de vorige keer${laatst>=max&&n>2?', je beste tot nu toe':''}</span>`
+        :d<0?`<span class="vg-z">${f1(-d)} lager dan de vorige keer${laatst>eerste?`, wel hoger dan je eerste keer (${f1(eerste)})`:''}</span>`
+        :`<span class="vg-z">Even hoog als de vorige keer</span>`}
+    return `<br>${bars}${zin?'<br>'+zin:''}`+(ouder?`<br><span class="pt-k">Gemaakt: ${rs.slice().reverse().map(x=>`${wanneer(x.rid)} (${f1(c(x))})`).join(' · ')}</span>`:`<br><span class="pt-k">Laatst gemaakt: ${wanneer(l.rid)}</span>`)};
   const top=(back,label)=>`<div class="top"><button class="link" id="back">← ${back}</button><span class="tag">${label||''}</span></div>`;
 
   /* V = wat vrij oefenen mag zien (oefen/gate.js: alleen wat al in een huiswerk aan de beurt was), VF = het hele vak.
@@ -95,11 +104,13 @@ window.Oefen=(()=>{
     const secBtn=s=>{const n=V.Q.filter(q=>q.o===s.id).length,b=ST.best[s.id],w=wrongIn(s.id);
       return `<button class="sec" data-s="${s.id}">${chip(s)}<span><b>${s.name}</b><small>${s.sub} · ${n} vragen${ST.diag&&ST.diag.r[s.id]?` · instaptoets ${ST.diag.r[s.id][0]}/${ST.diag.r[s.id][1]}`:''}${w?` · <span style="color:var(--bad)">${w} fout</span>`:''}</small></span><span class="best">${b!=null?'beste<br>'+b+'%':''}</span></button>`};
     const wacht=new Set((Oefen.ctx.wacht?Oefen.ctx.wacht(vid):[]));
+    /* beste proeftoets als cijfer, net als bij de pogingen (16 nov: stond er als percentage) */
+    const besteToets=()=>{const o=ST.toetsR||{},cs=(o.rondes||[]).map(x=>cijfer(x.g,x.t));const oud=o.oud!=null?o.oud:(o.rondes?null:ST.best.toets);if(oud!=null)cs.push(cijfer(oud,100));return cs.length?Math.max(...cs):cijfer(ST.best.toets,100)};
     const voorl=rs=>(rs||[]).some(x=>wacht.has(x.rid))?'<br><small>voorlopig</small>':'';
     const ttCard=p=>{if(!ttHeeft(p))return '';const b=(ST.ttoets||{})[p],ok=ttGehaald(p);
       return `<button class="sec pt${ok?' gehaald':''}" data-tt="${p}"><span class="sq" style="background:${ok?'var(--ok)':'var(--c2)'};color:var(--bg)">${ok?'✓':'1'}</span><span><b>Tussentoets</b><small>6 meerkeuzevragen: zit de basis? ${ok?'Gehaald: de paragraaftoets staat open.':'Haal een 7, dan gaat de paragraaftoets open.'}</small></span><span class="best">${b!=null?'beste<br>'+f1(b):''}</span></button>`};
     const ptCard=p=>{const r=ST.ptoets[p],ok=r&&r.best>=7,dicht=ttNodig(p);
-      return ttCard(p)+`<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"${dicht?' disabled aria-disabled="true"':''}><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>${dicht?'🔒 Gaat open als je de tussentoets hierboven met een 7 of hoger haalt. ':''}10 vragen zonder hulp${V.toetsvorm||tvVak()?' en zonder antwoorden om uit te kiezen, zoals op school':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}${r?keren(r.rondes,x=>f1(x.c)):''}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
+      return ttCard(p)+`<button class="sec pt${ok?' gehaald':''}" data-pt="${p}"${dicht?' disabled aria-disabled="true"':''}><span class="sq" style="background:${ok?'var(--ok)':'var(--ink)'};color:var(--bg)">${ok?'✓':'T'}</span><span><b>Paragraaftoets</b><small>${dicht?'🔒 Gaat open als je de tussentoets hierboven met een 7 of hoger haalt. ':''}10 vragen zonder hulp${V.toetsvorm||tvVak()?' en zonder antwoorden om uit te kiezen, zoals op school':''}, met een cijfer. ${ok?'Gehaald.':'Haal een 7 of hoger.'}${r?keren(r.rondes,x=>x.c):''}</small></span><span class="best">${r?'beste<br>'+f1(r.best)+voorl(r.rondes):''}</span></button>`};
     const B=V.basis,isB=p=>!!B&&p===B.par;
     const basisCards=p=>{const d=ST.diag,n=diagIds(p).length,dg=d&&Object.values(d.r).reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]);
       return `<button class="sec pt" id="b-diag"><span class="sq" style="background:var(--ink);color:var(--bg)">I</span><span><b>Instaptoets: wat zit er al goed?</b><small>${n} sommen zonder hulp. Daarna zie je per regel hoe het gaat.${d?' Gemaakt op '+d.d.split('-').reverse().join('-')+'.':''}</small></span><span class="best">${dg?dg[0]+' / '+dg[1]:''}</span></button>
@@ -134,8 +145,8 @@ window.Oefen=(()=>{
     <div class="stack"><span class="tag">Door elkaar</span>
       ${V.SECS.filter(s=>s.par==='mix').map(secBtn).join('')}
       ${tvVak()&&tvIds().length?`<button class="sec" id="tvboek"><span class="sq" style="background:var(--ink);color:var(--bg)">B</span><span><b>Oefentoets uit het boek</b><small>${tvIds().length} vragen in toetsvorm: zelf uitwerken op papier, dan nakijken</small></span></button>`:''}
-      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer${keren((ST.toetsR||{}).rondes,x=>f1(cijfer(x.g,x.t)))}</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+ST.best.toets+'%'+voorl((ST.toetsR||{}).rondes):''}</span></button>
-      <button class="sec" id="fouten"><span class="sq" style="background:var(--line)">${WR().length}</span><span><b>Mijn foute vragen</b><small>${WR().length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,WR().length)}.`:'Nog niets fout gedaan'}${TSTOF&&ST.wrong.length>WR().length?` · ${ST.wrong.length-WR().length} uit andere stof komen na de toets weer`:''}</small></span></button>
+      <button class="sec" id="toets"><span class="sq" style="background:var(--c2)">T</span><span><b>Proeftoets</b><small>20 vragen uit alle onderdelen${V.toetsvorm?', zelf opschrijven zoals op de toets':''}, met een cijfer${keren((ST.toetsR||{}).rondes,x=>cijfer(x.g,x.t))}</small></span><span class="best">${ST.best.toets!=null?'beste<br>'+f1(besteToets())+voorl((ST.toetsR||{}).rondes):''}</span></button>
+      <button class="sec${WR().length?' fout-klaar':''}" id="fouten"><span class="sq" style="background:${WR().length?'var(--c1)':'var(--line)'}">${WR().length}</span><span><b>Mijn foute vragen</b><small>${WR().length?`Ze komen terug in andere woorden. Per keer ${Math.min(FOUT_MAX,WR().length)}.`:'Nog niets fout gedaan'}${TSTOF&&ST.wrong.length>WR().length?` · ${ST.wrong.length-WR().length} uit andere stof komen na de toets weer`:''}</small></span></button>
       <button class="sec" id="spiek"><span class="sq" style="background:var(--line)">?</span><span><b>Spiekbrief</b><small>Alle regels en begrippen op één plek</small></span></button>
     </div>
     ${V.log&&V.log.length?`<div class="card"><span class="tag">Huiswerk in deze app</span><ul class="log">${V.log.map(l=>`<li><b>${l[0]}</b> ${l[1]}: ${l[2]}</li>`).join('')}</ul></div>`:''}`;
