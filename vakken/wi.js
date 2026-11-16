@@ -1485,6 +1485,7 @@ const Q=[
  a:GE8(x=>2*x*x+x-10),f:[[GE8(x=>-2*x*x-x+10),'$a = 2$ is positief, dus een dalparabool, geen bergparabool.'],[GE8(x=>2*x*x-x-10),'Deze gaat bij $x = 2$ door $y = -4$. Bij jouw formule is $y = 0$ bij $x = 2$.']]},
 /* ===== Extra opdrachten H3 (Teams, hele blad): E3ab, E7ac, E9 t/m E30, E32. Geen huiswerk, wel goed voor de toets.
    Antwoordenblad van de docent (E1 t/m E12) klopt niet bij E3a, E9d, E10a en E10b; hier staat wat uit de opdracht volgt.
+   Antwoordenblad E14 t/m E20 (16 nov): klopt niet bij E15b/c (56 i.p.v. −88, minteken vergeten), E18d (−½ i.p.v. −1½) en E19a (−27 i.p.v. −28).
    Antwoordenblad E20 t/m E26 (16 nov): E20, E21a, E22, E24 komen overeen. E23 is nu opgesplitst in de vier tabellen van het blad.
    E25 (blad: 16 en 1/8) en E26d (blad: y = 50/x) passen niet bij de opgave zoals hij hier staat: foto van het blad gevraagd. ===== */
 {id:'e3a',o:'rev',nr:'Extra opdracht E3a',q:'Is er bij deze tabel sprake van een recht evenredig verband? Zo ja, wat is de evenredigheidsconstante?'+tbl([0,1,2,3],[0,5,10,15]),
@@ -1587,11 +1588,11 @@ const Q=[
  a:'$(-12, -16)$',f:[['$(12, -16)$','Bij $(x + 12)$ is $p = -12$.'],['$(-12, 16)$','q is $-16$: neem het teken mee.']]},
 {id:'e15b',o:'vorm',nr:'Extra opdracht E15b',q:'Gegeven is $y = -[[1|2]](x + 12)^2 - 16$. Geef de coördinaten van het snijpunt met de y-as.',
  denk:'$x = 0$ invullen. Eerst haakjes, dan kwadraat.',
- st:[S('Haakjes.','$0 + 12 = 12$, $12^2 = 144$'),S('Keer $-[[1|2]]$, min 16.','$-72 - 16 = -88$'),S('Snijpunt.','$(0, -88)$')],
- a:'$(0, -88)$',f:[['$(0, -16)$','Bij $x = 0$ is $(0 + 12)^2 = 144$, die valt niet weg.'],['$(0, 56)$','$-[[1|2]] · 144 = -72$, en dan $-72 - 16 = -88$.']]},
+ st:[S('Haakjes.','$0 + 12 = 12$, $12^2 = 144$'),S('Keer $-[[1|2]]$, min 16.','$-72 - 16 = -88$'),S('Snijpunt.','$(0, -88)$'),S('Let op.','Op het antwoordenblad van de docent staat 56. Dan is het minteken van $-[[1|2]]$ vergeten: $+72 - 16 = 56$. Het is $-[[1|2]] · 144 = -72$, dus $-88$. Dit is waarschijnlijk de fout in E13 t/m E16 waar Van Neck naar vraagt.')],
+ a:'$(0, -88)$',f:[['$(0, -16)$','Bij $x = 0$ is $(0 + 12)^2 = 144$, die valt niet weg.'],['$(0, 56)$','$-[[1|2]] · 144 = -72$, en dan $-72 - 16 = -88$. (Op het antwoordenblad staat 56: daar is het minteken vergeten.)']]},
 {id:'e15c',o:'vorm',nr:'Extra opdracht E15c',q:'De grafiek van $y = -[[1|2]](x + 12)^2 - 16$ snijdt de y-as in $(0, -88)$. Welk ander punt op de grafiek ligt op dezelfde hoogte?',
  denk:'Spiegel in de symmetrieas $x = -12$.',
- st:[S('Van $x = 0$ naar de as $x = -12$ is 12 naar links.','nog 12 verder naar links'),S('$-12 - 12 = -24$.','$(-24, -88)$')],
+ st:[S('Van $x = 0$ naar de as $x = -12$ is 12 naar links.','nog 12 verder naar links'),S('$-12 - 12 = -24$.','$(-24, -88)$'),S('Let op.','Op het antwoordenblad staat $x = -24$ met 56. De $x = -24$ klopt; de 56 komt uit de fout bij E15b. De y is $-88$, net als bij $(0, -88)$.')],
  a:'$(-24, -88)$',f:[['$(24, -88)$','De symmetrieas is $x = -12$. Gespiegeld ligt het punt nog 12 verder naar links: $-24$.'],['$(-12, -88)$','$x = -12$ is de top zelf. Het spiegelpunt ligt aan de andere kant.']]},
 {id:'e16a',o:'vorm',nr:'Extra opdracht E16a',q:'Schrijf $y = 3(x + 4)^2 - 20$ in de algemene vorm.',
  denk:'Eerst $(x + 4)^2 = x^2 + 8x + 16$, dan keer 3.',
@@ -1624,11 +1625,11 @@ const Q=[
  a:'$x = -1[[1|2]]$',f:[['$x = 1[[1|2]]$','$2 + -5 = -3$, dus $-3 : 2 = -1[[1|2]]$.'],['$x = 3[[1|2]]$','Je hebt $2 + 5$ gedaan. De snijpunten zijn 2 en $-5$.']]},
 {id:'e18d',o:'vorm',nr:'Extra opdracht E18d',q:'Geef de coördinaten van de top van $y = [[1|4]](x - 2)(x + 5)$.',
  denk:'Vul $x = -1[[1|2]]$ in.',
- st:[S('Haakjes.','$-1[[1|2]] - 2 = -3[[1|2]]$ en $-1[[1|2]] + 5 = 3[[1|2]]$'),S('Vermenigvuldigen.','$-3[[1|2]] · 3[[1|2]] = -12[[1|4]]$'),S('Keer $[[1|4]]$.','$-12[[1|4]] : 4 = -3[[1|16]]$'),S('Top.','$(-1[[1|2]], -3[[1|16]])$')],
+ st:[S('Haakjes.','$-1[[1|2]] - 2 = -3[[1|2]]$ en $-1[[1|2]] + 5 = 3[[1|2]]$'),S('Vermenigvuldigen.','$-3[[1|2]] · 3[[1|2]] = -12[[1|4]]$'),S('Keer $[[1|4]]$.','$-12[[1|4]] : 4 = -3[[1|16]]$'),S('Top.','$(-1[[1|2]], -3[[1|16]])$'),S('Let op.','Op het antwoordenblad staat $-[[1|2]]$ en $-3[[1|16]]$. De $-[[1|2]]$ is een typfout: bij E18c staat op het blad zelf $x = -1[[1|2]]$.')],
  a:'$(-1[[1|2]], -3[[1|16]])$',f:[['$(-1[[1|2]], -12[[1|4]])$','Vergeet de $[[1|4]]$ vooraan niet: $-12[[1|4]] · [[1|4]] = -3[[1|16]]$.'],['$(-1[[1|2]], 3[[1|16]])$','Min keer plus is min: $-3[[1|2]] · 3[[1|2]]$ is negatief.']]},
 {id:'e19a',o:'vorm',nr:'Extra opdracht E19a',q:'Gegeven is $y = -4(x + 1)(x + 7)$. Geef het snijpunt met de y-as.',
- denk:'$x = 0$.',st:[S('Invullen.','$-4 · 1 · 7 = -28$'),S('Snijpunt.','$(0, -28)$')],
- a:'$(0, -28)$',f:[['$(0, 28)$','$-4 · 1 · 7$ is negatief.'],['$(0, 7)$','Alle factoren keer elkaar: $-4 · (0 + 1) · (0 + 7)$.']]},
+ denk:'$x = 0$.',st:[S('Invullen.','$-4 · 1 · 7 = -28$'),S('Snijpunt.','$(0, -28)$'),S('Let op.','Op het antwoordenblad staat $(0, -27)$. Maar $-4 · (0 + 1) · (0 + 7) = -4 · 7 = -28$. Vraag het na als je twijfelt.')],
+ a:'$(0, -28)$',f:[['$(0, 28)$','$-4 · 1 · 7$ is negatief.'],['$(0, 7)$','Alle factoren keer elkaar: $-4 · (0 + 1) · (0 + 7)$.'],['$(0, -27)$','$-4 · 7 = -28$. (Op het antwoordenblad staat $-27$: vraag het na.)']]},
 {id:'e19b',o:'vorm',nr:'Extra opdracht E19b',q:'Geef de snijpunten van $y = -4(x + 1)(x + 7)$ met de x-as.',
  denk:'Een factor 0.',st:[S('$x + 1 = 0$ of $x + 7 = 0$.','$(-1, 0)$ en $(-7, 0)$')],
  a:'$(-1, 0)$ en $(-7, 0)$',f:[['$(1, 0)$ en $(7, 0)$','$x + 1 = 0$ geeft $x = -1$.'],['$(-4, 0)$, $(-1, 0)$ en $(-7, 0)$','$-4$ is a, geen factor met x. Die geeft geen snijpunt.']]},
