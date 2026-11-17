@@ -264,9 +264,10 @@ Q.push({id:'v5a5',o:'v5',nr:'Opdracht 5a',q:`Wat is het werkwoordelijk gezegde?$
 zdQ('v5c1','v5','Opdracht 5c',Z5c,'de politie','ow','Wie zou zich verbazen? De politie.');
 zdQ('v5c2','v5','Opdracht 5c',Z5c,'nog steeds','bwb','Zegt iets over tijd: nog steeds.');
 zdQ('v5c3','v5','Opdracht 5c',Z5c,'over het toenemend aantal inbraken','vv','zich verbazen over: vast voorzetsel. Zou de politie zich erover verbazen?');
+zdQ('v5c5','v5','Opdracht 5c',Z5c,'zich','lv','zich verbazen is toevallig wederkerend: je kunt ook een ander verbazen. Dan is zich het lv (grammatica zinsdelen §3).');
 Q.push({id:'v5c4',o:'v5',nr:'Opdracht 5c',q:`Wat is het werkwoordelijk gezegde?${S(Z5c)}`,a:'Zou … verbazen',
   f:[['Zou','verbazen hoort er ook bij: alle werkwoorden horen bij het wg.'],['verbazen','Zou (de persoonsvorm) hoort er ook bij.'],['Zou … steeds verbazen','steeds is een bijwoord, geen werkwoord.']],
-  tv:`Noteer het werkwoordelijk gezegde.${S(Z5c)}`,tvAlt:['zou verbazen','zou zich verbazen','zou … zich verbazen'],u:`<b>Zou … verbazen</b>. Zich hoort bij het wederkerend werkwoord zich verbazen; schrijft je docent zich bij het wg, volg dan de docent.<div class="why">${ZDW.wg}</div>`,v:{q:`Welke woorden vormen samen het wg?${S(Z5c)}`}});
+  tv:`Noteer het werkwoordelijk gezegde.${S(Z5c)}`,tvAlt:['zou verbazen'],u:`<b>Zou … verbazen</b>. zich verbazen is toevallig wederkerend (je kunt ook een ander verbazen), dus zich is hier lv en hoort niet bij het wg (zie zinsdelen §3).<div class="why">${ZDW.wg}</div>`,v:{q:`Welke woorden vormen samen het wg?${S(Z5c)}`}});
 zdQ('v5d1','v5','Opdracht 5d',Z5d,'Aan onze reis naar Lapland','vv','plezier beleven aan: vast voorzetsel. We hebben er veel plezier aan beleefd.');
 zdQ('v5d2','v5','Opdracht 5d',Z5d,'we','ow','Wie hebben plezier beleefd? We.');
 zdQ('v5d3','v5','Opdracht 5d',Z5d,'vorig jaar','bwb','Zegt wanneer.');
