@@ -1,4 +1,6 @@
-/* Levensbeschouwing, hoofdstuk 6 De islam: paragraaf 1 en 2 (werkboek blz. 113–120).
+/* Levensbeschouwing, hoofdstuk 6 De islam: paragraaf 1 en 2 (werkboek blz. 113–120),
+   bron 7 en §3 (bron 8–13) uit de aantekeningen van de docent (PowerPoint 'Islam aantekeningen', 17 nov 2026).
+   Bron 9 staat niet als bron in de aantekeningen; de dia over de ramadan hoort bij saum (bron 8/9).
    Alleen vragen en uitleg; de manier van oefenen staat in oefen/engine.js.
    Feiten komen uit de bronnen in het boek. Modelantwoorden bij open vragen zijn door Claude gemaakt
    en kunnen afwijken van die van de docent. */
@@ -40,7 +42,46 @@ const SECS=[
   rules:[['Westerse cultuur','sterven vaak gezien als het einde; zoveel mogelijk pijnbestrijding',''],
    ['Veel moslims','accepteren pijn eerder geduldig; euthanasie wordt vaak afgewezen','Het leven is door God gegeven; alleen God bepaalt hoe lang het duurt.'],
    ['Lijden is niet altijd zinloos','een beproeving van God waardoor je sterker wordt, of een straf waardoor je schuld inlost en minder hoeft te lijden na je dood',''],
-   ['Lijden verzachten mag','smeekbeden tot God, pelgrimstocht naar Mekka, vasten, geld geven aan goede doelen','Of God daar iets mee doet, is aan God.']]}
+   ['Lijden verzachten mag','smeekbeden tot God, pelgrimstocht naar Mekka, vasten, geld geven aan goede doelen','Of God daar iets mee doet, is aan God.']]},
+ {id:'uit',par:'2',nr:'7',name:'De islamitische uitvaart',c:'--c1',sub:'Bron 7 · aantekeningen van de docent',
+  rules:[['Waarom deze rituelen?','Moslims geloven in een lichamelijke opstanding op de Dag des oordeels. Dat zie je terug in de rituelen bij een uitvaart.',''],
+   ['Begraven','Het lichaam moet ongeschonden blijven: daarom wordt een moslim begraven.',''],
+   ['Eeuwige grafrust','Het graf mag nooit worden geruimd.','Daarom wil een moslim vaak in een islamitisch land begraven worden.'],
+   ['Wassen','Het lichaam wordt minstens 3 keer gewassen.','Mannen door mannen, vrouwen door vrouwen.'],
+   ['Kafan','De witte doeken waarin het lichaam wordt gewikkeld en dichtgeknoopt.','In het graf wordt de kafan bij het hoofd en de voeten losgemaakt.'],
+   ['In het graf','Op de rechterzij, met het gezicht richting Mekka. Er worden rituele teksten uitgesproken.','Geen kist: er blijft ruimte boven het lichaam.']]},
+ {id:'zui',par:'3',nr:'8',name:'De vijf zuilen',c:'--c2',sub:'Bron 8 · aantekeningen van de docent',
+  rules:[['Sjahada','de geloofsbelijdenis: "Er is geen god dan Allah, en Mohammed is zijn profeet."','Een getuigenis. Bij een baby wordt de sjahada ingefluisterd.'],
+   ['Salaat','5 keer per dag bidden, op vaste tijden, richting Mekka',''],
+   ['Zakaat','armenbelasting','Niet verwarren met sadaqa: een vrijwillige gift aan de armen.'],
+   ['Saum','vasten in de maand ramadan',''],
+   ['Hadj','de bedevaart naar Mekka','']]},
+ {id:'ram',par:'3',nr:'9',name:'Vasten in de ramadan',c:'--c3',sub:'Saum · aantekeningen van de docent',
+  rules:[['Wanneer?','tussen zonsopkomst en zonsondergang, een maand lang',''],
+   ['Niet','eten en drinken, geen (seksuele) gemeenschap, geen zonden plegen',''],
+   ['Wel','extra de Koran lezen en bidden, meeleven met de armen, tot jezelf komen',''],
+   ['Waarom?','De ramadan is een maand van bezinning: een spirituele schoonmaak.','']]},
+ {id:'mos',par:'3',nr:'10',name:'De moskee',c:'--c4',sub:'Bron 10 · aantekeningen van de docent',
+  rules:[['Moskee','islamitisch gebedshuis én ontmoetingsplaats voor moslims','Er wordt ook Koranles (godsdienstonderwijs) gegeven.'],
+   ['Vrijdagmiddaggebed','Voor mannen verplicht: de salaat samen (in groepsverband) bidden in de moskee.',''],
+   ['Imam','de voorganger in het gebed',''],
+   ['Vrouwen','bidden eventueel in een aparte ruimte',''],
+   ['Kledingvoorschriften','schoenen uit, armen en benen bedekt, vrouwen een hoofddoek','']]},
+ {id:'kab',par:'3',nr:'11',name:'De Ka\'ba en de hadj',c:'--c5',sub:'Bron 11 · aantekeningen van de docent',
+  rules:[['Ka\'ba','gebouwd door Ibrahim (Abraham) en zijn zoon Isma\'iel (Ismaël)',''],
+   ['Mohammed zuiverde de Ka\'ba','Er werden inmiddels ook andere goden vereerd. Mohammed maakte er weer een heiligdom voor één God van.',''],
+   ['Zwarte steen','in de Ka\'ba, uit de tijd van Adam','Zwart geworden doordat hij de zonden (van mensen) opnam.'],
+   ['Rituelen bij de hadj','zeven rondjes om de Ka\'ba, tegen de klok in (je hart naar de Ka\'ba)','De zwarte steen aanraken of ernaar wijzen; eventueel het graf van Mohammed bezoeken.']]},
+ {id:'krn',par:'3',nr:'12',name:'De Koran',c:'--c6',sub:'Bron 12 · aantekeningen van de docent',
+  rules:[['Ontstaan','God fluisterde de Koran aan Mohammed in, via de engel Djibriel.','Daarom is de Koran voor moslims letterlijk het woord van God.'],
+   ['Opbouw','114 soera\'s (hoofdstukken), onderverdeeld in aja\'s (verzen)','De soera\'s staan op volgorde van lang naar kort.'],
+   ['Bijbelse verhalen','In de Koran staan ook verhalen die in de Bijbel staan.',''],
+   ['Laatste oordeel','net als in het jodendom en christendom: God beloont of bestraft de daden van mensen','God wordt in de Koran ook "Opsteller van de rekening" genoemd.']]},
+ {id:'sha',par:'3',nr:'13',name:'De sharia',c:'--c1',sub:'Bron 13 · aantekeningen van de docent',
+  rules:[['Sharia','islamitische wetgeving: regels over hoe een moslim omgaat met God en met andere mensen','Het zijn richtlijnen.'],
+   ['Soorten regels','strafrecht, erfrecht, huwelijksrecht',''],
+   ['Geen boek','De sharia is gebaseerd op eerdere uitspraken op basis van de bronnen (zoals de Koran).','Moslimgeleerden discussiëren over aanpassingen: met de tijd meegaan.'],
+   ['Spanning','Sommige regels zijn in strijd met westerse waarden, zoals de gelijkwaardigheid van man en vrouw.','']]}
 ];
 
 /* begrippen, met de paragraaf waar ze bij horen */
@@ -65,7 +106,24 @@ const BEG=[
  ['TeNaCh','De joodse bijbel; voor christenen ongeveer het Oude Testament.','2'],
  ['laatste oordeel','De dag waarop God de daden van alle mensen weegt (ook: Dag des oordeels, Dag van de opstanding).','2'],
  ['euthanasie','Het leven op verzoek beëindigen; door veel moslims afgewezen.','2'],
- ['beproeving','Lijden als test van God waardoor je sterker wordt.','2']
+ ['beproeving','Lijden als test van God waardoor je sterker wordt.','2'],
+ ['kafan','De witte doeken waarin het lichaam van een overleden moslim wordt gewikkeld.','2'],
+ ['eeuwige grafrust','Een moslimgraf mag nooit worden geruimd.','2'],
+ ['vijf zuilen','De vijf plichten van een moslim: sjahada, salaat, zakaat, saum en hadj.','3'],
+ ['sjahada','De geloofsbelijdenis: "Er is geen god dan Allah, en Mohammed is zijn profeet."','3'],
+ ['salaat','Het gebed: 5 keer per dag op vaste tijden, richting Mekka.','3'],
+ ['zakaat','Armenbelasting (een van de vijf zuilen).','3'],
+ ['sadaqa','Een vrijwillige gift aan de armen.','3'],
+ ['saum','Het vasten in de maand ramadan.','3'],
+ ['ramadan','De vastenmaand: een maand van bezinning, een spirituele schoonmaak.','3'],
+ ['hadj','De bedevaart naar Mekka.','3'],
+ ['moskee','Islamitisch gebedshuis en ontmoetingsplaats voor moslims.','3'],
+ ['imam','De voorganger in het gebed.','3'],
+ ['Ka\'ba','Heiligdom in Mekka, gebouwd door Ibrahim en Isma\'iel; Mohammed zuiverde het.','3'],
+ ['zwarte steen','Steen in de Ka\'ba uit de tijd van Adam, zwart geworden doordat hij zonden opnam.','3'],
+ ['soera','Een hoofdstuk van de Koran (er zijn er 114).','3'],
+ ['aja','Een vers van de Koran.','3'],
+ ['sharia','Islamitische wetgeving: regels over hoe een moslim omgaat met God en met andere mensen.','3']
 ];
 
 const Q=[
@@ -142,7 +200,63 @@ const Q=[
  {id:'l5',o:'lij',nr:'Opdracht 9b',t:'open',q:'Leg uit waarom het lijden voor moslims lang niet altijd als zinloos wordt ervaren.',
   k:['Lijden kan een beproeving van God zijn, waardoor je sterker wordt.','Lijden kan een straf zijn, waardoor je een stuk van je schuld bij God inlost en minder hoeft te lijden na je sterven.'],
   vb:['Voor moslims heeft lijden vaak een zin. Het kan een beproeving van God zijn, waardoor je sterker wordt. Het kan ook een straf zijn: dan los je een deel van je schuld bij God al af, zodat je na je dood minder hoeft te lijden.'],
-  v:{q:'Geef twee redenen waarom lijden voor een moslim zin kan hebben.'}}
+  v:{q:'Geef twee redenen waarom lijden voor een moslim zin kan hebben.'}},
+
+/* ---- 7. Uitvaart (bron 7, aantekeningen) ---- */
+ {id:'ui1',o:'uit',nr:'Bron 7',q:'Waarom wordt een moslim begraven en niet gecremeerd?',a:'Het lichaam moet ongeschonden blijven, want moslims geloven in een lichamelijke opstanding',f:['Omdat cremeren te duur is','Omdat Mohammed ook begraven is','Omdat het graf na tien jaar wordt geruimd'],u:'De lichamelijke opstanding op de Dag des oordeels zie je terug in de rituelen: het lichaam moet ongeschonden blijven.',v:{q:'Welk geloofspunt zie je terug in de rituelen bij een islamitische uitvaart?',a:'De lichamelijke opstanding op de Dag des oordeels',f:['Het geloof in de 99 namen van God','Het beeldverbod','Het geloof in de drie-eenheid']}},
+ {id:'ui2',o:'uit',nr:'Bron 7',q:'Waarom wil een moslim vaak in een islamitisch land begraven worden?',a:'Vanwege de eeuwige grafrust: het graf mag nooit worden geruimd',f:['Omdat het daar warmer is','Omdat je daar geen kafan nodig hebt','Omdat je daar in een kist mag'],u:'Eeuwige grafrust: een moslimgraf mag nooit worden geruimd.',v:{q:'Wat betekent eeuwige grafrust?',a:'Het graf mag nooit worden geruimd',f:['Je mag het graf nooit bezoeken','Er mogen geen bloemen op het graf','Het graf moet in Mekka liggen']}},
+ {id:'ui3',o:'uit',nr:'Bron 7',q:'Hoe vaak wordt het lichaam van een overleden moslim minstens gewassen, en door wie?',a:'Minstens 3 keer; mannen door mannen, vrouwen door vrouwen',f:['1 keer, door de imam','5 keer, door de familie','7 keer, net als de rondjes om de Ka\'ba'],u:'Het lichaam wordt minimaal 3 keer gewassen: mannen door mannen, vrouwen door vrouwen.',v:{q:'Wie wast het lichaam van een overleden vrouw?',a:'Vrouwen',f:['De imam','Haar man','Iedereen uit de familie']}},
+ {id:'ui4',o:'uit',nr:'Bron 7',q:'Wat is de kafan?',a:'De witte doeken waarin het lichaam wordt gewikkeld',f:['De kist van een moslim','Het gebed bij het graf','Het bidsnoer met 100 kralen'],u:'Het lichaam wordt in witte doeken gewikkeld, de kafan, die wordt dichtgeknoopt. In het graf wordt hij bij het hoofd en de voeten losgemaakt.',v:{q:'Hoe heten de witte doeken waarin een overleden moslim wordt gewikkeld?',a:'de kafan',f:['de subha','de soera','de sadaqa']}},
+ {id:'ui5',o:'uit',nr:'Bron 7',q:'Hoe wordt een overleden moslim in het graf gelegd?',a:'Op de rechterzij, richting Mekka, zonder kist',f:['Op de rug, richting Medina, in een kist','Op de linkerzij, richting Jeruzalem','Zittend, met het gezicht naar het oosten'],u:'Op de rechterzijde richting Mekka. Er is geen kist: er blijft ruimte boven het lichaam.',v:{q:'Waarom blijft er ruimte boven het lichaam in een moslimgraf?',a:'Er is geen kist, en de kafan wordt bij hoofd en voeten losgemaakt',f:['Zodat er later nog iemand bij kan','Omdat het graf na 10 jaar wordt geruimd','Omdat het lichaam zittend begraven wordt']}},
+
+/* ---- 8. Vijf zuilen (bron 8) ---- */
+ {id:'zu1',o:'zui',nr:'Bron 8',q:'Wat is de sjahada?',a:'De geloofsbelijdenis: "Er is geen god dan Allah, en Mohammed is zijn profeet"',f:['Het vasten in de ramadan','De bedevaart naar Mekka','De armenbelasting'],u:'De sjahada is de geloofsbelijdenis, een getuigenis. Bij een baby wordt hij ingefluisterd.',v:{q:'Welke zuil wordt bij een pasgeboren baby ingefluisterd?',a:'de sjahada',f:['de salaat','de zakaat','de hadj']}},
+ {id:'zu2',o:'zui',nr:'Bron 8',q:'Wat is de salaat?',a:'5 keer per dag op vaste tijden bidden, richting Mekka',f:['1 keer per week bidden in de moskee','Vasten tussen zonsopkomst en zonsondergang','Een vrijwillige gift aan de armen'],u:'Salaat: 5 keer per dag bidden, op vaste tijden, richting Mekka.',v:{q:'Hoe vaak per dag bidt een moslim de salaat?',a:'5 keer',f:['3 keer','7 keer','1 keer']}},
+ {id:'zu3',o:'zui',nr:'Bron 8',q:'Wat is het verschil tussen zakaat en sadaqa?',a:'Zakaat is armenbelasting (een zuil); sadaqa is een vrijwillige gift aan de armen',f:['Zakaat is vasten; sadaqa is bidden','Zakaat is vrijwillig; sadaqa is verplicht','Er is geen verschil'],u:'Zakaat is een van de vijf zuilen: armenbelasting. Sadaqa is wat je daarnaast vrijwillig aan de armen geeft.',v:{q:'Welke zuil is de armenbelasting?',a:'zakaat',f:['sadaqa','saum','sjahada']}},
+ {id:'zu4',o:'zui',nr:'Bron 8',q:'Wat is de saum?',a:'Het vasten in de maand ramadan',f:['De bedevaart naar Mekka','Het vrijdagmiddaggebed','De geloofsbelijdenis'],u:'Saum is het vasten in de maand ramadan.',v:{q:'Hoe heet de zuil van het vasten?',a:'saum',f:['salaat','hadj','zakaat']}},
+ {id:'zu5',o:'zui',nr:'Bron 8',q:'Wat is de hadj?',a:'De bedevaart naar Mekka',f:['Het gebed in de moskee','Een hoofdstuk uit de Koran','De islamitische wetgeving'],u:'De hadj is de bedevaart naar Mekka, een van de vijf zuilen.',v:{q:'Hoe heet de bedevaart naar Mekka?',a:'de hadj',f:['de saum','de sjahada','de sharia']}},
+ {id:'zu6',o:'zui',nr:'Bron 8',q:'Welke van deze is GEEN van de vijf zuilen?',a:'Sadaqa',f:['Sjahada','Zakaat','Hadj'],mc:1,u:'De vijf zuilen: sjahada, salaat, zakaat, saum en hadj. Sadaqa is een vrijwillige gift, geen zuil.',v:{q:'Welke van deze hoort WEL bij de vijf zuilen?',a:'Saum',f:['Sadaqa','Sharia','Kafan'],mc:1}},
+ {id:'zu7',o:'zui',nr:'Bron 8',t:'open',q:'Noem de vijf zuilen van de islam en zeg bij elke zuil wat het is.',
+  k:['sjahada: de geloofsbelijdenis','salaat: 5 keer per dag bidden richting Mekka','zakaat: armenbelasting','saum: vasten in de ramadan','hadj: de bedevaart naar Mekka'],
+  v:{q:'Welke vijf plichten heeft een moslim? Geef de naam en wat het betekent.'}},
+
+/* ---- 9. Ramadan ---- */
+ {id:'ra1',o:'ram',nr:'Saum',q:'Wanneer vasten moslims tijdens de ramadan?',a:'Tussen zonsopkomst en zonsondergang',f:['De hele dag en nacht','Alleen op vrijdag','Tussen zonsondergang en zonsopkomst'],u:'Tussen zonsopkomst en zonsondergang: niet eten en drinken, geen gemeenschap en geen zonden plegen.',v:{q:'Wat mag je tijdens het vasten tussen zonsopkomst en zonsondergang niet?',a:'Eten en drinken, gemeenschap hebben en zonden plegen',f:['Alleen vlees eten','Bidden en de Koran lezen','Naar de moskee gaan']}},
+ {id:'ra2',o:'ram',nr:'Saum',q:'Wat doe je in de ramadan juist wél extra?',a:'De Koran lezen, bidden, meeleven met de armen en tot jezelf komen',f:['Feesten en cadeaus geven','Op bedevaart naar Mekka','Extra werken voor de zakaat'],u:'In de ramadan lees je extra in de Koran en bid je meer, je leeft mee met de armen en komt tot jezelf.',v:{q:'Noem iets wat een moslim in de ramadan extra doet.',a:'Extra de Koran lezen en bidden',f:['Extra eten na het middaggebed','Op bedevaart naar Mekka gaan','De zakaat terugvragen']}},
+ {id:'ra3',o:'ram',nr:'Saum',q:'Wat is de ramadan voor een moslim?',a:'Een maand van bezinning: een spirituele schoonmaak',f:['Een feestmaand zonder regels','De maand van de hadj','Een maand waarin de Koran niet gelezen wordt'],u:'De ramadan is een maand van bezinning, een spirituele schoonmaak.',v:{q:'Hoe noemen de aantekeningen de ramadan?',a:'Een maand van bezinning, een spirituele schoonmaak',f:['Een maand van feest','De maand van de doden','De maand van de sharia']}},
+ {id:'ra4',o:'ram',nr:'Saum',t:'open',q:'Leg uit wat een moslim tijdens de ramadan wel en niet doet, en waarom.',
+  k:['niet eten en drinken (en geen gemeenschap, geen zonden) tussen zonsopkomst en zonsondergang','wel extra de Koran lezen en bidden, meeleven met de armen, tot jezelf komen','het is een maand van bezinning: een spirituele schoonmaak'],
+  v:{q:'Beschrijf het vasten in de ramadan: wat mag niet, wat doe je extra, en wat is het doel?'}},
+
+/* ---- 10. Moskee (bron 10) ---- */
+ {id:'mo1',o:'mos',nr:'Bron 10',q:'Waarvoor is een moskee, behalve om te bidden?',a:'Een ontmoetingsplaats, en er wordt Koranles gegeven',f:['Er worden mensen begraven','Er wordt de zakaat geïnd','Er woont de kalief'],u:'De moskee is een gebedshuis, een ontmoetingsplaats voor moslims, en er wordt Koranles (godsdienstonderwijs) gegeven.',v:{q:'Wat is een moskee?',a:'Een islamitisch gebedshuis en ontmoetingsplaats',f:['Een islamitische school zonder gebed','Het graf van Mohammed','Het heiligdom in Mekka']}},
+ {id:'mo2',o:'mos',nr:'Bron 10',q:'Wat is een imam?',a:'De voorganger in het gebed',f:['Een politiek leider na Mohammed','Een engel','Een hoofdstuk uit de Koran'],u:'De imam is de voorganger in het gebed.',v:{q:'Hoe heet de voorganger in het gebed?',a:'de imam',f:['de kalief','de profeet','de sjahada']}},
+ {id:'mo3',o:'mos',nr:'Bron 10',q:'Wat is het vrijdagmiddaggebed?',a:'Voor mannen verplicht: de salaat samen in de moskee bidden',f:['Voor iedereen verplicht: thuis bidden','Een gebed alleen voor vrouwen','Het gebed bij een uitvaart'],u:'Voor mannen is het verplicht om op vrijdagmiddag de salaat in groepsverband uit te voeren.',v:{q:'Voor wie is het vrijdagmiddaggebed in de moskee verplicht?',a:'Voor mannen',f:['Voor vrouwen','Voor kinderen','Alleen voor de imam']}},
+ {id:'mo4',o:'mos',nr:'Bron 10',q:'Welke kledingvoorschriften gelden in de moskee?',a:'Schoenen uit, armen en benen bedekt, vrouwen een hoofddoek',f:['Alleen witte kleding','Schoenen aan, hoofd onbedekt','Alleen mannen moeten iets bedekken'],u:'Schoenen uit, armen en benen bedekt, en vrouwen dragen een hoofddoek. Vrouwen bidden eventueel in een aparte ruimte.',v:{q:'Waar bidden vrouwen in de moskee?',a:'Eventueel in een aparte ruimte',f:['Altijd vooraan','Nooit in de moskee','Samen met de imam']}},
+
+/* ---- 11. Ka'ba (bron 11) ---- */
+ {id:'ka1',o:'kab',nr:'Bron 11',q:'Wie bouwden de Ka\'ba volgens de islam?',a:'Ibrahim (Abraham) en zijn zoon Isma\'iel (Ismaël)',f:['Mohammed en Djibriel','Adam en Eva','Mozes en Aäron'],u:'De Ka\'ba is gebouwd door Ibrahim en zijn zoon Isma\'iel.',v:{q:'Wat deed Mohammed met de Ka\'ba?',a:'Hij zuiverde hem: er werd weer één God vereerd',f:['Hij bouwde hem','Hij brak hem af','Hij bracht hem naar Medina']}},
+ {id:'ka2',o:'kab',nr:'Bron 11',q:'Waarom zuiverde Mohammed de Ka\'ba?',a:'Er werden inmiddels ook andere goden vereerd',f:['Hij was vuil geworden door de zwarte steen','Hij was ingestort','De joden wilden hem hebben'],u:'Er werden ook andere goden vereerd. Mohammed maakte er weer een heiligdom voor één God van.',v:{q:'Wat werd de Ka\'ba na de zuivering door Mohammed?',a:'Een islamitisch heiligdom waar weer één God werd vereerd',f:['Een moskee voor vrouwen','Het graf van Mohammed','Een markt']}},
+ {id:'ka3',o:'kab',nr:'Bron 11',q:'Waarom is de zwarte steen zwart?',a:'Hij is zwart geworden doordat hij zonden opnam',f:['Hij is van verbrande klei gemaakt','Hij komt uit een vulkaan bij Mekka','Hij is zwart geverfd door Mohammed'],u:'De zwarte steen komt volgens de islam uit de tijd van Adam en is zwart geworden doordat hij zonden opnam.',v:{q:'Uit welke tijd komt de zwarte steen volgens de islam?',a:'Uit de tijd van Adam',f:['Uit de tijd van Mohammed','Uit de tijd van Jezus','Uit 661']}},
+ {id:'ka4',o:'kab',nr:'Bron 11',q:'Welk ritueel hoort bij de hadj?',a:'Zeven rondjes om de Ka\'ba lopen, tegen de klok in',f:['Drie rondjes met de klok mee','Vasten tot zonsondergang bij de Ka\'ba','De Ka\'ba wassen met water'],u:'Zeven rondjes tegen de klok in (je hart naar de Ka\'ba), de zwarte steen aanraken of ernaar wijzen, en eventueel het graf van Mohammed bezoeken.',v:{q:'Hoeveel rondjes loop je bij de hadj om de Ka\'ba, en in welke richting?',a:'Zeven, tegen de klok in',f:['Zeven, met de klok mee','Drie, tegen de klok in','Vijf, met de klok mee']}},
+ {id:'ka5',o:'kab',nr:'Bron 11',t:'open',q:'Beschrijf drie rituelen die bij de hadj horen.',
+  k:['zeven rondjes om de Ka\'ba lopen, tegen de klok in','de zwarte steen aanraken of ernaar wijzen','eventueel het graf van Mohammed bezoeken'],
+  v:{q:'Wat doet een moslim tijdens de bedevaart naar Mekka? Noem drie dingen.'}},
+
+/* ---- 12. Koran (bron 12) ---- */
+ {id:'ko1',o:'krn',nr:'Bron 12',q:'Hoe is de Koran volgens moslims ontstaan?',a:'God fluisterde hem aan Mohammed in via de engel Djibriel',f:['Mohammed schreef hem zelf na zijn reis naar Medina','De kaliefen schreven hem na 661','Hij werd gevonden in de Ka\'ba'],u:'Daarom is de Koran voor moslims letterlijk het woord van God.',v:{q:'Waarom is de Koran voor moslims letterlijk het woord van God?',a:'God fluisterde hem via Djibriel in aan Mohammed',f:['Omdat Mohammed heel goed kon schrijven','Omdat hij in het Arabisch is','Omdat hij de oudste is']}},
+ {id:'ko2',o:'krn',nr:'Bron 12',q:'Hoe is de Koran opgebouwd?',a:'114 soera\'s (hoofdstukken), verdeeld in aja\'s (verzen)',f:['99 soera\'s, voor elke naam van God één','114 aja\'s, verdeeld in soera\'s','5 boeken, voor elke zuil één'],u:'114 soera\'s, onderverdeeld in aja\'s. De soera\'s staan op volgorde van lang naar kort.',v:{q:'In welke volgorde staan de soera\'s?',a:'Van lang naar kort',f:['Van kort naar lang','Op volgorde van tijd','Op alfabet']}},
+ {id:'ko3',o:'krn',nr:'Bron 12',q:'Wat is een soera?',a:'Een hoofdstuk van de Koran',f:['Een vers van de Koran','Een gebed in de moskee','Een bidsnoer'],u:'Soera = hoofdstuk, aja = vers.',v:{q:'Wat is een aja?',a:'Een vers van de Koran',f:['Een hoofdstuk van de Koran','Een engel','Een gift aan de armen']}},
+ {id:'ko4',o:'krn',nr:'Bron 12',q:'Wat zegt de Koran over het laatste oordeel?',a:'Net als in jodendom en christendom: God beloont of bestraft de daden van mensen',f:['Er is geen laatste oordeel','Alleen ongelovigen worden geoordeeld','Mohammed oordeelt over de mensen'],u:'God wordt in de Koran ook "Opsteller van de rekening" genoemd.',v:{q:'Welke naam voor God in de Koran past bij het laatste oordeel?',a:'Opsteller van de rekening',f:['de Enige','de Profeet','de Schepper van de Ka\'ba']}},
+
+/* ---- 13. Sharia (bron 13) ---- */
+ {id:'sh1',o:'sha',nr:'Bron 13',q:'Wat is de sharia?',a:'Islamitische wetgeving: regels over hoe een moslim omgaat met God en met andere mensen',f:['Een hoofdstuk uit de Koran','De bedevaart naar Mekka','De geloofsbelijdenis'],u:'Het zijn richtlijnen, bijvoorbeeld over strafrecht, erfrecht en huwelijksrecht.',v:{q:'Hoe heet de islamitische wetgeving?',a:'de sharia',f:['de sjahada','de soera','de saum']}},
+ {id:'sh2',o:'sha',nr:'Bron 13',q:'Is de sharia een boek?',a:'Nee, hij is gebaseerd op eerdere uitspraken op basis van de bronnen',f:['Ja, het is het tweede deel van de Koran','Ja, Mohammed schreef het in Medina','Nee, het is een gebed'],u:'De sharia is geen boek. Moslimgeleerden discussiëren over aanpassingen, om met de tijd mee te gaan.',v:{q:'Wat doen moslimgeleerden met de sharia?',a:'Ze discussiëren over aanpassingen, om met de tijd mee te gaan',f:['Ze schrijven hem over in een boek','Ze mogen er niets aan veranderen','Ze lezen hem voor bij de hadj']}},
+ {id:'sh3',o:'sha',nr:'Bron 13',q:'Over welke soorten recht gaat de sharia?',a:'Onder andere strafrecht, erfrecht en huwelijksrecht',f:['Alleen over bidden','Alleen over eten','Alleen over de moskee'],u:'Strafrecht, erfrecht en huwelijksrecht.',v:{q:'Noem een soort recht waar de sharia regels over geeft.',a:'Erfrecht',f:['Verkeersrecht','Sportrecht','Auteursrecht']}},
+ {id:'sh4',o:'sha',nr:'Bron 13',t:'open',q:'Leg uit waarom de sharia soms botst met westerse waarden.',
+  k:['sommige regels zijn in strijd met westerse waarden','bijvoorbeeld de gelijkwaardigheid van man en vrouw'],
+  vb:['Sommige regels van de sharia passen niet bij westerse waarden. Een voorbeeld is de gelijkwaardigheid van man en vrouw: in het westen moeten mannen en vrouwen dezelfde rechten hebben, en dat is in sommige regels van de sharia niet zo.'],
+  v:{q:'Geef een voorbeeld van een westerse waarde waarmee de sharia soms in strijd is.'}}
 ];
 
 /* open toetsvragen: de toets van levensbeschouwing bestaat uit open vragen. Een meerkeuzevraag met 'open' wordt in rondes,
@@ -182,11 +296,30 @@ const OPEN={
  o4:{q:'Wat gebeurt er bij het laatste oordeel met de gezegenden en met de verdoemden?',k:['de daden van mensen worden gewogen','de gezegenden (rechterzijde) gaan naar het paradijs, waar ze God kunnen aanschouwen','de verdoemden (linkerzijde) gaan voor eeuwig naar de hel']},
  l1:{q:'Hoe kijken veel moslims naar euthanasie? Leg uit waarom.',k:['veel moslims wijzen euthanasie af','het leven is door God gegeven','alleen God bepaalt hoe lang het leven duurt']},
  l3:{q:'Hoe kunnen nabestaanden volgens de islam proberen het lijden van een overledene te verzachten? Noem twee manieren.',k:['twee van: smeekbeden tot God, een pelgrimstocht naar Mekka, vasten, geld geven aan goede doelen']},
- l4:{q:'Vergelijk hoe er in de westerse cultuur en door veel moslims naar pijn en sterven wordt gekeken.',k:['westerse cultuur: sterven wordt vaak gezien als het einde, pijn bestrijd je zoveel mogelijk','veel moslims: pijn eerder geduldig accepteren, lijden kan zin hebben en euthanasie wordt vaak afgewezen']}
+ l4:{q:'Vergelijk hoe er in de westerse cultuur en door veel moslims naar pijn en sterven wordt gekeken.',k:['westerse cultuur: sterven wordt vaak gezien als het einde, pijn bestrijd je zoveel mogelijk','veel moslims: pijn eerder geduldig accepteren, lijden kan zin hebben en euthanasie wordt vaak afgewezen']},
+ ui1:{q:'Leg uit waarom een moslim begraven wordt en niet gecremeerd.',k:['moslims geloven in een lichamelijke opstanding op de Dag des oordeels','daarom moet het lichaam ongeschonden blijven']},
+ ui2:{q:'Waarom wil een moslim vaak in een islamitisch land begraven worden?',k:['eeuwige grafrust: het graf mag nooit worden geruimd']},
+ ui4:{q:'Wat is de kafan, en wat gebeurt er in het graf mee?',k:['witte doeken waarin het lichaam wordt gewikkeld en dichtgeknoopt','in het graf wordt hij bij het hoofd en de voeten losgemaakt']},
+ ui5:{q:'Beschrijf hoe een overleden moslim in het graf wordt gelegd.',k:['op de rechterzij, richting Mekka','zonder kist: er blijft ruimte boven het lichaam']},
+ zu1:{q:'Wat is de sjahada? Geef ook de tekst.',k:['de geloofsbelijdenis (een getuigenis)','"Er is geen god dan Allah, en Mohammed is zijn profeet"']},
+ zu2:{q:'Wat is de salaat?',k:['5 keer per dag bidden, op vaste tijden','richting Mekka']},
+ zu3:{q:'Leg het verschil uit tussen zakaat en sadaqa.',k:['zakaat is armenbelasting, een van de vijf zuilen','sadaqa is een vrijwillige gift aan de armen']},
+ ra1:{q:'Wat mag een moslim tijdens de ramadan tussen zonsopkomst en zonsondergang niet?',k:['niet eten en drinken','geen gemeenschap en geen zonden plegen']},
+ ra3:{q:'Wat is het doel van de ramadan?',k:['een maand van bezinning: een spirituele schoonmaak']},
+ mo1:{q:'Noem drie functies van een moskee.',k:['gebedshuis','ontmoetingsplaats voor moslims','er wordt Koranles (godsdienstonderwijs) gegeven']},
+ mo3:{q:'Wat is het vrijdagmiddaggebed, en voor wie is het verplicht?',k:['de salaat samen (in groepsverband) bidden in de moskee','verplicht voor mannen']},
+ mo4:{q:'Welke kledingvoorschriften gelden in de moskee?',k:['schoenen uit','armen en benen bedekt','vrouwen een hoofddoek']},
+ ka1:{q:'Wie bouwden de Ka\'ba, en wat deed Mohammed later met de Ka\'ba?',k:['Ibrahim en zijn zoon Isma\'iel bouwden hem','Mohammed zuiverde hem: er werden ook andere goden vereerd, hij maakte er weer een heiligdom voor één God van']},
+ ka3:{q:'Wat is de zwarte steen volgens de islam?',k:['een steen in de Ka\'ba uit de tijd van Adam','zwart geworden doordat hij zonden opnam']},
+ ko1:{q:'Hoe is de Koran volgens moslims ontstaan, en wat betekent dat voor hoe moslims de Koran zien?',k:['God fluisterde hem in aan Mohammed via de engel Djibriel','daarom is hij letterlijk het woord van God']},
+ ko2:{q:'Beschrijf hoe de Koran is opgebouwd.',k:['114 soera\'s (hoofdstukken)','onderverdeeld in aja\'s (verzen)','de soera\'s staan van lang naar kort']},
+ ko4:{q:'Welke overeenkomst is er tussen de Koran en het jodendom en christendom over het laatste oordeel?',k:['in alle drie beloont of bestraft God de daden van mensen']},
+ sh1:{q:'Wat is de sharia? Noem ook twee soorten recht.',k:['islamitische wetgeving: regels over hoe een moslim omgaat met God en andere mensen','twee van: strafrecht, erfrecht, huwelijksrecht']},
+ sh2:{q:'De sharia is geen boek. Leg uit waar hij dan op gebaseerd is en hoe hij kan veranderen.',k:['op eerdere uitspraken op basis van de bronnen','moslimgeleerden discussiëren over aanpassingen (met de tijd meegaan)']}
 };
 Q.forEach(q=>{if(OPEN[q.id])q.open=OPEN[q.id]});
 
-return {id:'lv',naam:'Levensbeschouwing',afk:'LV',kop:'Hoofdstuk 6 De islam · §1 en §2',SECS,SNAP:{},BEG,Q,snapHtml:()=>'',
-  leer:['1','2'],reken:false,volledig:false,
-  PN:{'1':'§1 Het ontstaan van de islam','2':'§2 De levensbeschouwing van de moslim','mix':'Door elkaar'}};
+return {id:'lv',naam:'Levensbeschouwing',afk:'LV',kop:'Hoofdstuk 6 De islam · §1, §2 en §3',SECS,SNAP:{},BEG,Q,snapHtml:()=>'',
+  leer:['1','2','3'],reken:false,volledig:false,
+  PN:{'1':'§1 Het ontstaan van de islam','2':'§2 De levensbeschouwing van de moslim','3':'§3 De vijf zuilen en het leven als moslim','mix':'Door elkaar'}};
 })();

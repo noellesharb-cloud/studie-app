@@ -417,14 +417,14 @@ ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;whit
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="huiswerk.js?v=202611161730"></script>
-<script src="pto.js?v=202611141930"></script>
+<script src="huiswerk.js?v=202611170800"></script>
+<script src="pto.js?v=202611170800"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
 <script src="oefen/engine.js?v=202611162140"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>
-<script src="vakken/wi.js?v=202611161725"></script>
+<script src="vakken/wi.js?v=202611170800"></script>
 <script src="vakken/wi-var.js?v=202611042008"></script>
 <script src="vakken/wi-basis.js?v=202611042008"></script>
 <script src="vakken/ak-kaart.js?v=202611061945"></script>
@@ -432,7 +432,7 @@ ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;whit
 <script src="vakken/ak-ko.js?v=202611051500"></script>
 <script src="vakken/gr.js?v=202611091700"></script>
 <script src="vakken/gr2.js?v=202611091700"></script>
-<script src="vakken/lv.js?v=202611042008"></script>
+<script src="vakken/lv.js?v=202611170800"></script>
 <script src="vakken/lv-ko.js?v=202611051500"></script>
 <script src="vakken/du.js?v=202611141915"></script>
 <script src="vakken/ne.js?v=202611101610"></script>
@@ -611,7 +611,7 @@ function schedule(){
   return SCHED=maakSchedule(F,credit);
 }
 function maakSchedule(van,credit){
-  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+lesMin(d)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend)L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -649,8 +649,31 @@ function inhaalVoor(s){const R=[];Object.values(LOG).forEach(w=>((w&&w.entries)|
     titel:'Inhalen: '+i.titel,uit:`Doorgeschoven van ${nice(e.d)}.${t?` Toets op ${nice(t.datum)}.`:''} ${app?`Oefen ${i.min} minuten in de app. De tijd telt vanzelf mee.`:'Overhoor jezelf en tik het blok daarna af.'}`},i.prep?{prep:i.prep}:{})})}
 /* toetsvoorbereiding die als inhaalblok al op een komende dag staat: niet nog een keer inplannen */
 function inhaalPrep(van){const c={};Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.inh&&e.inh.prep&&e.naar>=van){const id=e.inh.prep.vid+'|'+e.inh.prep.tid;c[id]=(c[id]||0)+e.inh.min}}));return c}
-/* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets */
-function volgendePar(vid){const st=OEF[vid]||{},p=Oefen.pars(vid);return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
+/* eerstvolgende toets van een vak in deze periode (met datum, zonder cijfer, ná dag s) */
+function toetsVan(vid,s){const e=periodeEind(s);return (vakOf(vid)?.toetsen||[]).filter(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>0&&t.datum<=e).sort((a,b)=>a.datum<b.datum?-1:1)[0]||null}
+/* paragrafen in de app die bij de toetsstof horen (vinkjes bij de toets in Cijfers; niets aangevinkt = alles) */
+function stofPars(vid,t){const P=Oefen.pars(vid),st=t&&Array.isArray(t.stof)?t.stof.filter(p=>P.includes(p)):[];return st.length?P.filter(p=>st.includes(p)):P}
+/* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets, alleen uit de toetsstof (17 nov: aardrijkskunde alleen §3.1–3.3) */
+function volgendePar(vid){const st=OEF[vid]||{},p=stofPars(vid,toetsVan(vid,today()));return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
+/* ---------- les-huiswerk (afspraak 17 nov 2026) ----------
+   Geschiedenis en levensbeschouwing geven geen huiswerk. Daarom na elke les 10 minuten in de app, zodat de stof niet pas bij de
+   toetsvoorbereiding voor het eerst langskomt. De toetsstof (vinkjes in Cijfers, anders alles) wordt in volgorde over de lesdagen tot de
+   toets verdeeld, los van wat er in de les gebeurde (de docent geschiedenis was de eerste weken ziek; die stof wordt toch getoetst).
+   Elke lesdag één nieuwe paragraaf (uitleg + korte ronde); zijn ze allemaal geweest, dan herhalen (bijhouden met terugblik) van de zwakste.
+   Een les op vrijdag komt op zondag in het plan (vrijdag en zaterdag: alleen een sprint). Past het niet binnen 3 uur, dan vervalt het die dag. */
+const LESDAGEN={gs:[2,5],lv:[2,3]},LES_VAN='2026-11-17',LES_MIN=10;
+const planDag=L=>{const g=pd(L).getDay();return g===5?addDays(L,2):g===6?addDays(L,1):L};
+function lesDagen(vid,t){const R=[];for(let d=LES_VAN,k=0;d<t.datum&&k<200;d=addDays(d,1),k++)if(LESDAGEN[vid].includes(pd(d).getDay())&&schooldag(d)&&planDag(d)<t.datum&&!vrijDag(planDag(d)))R.push(d);return R}
+const LESC={};
+function lesBlokken(s){if(LESC[s])return LESC[s];const R=[];
+  if(!vrijDag(s)&&!vrijZa(s)&&!inToetsweek(s)&&window.VAKDATA)Object.keys(LESDAGEN).forEach(vid=>{if(!VAKDATA[vid])return;const t=toetsVan(vid,s);if(!t||t.stofOnbekend)return;
+    const Ls=lesDagen(vid,t),i=Ls.findIndex(L=>planDag(L)===s);if(i<0)return;
+    const P=stofPars(vid,t),st=OEF[vid]||{},nieuw=i<P.length,par=nieuw?P[i]:(P.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||P[P.length-1]);
+    R.push({vid,t,par,nieuw,L:Ls[i],min:LES_MIN})});
+  const vrij=SET.maxDagSchool+(SET.rekMin??DEF.rekMin)-huiswerkMin(s)-opwarmMin(s)-bijhouden(s).reduce((a,x)=>a+x.min,0);
+  while(R.length&&R.length*LES_MIN>vrij)R.pop();
+  return LESC[s]=R}
+const lesMin=s=>lesBlokken(s).reduce((a,x)=>a+x.min,0);
 function blokken(s){
   const B=[],split=m=>{const r=[];let left=m;while(left>0){const x=Math.min(SET.blok,left);r.push(x);left-=x}return r};
   if(vrijDag(s))return [];
@@ -671,6 +694,11 @@ function blokken(s){
       titel:`${V.naam}: ${V.PN[b.par]||b.par}${V.extra&&V.extra.par!==b.par?' + '+V.extra.titel.toLowerCase().replace(/ op de kaart$/,''):''} in de app`,uit:'Bijhouden, direct na je huiswerk: begin met de terugblik (een paar vragen oude stof, ongeveer 5 minuten), dan de herhaalronde. Zo blijft het hangen. De tijd telt vanzelf mee'+(b.h.opg&&b.h.opg.length||b.h.leer&&b.h.leer.length?`, zodra de tijd voor je huiswerk in de app erop zit (wat je vandaag echt aan je huiswerk deed, hooguit ${b.h.min} minuten). Was je langer met je huiswerk bezig, dan telt die extra tijd hier al mee.`:'.')})}});
   const rest=hwCompleet(nd)?0:huiswerkMin(s)-T.reduce((a,h)=>a+(h.min||0),0);
   const hs=rest>=10?split(rest):[];hs.forEach((m,i)=>B.push({key:`hw${i}`,vak:'hw',soort:'huiswerk',min:m,titel:`${T.length?'Rest van het huiswerk':'Huiswerk voor morgen'}${hs.length>1?` · blok ${i+1} van ${hs.length}`:''}`,uit:T.length?'Dit huiswerk staat nog niet in de app. Kijk in SOMtoday wat er nog meer af moet.':'Kijk in SOMtoday wat er morgen af moet. Begin met het vak dat je het minst leuk vindt.'}));
+  if(!wk)lesBlokken(s).forEach(x=>{const V=VAKDATA[x.vid],pn=V.PN[x.par]||x.par,vr=pd(x.L).getDay()===5&&x.L!==s;
+    B.push({key:'les-'+x.vid,vak:x.vid,soort:'oefenen',auto:x.vid,mode:x.nieuw?null:'bijhouden',min:x.min,par:x.par,les:x,
+      titel:`${V.naam}: ${x.nieuw?pn:'herhalen'} in de app`,
+      uit:`Les-huiswerk${vr?' van de les van vrijdag':''}: voor ${V.naam.toLowerCase()} krijg je geen huiswerk, dus zo blijft de stof bij tot de toets van ${nice(x.t.datum)}. `+
+        (x.nieuw?`Lees de uitleg van ${pn} en doe een korte ronde. Is het in de les nog niet geweest, dan leer je het zo alvast.`:`Alle stof is langs geweest. Begin met de terugblik, dan de herhaalronde van ${pn}.`)+` ${x.min} minuten. De tijd telt vanzelf mee.`})});
   const SC=schedule();
   prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
     const pto=window.ptoVan?ptoVan(p.v.id,p.t):null;
@@ -1172,7 +1200,7 @@ const GELADEN={};
 /* vernieuwen: op het beginscherm van de iPhone is er geen adresbalk en dus geen herlaadknop (13 nov, vader). Eerst opslaan, dan herladen. */
 $('#herlaad').onclick=()=>{try{flushAct()}catch(e){};$('#herlaad').textContent='Bezig…';setTimeout(()=>location.reload(),1500)};
 function render(){
-  SCHED=null;SCHED_OUD=null;
+  SCHED=null;SCHED_OUD=null;for(const k in LESC)delete LESC[k];
   /* fout gevonden 14 nov: stempelBij draaide ook als de instellingen nog niet binnen waren. Dan gold de standaard (vrijdag/zaterdag
      alleen een sprint), was de zaterdag 'niet af' en werd de stempel van vandaag gewist. Daarna werd de dag opnieuw gepland. */
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen&&GELADEN.set)stempelBij();

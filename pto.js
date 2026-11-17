@@ -64,7 +64,7 @@ window.PTO={
  la:[{p:1,stof:[{t:'H6'}]},{p:2,stof:[{t:'Het dagelijks leven in Rome'}]},{p:3,stof:[{t:'H7 en H8',app:'H7A staat in de app'}]},{p:4,stof:[{t:'H9 en H10'}]},{p:5,stof:[{t:'H11 t/m H13'}]}],
  lv:[
   {p:1,stof:[{t:'Hoofdstuk 5 Hoofdwaarden',k:/H5|hoofdstuk|hoofdwaard|toets/i},{t:'Praktische opdracht 1: casus + discussie (telt 2× mee)',k:/PO|praktisch|casus|discussie/i},{t:'Levensvisieboekopdracht: hoofdwaarden',k:/levensvisie/i}]},
-  {p:2,stof:[{t:'Hoofdstuk 6 Islam (toets 1, telt 2× mee)',app:'§1 en §2 staan in de app'}]},
+  {p:2,stof:[{t:'Hoofdstuk 6 Islam (toets 1, telt 2× mee)',app:'§1, §2 en §3 staan in de app (§3 en bron 7 uit de aantekeningen van de docent)'}]},
   {p:3,stof:[{t:'Hoofdstuk 4 Hindoeïsme en boeddhisme (toets 2, telt 2× mee)',k:/H4|hoofdstuk|hindo|boeddh|toets/i},{t:'Excursie gebedshuizen: moskee en mandir/tempel',k:/excursie|gebedshuis/i}]},
   {p:4,stof:[{t:'Hoofdstuk 6/3 Sociale media en seksualiteit',k:/H6|H3|hoofdstuk|seks|toets/i},{t:'Praktische opdracht 2: sociale media (telt 2× mee)',k:/PO|praktisch|sociale/i}]},
   {p:5,stof:[{t:'Hoofdstuk 1 Gelukkig worden',k:/H1|hoofdstuk|toets/i},{t:'Praktische opdracht 3: geluk (telt 2× mee)',k:/PO|praktisch/i},{t:'Levensvisieboekopdracht: geluk',k:/levensvisie/i}]}],
