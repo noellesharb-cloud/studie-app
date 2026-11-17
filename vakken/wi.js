@@ -52,7 +52,8 @@ const LOG=[
  ['Dag 6','di 10 nov','Extra opdrachten H3 van Teams: E1, E2, E3cd, E4, E5, E6, E7bd, E8 (huiswerk voor donderdag 12 november)'],
  ['Dag 7','za 14 nov','Hele blad Extra opdrachten H3 van Teams: E3ab, E7ac, E9 t/m E30 en E32 erbij (geen huiswerk, voor de toets)'],
  ['Dag 7','za 14 nov','Uitwerkingen van Van Neck (Teams, 12 nov) verwerkt: 71a met zijn notatie, 71b en 71c met x → ∞ en schetsen, kruislings vermenigvuldigen bij verhoudingstabellen (E5)'],
- ['Dag 8','ma 16 nov','Uitleg van Van Neck "Omschrijven: algemene vorm en de twee handige vormen" (§3.3, onderdeel 9b) en antwoordenblad E20 t/m E26 vergeleken: E23 nu als tabellen zoals op het blad']
+ ['Dag 8','ma 16 nov','Uitleg van Van Neck "Omschrijven: algemene vorm en de twee handige vormen" (§3.3, onderdeel 9b) en antwoordenblad E20 t/m E26 vergeleken: E23 nu als tabellen zoals op het blad'],
+ ['Dag 9','di 17 nov','Opdracht U1 van Teams (wet van Boyle, fietspomp; op het blad staat U2), huiswerk voor donderdag 19 november']
 ];
 
 /* ---------- onderdelen ---------- */
@@ -1495,6 +1496,15 @@ const Q=[
  denk:'$a = 2$ is positief: een dalparabool. Bij $x = 0$ is $y = -10$.',
  st:[S('Negatieve x erbij.',tbl([-3,-2,-1,0,1,2],[5,-4,-9,-10,-7,0])),S('Zet de punten uit en trek een vloeiende boog.',GE8(x=>2*x*x+x-10,[[-3,5],[-2,-4],[-1,-9],[0,-10],[1,-7],[2,0]]))],
  a:GE8(x=>2*x*x+x-10),f:[[GE8(x=>-2*x*x-x+10),'$a = 2$ is positief, dus een dalparabool, geen bergparabool.'],[GE8(x=>2*x*x-x-10),'Deze gaat bij $x = 2$ door $y = -4$. Bij jouw formule is $y = 0$ bij $x = 2$.']]},
+/* ===== Opdracht U1 (Teams, huiswerk do 19 nov; op het blad zelf staat 'Opdracht U2'). De wet van Boyle. Let op juiste notatie! ===== */
+{id:'u1a',o:'hyp',nr:'Opdracht U1a',q:'<b>De wet van Boyle (natuurkunde)</b><br>Bij een constante temperatuur is het volume (V in liter) van een afgesloten hoeveelheid gas omgekeerd evenredig met de druk (p in bar). Voor een bepaalde fietspomp geldt de formule $V = [[4,5|p + 0,5]] + 0,2$.<br>Bereken het volume als de druk 2,5 bar is.',
+ denk:'Vul $p = 2,5$ in. Eerst de noemer, dan de breuk, dan $+ 0,2$. Vergeet de eenheid niet.',
+ st:[S('Vul $p = 2,5$ in.','$V = [[4,5|2,5 + 0,5]] + 0,2$'),S('Noemer.','$2,5 + 0,5 = 3$'),S('Breuk.','$4,5 : 3 = 1,5$'),S('Plus 0,2.','$V = 1,5 + 0,2 = 1,7$'),S('Antwoord met eenheid.','het volume is 1,7 liter')],
+ a:'$V = 1,7$ liter',f:[['$V = 1,5$ liter','Je bent de $+ 0,2$ vergeten: $1,5 + 0,2 = 1,7$.'],['$V = 2$ liter','De noemer is $2,5 + 0,5 = 3$, niet 2,5. $4,5 : 3 = 1,5$, plus 0,2 is 1,7.'],['$V = 1,325$ liter','Je hebt eerst $4,5 : 2,5 + 0,5$ gedaan. De hele noemer $p + 0,5$ staat onder de breukstreep: $4,5 : 3$.']]},
+{id:'u1b',o:'hyp',nr:'Opdracht U1b',q:'Fietspomp: $V = [[4,5|p + 0,5]] + 0,2$.<br>Welke waarde nadert het volume als de druk extreem hoog wordt? Leg uit hoe je dit aan de formule ziet.',
+ denk:'Zo doet Van Neck het: kijk wat er gebeurt als $p → ∞$. Wat wordt de breuk dan?',
+ st:[S('Als $p → ∞$, dan wordt de noemer $p + 0,5$ heel groot.','$p + 0,5 → ∞$'),S('4,5 gedeeld door een heel groot getal is bijna 0.','$[[4,5|∞]] → 0$'),S('Er blijft $0 + 0,2$ over.','$V → 0,2$'),S('Het volume komt steeds dichter bij 0,2 liter, maar wordt nooit precies 0,2: $V = 0,2$ is de horizontale asymptoot.','het volume nadert 0,2 liter')],
+ a:'0,2 liter: als $p → ∞$ wordt de breuk $[[4,5|p + 0,5]]$ bijna 0, dus $V → 0 + 0,2 = 0,2$',f:[['0 liter: bij een heel hoge druk wordt het gas helemaal samengeperst','De breuk wordt bijna 0, maar de $+ 0,2$ blijft er altijd bij. Dus $V → 0,2$.'],['4,5 liter: dat getal staat in de teller','4,5 gedeeld door een heel groot getal wordt juist bijna 0. Kijk naar wat erbij staat: $+ 0,2$.'],['$-0,5$ liter: daar wordt de noemer 0','$p = -0,5$ is de verticale asymptoot. De vraag gaat over een heel hoge druk: $p → ∞$.']]},
 /* ===== Extra opdrachten H3 (Teams, hele blad): E3ab, E7ac, E9 t/m E30, E32. Geen huiswerk, wel goed voor de toets.
    Antwoordenblad van de docent (E1 t/m E12) klopt niet bij E3a, E9d, E10a en E10b; hier staat wat uit de opdracht volgt.
    Antwoordenblad E14 t/m E20 (16 nov): klopt niet bij E15b/c (56 i.p.v. −88, minteken vergeten), E18d (−½ i.p.v. −1½) en E19a (−27 i.p.v. −28).
