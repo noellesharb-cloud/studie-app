@@ -189,10 +189,11 @@ T1.forEach(([zn,zin,w,a,uit],i)=>Q.push({id:'n4-'+(i+1),o:'o4',nr:`Opdracht 4 ·
   tv:`Benoem het onderstreepte woord: pers.vnw, bez.vnw, wed.vnw of wedig.vnw.${S(z)}`,u:`<b>${a}</b>. ${u}<div class="why">${TRUC}</div>`,
   v:{q:`Gebruik de vervangtruc (hij/hem, zijn, zich). Wat is het onderstreepte woord?${S(z)}`}}));
 Q.push({id:'tv9',o:'th',nr:'Extra · mezelf',q:'Welke zin is goed?',a:'Ik bemoei me nooit met de ruzies van anderen.',
+  tv:`Vul het goede woord in.${S('Ik bemoei ___ nooit met de ruzies van anderen.')}`,tvAlt:['me'],
   f:[['Ik bemoei mezelf nooit met de ruzies van anderen.','zich bemoeien is verplicht wederkerend: dan geen mezelf, alleen me.'],['Ik bemoei mijn nooit met de ruzies van anderen.','mijn is een bez.vnw. Hier hoort een wed.vnw: me.']],
   u:'Bij verplicht wederkerende werkwoorden (zich bemoeien, zich vergissen, zich schamen) gebruik je geen mezelf, jezelf, zichzelf of onszelf.',
   v:{q:'Bij welke zin is het wederkerend voornaamwoord goed gebruikt?'}});
-Q.push({id:'tv10',o:'th',nr:'Extra · mezelf',q:'Bij welk werkwoord mag je <b>zichzelf</b> gebruiken?',a:'zich wassen',
+Q.push({id:'tv10',o:'th',nr:'Extra · mezelf',q:'Bij welk werkwoord mag je <b>zichzelf</b> gebruiken?',a:'zich wassen',mc:1,
   f:[['zich vergissen','zich vergissen is verplicht wederkerend: alleen zich.'],['zich schamen','zich schamen is verplicht wederkerend: alleen zich.'],['zich verslikken','zich verslikken is verplicht wederkerend: alleen zich.']],
   u:'zich wassen is toevallig wederkerend: je kunt ook iemand anders wassen. Dan mag zichzelf.',v:{q:'Welk werkwoord is toevallig wederkerend (je kunt het ook bij een ander doen)?'}});
 

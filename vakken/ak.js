@@ -40,7 +40,7 @@ STAD.forEach(([n,s,c])=>{
   Q.topo.push({id:'tv'+i,t:'kaart',k:'welkwater',doel:w,nr:'1a',q:'Welk water is geel gemaakt?',a:w,u});
 });
 Q.topo.push(
- {id:'t1b',t:'mc',nr:'1b',q:'Welk land ligt NIET op het Arabisch Schiereiland?',a:'Irak',f:['Oman','Jemen','Qatar'],u:'Op het Arabisch Schiereiland liggen Saudi-Arabië, Jemen, Oman, de VAE, Qatar, Bahrein en Koeweit. Irak ligt erboven, tussen Syrië en Iran.'},
+ {id:'t1b',t:'mc',nr:'1b',q:'Welk land ligt NIET op het Arabisch Schiereiland?',a:'Irak',mc:1,f:['Oman','Jemen','Qatar'],u:'Op het Arabisch Schiereiland liggen Saudi-Arabië, Jemen, Oman, de VAE, Qatar, Bahrein en Koeweit. Irak ligt erboven, tussen Syrië en Iran.'},
  {id:'t1c',t:'mc',nr:'Extra',q:'Welke zee ligt tussen Iran en het Arabisch Schiereiland?',a:'de Perzische Golf',f:['de Rode Zee','de Kaspische Zee','de Middellandse Zee'],u:'De Perzische Golf ligt tussen Iran en het Arabisch Schiereiland. Via de Straat van Ormoes kom je in de Golf van Oman.'},
  {id:'t1d',t:'mc',nr:'Extra',q:'Welke zee ligt tussen Egypte en Saudi-Arabië?',a:'de Rode Zee',f:['de Perzische Golf','de Arabische Zee','de Zwarte Zee'],u:'De Rode Zee ligt tussen Afrika (Egypte, Sudan) en het Arabisch Schiereiland.'},
  {id:'t1e',t:'mc',nr:'Extra',q:'Welke twee rivieren stromen van Turkije door Syrië en Irak naar de Perzische Golf?',a:'Eufraat en Tigris',f:['Nijl en Jordaan','Eufraat en Nijl','Tigris en Jordaan'],u:'De Eufraat en de Tigris ontspringen in Turkije (bron W22 en bron 25).'},
@@ -368,7 +368,7 @@ const SECS2=SECS.map((s,i)=>({id:s.id,par:PAR(s.id),nr:String(s.n),name:s.t,c:'-
        :(SPIEK[i-1]?SPIEK[i-1][1]:[]).map(r=>[T(r),'',''])}));
 const Q2=[];
 Object.entries(Q).forEach(([sec,list])=>list.forEach(q=>{
-  const b={id:q.id,o:sec,nr:NR(q.nr),q:T(q.q),v:VARI(q.v)};
+  const b={id:q.id,o:sec,nr:NR(q.nr),q:T(q.q),v:VARI(q.v)};if(q.mc)b.mc=1;
   if(q.t==='kaart')Q2.push(Object.assign(b,{type:'kaart',k:q.k,doel:q.doel,lab:q.lab,a:T(q.a),u:T(q.u||'')}));
   else if(q.t==='open')Q2.push(Object.assign(b,{t:'open',k:q.k.map(T),vb:q.vb?q.vb.map(T):undefined}));
   else Q2.push(Object.assign(b,{a:T(q.a),f:q.f.map(x=>[T(x),'']),u:T(q.u||'')}));
