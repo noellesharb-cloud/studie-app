@@ -11,7 +11,13 @@ const pick=(arr,n,not)=>shuf(arr.filter(x=>x!==not)).slice(0,n);
 
 /* ---------- paragrafen ---------- */
 const NIEUW=[
- {id:'p41',par:'4.1',name:'4.1 Berlijn (en Start H4)',sub:'Start: veranderingen in Europa, dimensies, schaalniveaus, 1989',rules:[
+ {id:'p41',par:'4.1',name:'4.1 Berlijn',sub:'Model van een stad, de Muur, hereniging, gentrificatie, re-urbanisatie (+ Start H4)',rules:[
+  'Berlijn ontstond op een eiland in de Spree (historische binnenstad, Unter den Linden). Vanaf 1871 industrie langs rivieren en spoor; daaromheen oude woonwijken (4–5 verdiepingen) voor arbeiders.',
+  'Na WO II: Oost-Berlijn (Sovjet-Unie) en West-Berlijn (VS, VK, Frankrijk). 13 augustus 1961: de Muur om West-Berlijn. Oude centrum in het oosten → nieuw centrum in het westen rond de Kurfürstendamm. Langs de Muur niemandsland.',
+  '9 november 1989 viel de Muur: de Wende. Lege stroken opnieuw ingericht: nieuw cbd bij de Potsdamer Platz (cityvorming), regeringscentrum met de Rijksdag, Berlin Hauptbahnhof.',
+  'Stedelijke vernieuwing in vervallen oude woonwijken (Kreuzberg, Prenzlauerberg): woningen tot 70% duurder → gentrificatie, protest.',
+  'Na de Wende suburbanisatie (gezinnen naar dorpen en voorsteden) én re-urbanisatie (jongeren terug naar de stad, natuurlijke bevolkingsgroei).',
+  'Vroeger was West-Berlijn een uithoek; nu is Berlijn de schakel tussen West-, Midden- en Oost-Europa.',
   'Dimensies (B13): demografisch (omvang en samenstelling bevolking), economisch (geld verdienen), sociaal-cultureel (normen, waarden, taal, godsdienst), politiek (besturen, macht, wetten), natuurlijk of fysisch (klimaat, delfstoffen, reliëf, planten, dieren, bodem).',
   'Schaalniveaus (B14): lokaal, regionaal, nationaal, continentaal, mondiaal; plus fluviaal (stroomgebied van een rivier).',
   'In 1989 scheidde het IJzeren Gordijn Oost- en West-Europa. Na het einde van het communisme vielen de Sovjet-Unie, Joegoslavië en Tsjechoslowakije uiteen: nieuwe landen.']},
@@ -41,7 +47,16 @@ V.kop='H3 Midden-Oosten en H4 Grenzeloos Europa';
 
 /* ---------- begrippen ---------- */
 const BEG={
-p41:[['demografische dimensie','Invalshoek die gaat over de omvang en samenstelling van de bevolking (geboorte, sterfte, immigratie, emigratie, vergrijzing).'],
+p41:[['historische binnenstad','Het oudste deel van de stad, met monumentale huizen, kerken en musea.'],
+ ['central business district (cbd)','Het kantoren-, winkel- en uitgaansgebied van een stad: de centrale zakenwijk.'],
+ ['oude woonwijken','Dichtbebouwde wijken rond de binnenstad, gebouwd voor de arbeiders van de fabrieken in de tijd van de industrie.'],
+ ['cityvorming','De verdringing van de woonfunctie door kantoren en winkels.'],
+ ['stedelijke vernieuwing','Het vernieuwen van woonwijken in de stad, zodat de leefbaarheid sterk verbetert: woningen, woonomgeving en kansen voor bewoners.'],
+ ['gentrificatie','Rijkere mensen verdringen minder welvarende bewoners in een opgeknapte wijk.'],
+ ['suburbanisatie','Mensen (vooral gezinnen) verhuizen uit de stad naar dorpen en voorsteden met rust en ruimte.'],
+ ['re-urbanisatie','Mensen (vooral jongeren) trekken opnieuw naar de stad om er te wonen.'],
+ ['de Wende','De verandering in 1989–1990: de val van de Muur en de hereniging van Oost- en West-Duitsland.'],
+ ['demografische dimensie','Invalshoek die gaat over de omvang en samenstelling van de bevolking (geboorte, sterfte, immigratie, emigratie, vergrijzing).'],
  ['economische dimensie','Invalshoek die gaat over het verdienen van geld: sectoren, import en export, handel.'],
  ['sociaal-culturele dimensie','Invalshoek die gaat over de cultuur van mensen: normen, waarden, gewoonten, gebruiken, taal en godsdienst.'],
  ['politieke dimensie','Invalshoek die gaat over het besturen van een land en de verdeling van de macht: overheid, regels en wetten.'],
@@ -121,6 +136,65 @@ M('p41','s41g','Basisboek B14','Je bestudeert de migratie van jongeren van Oost-
  'Meer dan één land, een werelddeel: continentale schaal.',['Je vergelijkt de werkloosheid in het Ruhrgebied met de rest van Duitsland. Op welk schaalniveau kijk je naar het Ruhrgebied?','regionale schaal',['continentale schaal','mondiale schaal','fluviale schaal']]);
 M('p41','s41h','Basisboek B14','De Rijn stroomt door Zwitserland, Duitsland, Frankrijk en Nederland. Welk schaalniveau gebruik je als je het hele stroomgebied bekijkt?','fluviale schaal',['continentale schaal','nationale schaal','regionale schaal'],
  'Het stroomgebied van een rivier is de fluviale schaal; rivieren houden zich niet aan landgrenzen.',['Het stroomgebied van de Nijl bekijk je op welk schaalniveau?','fluviale schaal',['mondiale schaal','lokale schaal','nationale schaal']]);
+
+/* ===== §4.1 Berlijn ===== */
+const MODEL=()=>`<figure class="bron"><figcaption><b>Bron</b> Model van een westerse stad (eigen tekening naar bron 7.8 in het Basisboek)</figcaption><div class="bronbox"><svg class="bronkaart" viewBox="0 0 300 220" role="img" aria-label="Model van een westerse stad">
+<rect x="0" y="0" width="300" height="220" fill="#EEF3E6"/>
+<path d="M0,200 L300,20" stroke="#8A93A6" stroke-width="6"/><text x="236" y="40" font-size="8" class="lbl">snelweg</text>
+<rect x="232" y="44" width="40" height="22" fill="#B9A5D6"/><text x="296" y="76" font-size="7" text-anchor="end" class="lbl">bedrijventerrein</text>
+<circle cx="150" cy="110" r="95" fill="#CDE8C0"/><circle cx="150" cy="110" r="62" fill="#F5D27A"/><circle cx="150" cy="110" r="30" fill="#E9A93B"/>
+<path d="M60,110 L240,110" stroke="#555" stroke-width="1.6" stroke-dasharray="5 3"/><text x="64" y="106" font-size="7" class="lbl">spoorweg</text>
+<rect x="96" y="112" width="20" height="10" fill="#9E8C7A"/><rect x="186" y="98" width="18" height="10" fill="#9E8C7A"/><text x="184" y="94" font-size="7" class="lbl">fabrieken</text>
+<text x="150" y="108" font-size="8" text-anchor="middle" class="lbl">historische</text><text x="150" y="117" font-size="8" text-anchor="middle" class="lbl">binnenstad</text>
+<rect x="164" y="118" width="12" height="16" fill="#1D2842"/><text x="179" y="132" font-size="7" class="lbl">cbd</text>
+<text x="150" y="68" font-size="8" text-anchor="middle" class="lbl">oude woonwijken</text><text x="150" y="30" font-size="8" text-anchor="middle" class="lbl">nieuwe woonwijken</text>
+<circle cx="88" cy="168" r="9" fill="#7FC77F"/><text x="66" y="186" font-size="7" class="lbl">park, sport</text></svg></div></figure>`;
+O('p41','h41a',LB,'Waar en hoe is Berlijn ontstaan, en waar ligt het oudste deel van de stad?','Hoe is Berlijn ontstaan?',
+ ['Berlijn ontstond op en rond een eiland in de rivier de Spree. Daar ligt het oudste deel: de historische binnenstad.','Van daaruit breidde de stad zich in alle richtingen uit, onder andere langs Unter den Linden.'],
+ [['Waar ontstond Berlijn?','spree|eiland/rivier',0],['Hoe heet het oudste deel?','historische binnenstad/binnenstad/oude centrum/unter den linden',0]]);
+O('p41','h41b',LB,'Leg uit hoe vanaf 1871 de oude woonwijken rond de binnenstad van Berlijn zijn ontstaan.','Waarom werden er vanaf 1871 dichtbebouwde wijken rond de binnenstad van Berlijn gebouwd?',
+ ['Vanaf 1871 kwam de industrie op: fabrieken vestigden zich langs rivieren en spoorwegen aan de randen van de binnenstad.','Duizenden mensen kwamen in de fabrieken werken. Voor hen waren woningen nodig, dus ontstonden rond de binnenstad dichtbebouwde oude woonwijken met blokken van vier tot vijf verdiepingen.'],
+ [['Wat kwam er op, en waar?','industrie/fabriek|rivier/spoor/rand',0],['Waarom waren er veel woningen nodig?','arbeid/werk/mensen/migrant|woning/huizen/wonen',1]]);
+M('p41','h41c',LB,'Wanneer werd de Muur om West-Berlijn gebouwd, en waarom?','op 13 augustus 1961, om de vlucht van Oost-Duitsers naar het Westen te stoppen',['in 1945, om de oorlog te beëindigen','op 9 november 1989, om de stad te verenigen','in 1871, om de industrie te beschermen'],
+ 'Zo’n 3 miljoen Oost-Duitsers waren al gevlucht voor de onderdrukking van het communisme.',['Waarom bouwde Oost-Duitsland in 1961 een muur om West-Berlijn?','om te voorkomen dat nog meer Oost-Duitsers naar het vrije Westen vluchtten',['om West-Berlijn te beschermen tegen de Sovjet-Unie','om de Spree tegen overstromingen te beschermen','om toeristen tegen te houden']]);
+M('p41','h41d',LB,'Wie bestuurde na de Tweede Wereldoorlog Oost-Berlijn en wie West-Berlijn?','Oost: de Sovjet-Unie; West: de VS, het VK en Frankrijk',['Oost: Polen; West: Nederland','Oost: de VS; West: de Sovjet-Unie','Oost en West: de Verenigde Naties'],
+ 'Berlijn werd, net als heel Duitsland, opgedeeld.',['Onder wiens leiding stond Oost-Berlijn na 1945?','de Sovjet-Unie',['de Verenigde Staten','Frankrijk','het Verenigd Koninkrijk']]);
+O('p41','h41e',LB,'Welke gevolgen had de Muur voor de opbouw van Berlijn? Noem er twee.','Hoe veranderde de opbouw van Berlijn door de Muur? Noem twee gevolgen.',
+ ['Het oude stadscentrum kwam in Oost-Berlijn te liggen, daardoor ontstond in West-Berlijn een nieuw stadscentrum rond de Kurfürstendamm.','Langs de Muur werden gebouwen gesloopt: er ontstond een onbebouwd niemandsland, waar men goed toezicht kon houden.'],
+ [['Wat gebeurde er met het centrum?','kurfurstendamm/nieuw centrum/tweede centrum/oude centrum|oost/west',1],['Wat gebeurde er langs de Muur?','niemandsland/gesloopt/sloop/leeg/onbebouwd',0]]);
+M('p41','h41f',LB,'Wanneer viel de Muur, en hoe heet die verandering in het Duits?','9 november 1989; de Wende',['13 augustus 1961; de Wende','9 november 1989; de Anschluss','3 oktober 1945; de Mauerfall'],
+ 'Na 28 jaar werden Oost- en West-Berlijn (en Duitsland) weer één.',['Wat betekent “die Wende”?','de verandering: de val van de Muur en de hereniging',['de muur','de deling van Duitsland','de wederopbouw na de oorlog']]);
+O('p41','h41g',LB,'Wat is er na de val van de Muur gebouwd op de lege stroken langs de Muur? Noem twee voorbeelden.','Hoe werden de onbebouwde gebieden langs de Muur na 1989 ingericht? Noem twee voorbeelden.',
+ ['Een nieuw zakencentrum (cbd) rond de Potsdamer Platz, vlak bij de Brandenburger Tor, met vooral winkels en kantoren: cityvorming.','Een nieuw regeringscentrum met het parlement (de Rijksdag), en een nieuw centraal station: Berlin Hauptbahnhof.'],
+ [['Voorbeeld 1','potsdamer/cbd/zakencentrum/kantoren/winkels/regering/rijksdag/parlement/hauptbahnhof/station',0],['Voorbeeld 2','potsdamer/cbd/zakencentrum/kantoren/winkels/regering/rijksdag/parlement/hauptbahnhof/station',0]]);
+O('p41','h41h',LB,'Beschrijf wat er in Kreuzberg en Prenzlauerberg gebeurde. Gebruik de begrippen stedelijke vernieuwing en gentrificatie.','Waarom protesteerden bewoners van Kreuzberg en Prenzlauerberg? Gebruik stedelijke vernieuwing en gentrificatie.',
+ ['De oude woonwijken in het voormalige Oost-Berlijn waren slecht onderhouden. Huizen en voorzieningen werden opgeknapt: stedelijke vernieuwing.','Daardoor werden woningen tot wel 70% duurder. Bewoners die dat niet konden betalen, moesten verhuizen en rijkere mensen namen hun plek in: gentrificatie. Daartegen was veel protest.'],
+ [['Wat gebeurde er met de wijken? (begrip)','vernieuw/opgeknapt/opknap/renov',0],['Wat was het gevolg voor de bewoners? (begrip)','gentrific|duur/huur/verdre/verhuiz/rijk',1]]);
+O('p41','h41i',LB,'Verklaar waarom er in Berlijn de afgelopen jaren zowel suburbanisatie als re-urbanisatie plaatsvond.','Na de Wende verlieten mensen Berlijn, maar de stad groeit toch. Hoe kan dat?',
+ ['Suburbanisatie: vooral gezinnen verlieten de stad voor dorpen en voorsteden, waar rust en ruimte is.','Re-urbanisatie: dankzij de verbetering van de oude woonwijken trekken veel jongeren weer naar Berlijn. Daardoor is daar een hoger geboortecijfer en zelfs natuurlijke bevolkingsgroei.'],
+ [['Wie vertrekt er, waarheen en waarom? (begrip)','gezin/suburban|voorstad/dorp/rust/ruimte',1],['Wie komt er, en waarom? (begrip)','jong/re-urban|opgeknapt/verbeter/woonwijk/stad',1]]);
+O('p41','h41j',LB,'Geef voorbeelden van voordelen voor Berlijn door de centrale ligging in de EU. Leg uit hoe dat vóór 1989 anders was.','Waarom ligt Berlijn nu gunstiger dan vóór 1989?',
+ ['Vóór 1989 was West-Berlijn een uithoek: een westers eiland in Oost-Europa, waar alle straten doodliepen op de Muur.','Nu ligt Berlijn niet meer geïsoleerd: het is de schakel tussen West-, Midden- en Oost-Europa. Dat is gunstig voor handel, bedrijven en verkeer, zeker nu veel Oost-Europese landen bij de EU horen.'],
+ [['Hoe was het vóór 1989?','uithoek/eiland/geisoleerd/muur/doodl',0],['Waarom is het nu gunstig?','schakel/centraal/midden/tussen|oost/west/handel/bedrijv/verkeer',0]]);
+M('p41','h41k','Basisboek B179','Waar liggen in het model van een westerse stad de oude woonwijken?',"rond de historische binnenstad, bij de fabrieken langs het spoor",['aan de rand van de stad, bij de snelweg','midden in de historische binnenstad','in de voorsteden'],
+ 'Oude woonwijken werden gebouwd voor de arbeiders, vlak bij de fabrieken.',['Wat vind je volgens het model aan de rand van de stad?','nieuwe woonwijken met parken, en bedrijventerreinen bij snelwegen',['de historische binnenstad','de oude woonwijken','het cbd met wolkenkrabbers']],{q:MODEL()+T('Waar liggen in het model van een westerse stad de oude woonwijken?')});
+{const q=V.Q[V.Q.length-1];q.v.q=MODEL()+q.v.q;q.tv=T('Waar liggen in het model van een westerse stad de oude woonwijken?')}
+M('p41','h41l','Basisboek B180','Rond de Kurfürstendamm en de Potsdamer Platz maakten woningen plaats voor kantoren en winkels. Hoe heet dat?','cityvorming',['gentrificatie','suburbanisatie','re-urbanisatie'],
+ 'Cityvorming: de woonfunctie wordt verdrongen door kantoren en winkels (naar de City of London).',['Wat is cityvorming?','de verdringing van woningen door kantoren en winkels',['rijke mensen verdringen armere bewoners','mensen trekken naar de voorsteden','jongeren trekken terug naar de stad']]);
+M('p41','h41m','Basisboek B188','In Prenzlauerberg komen rijkere mensen wonen in opgeknapte huizen, en de oorspronkelijke bewoners kunnen de huur niet meer betalen. Hoe heet dat?','gentrificatie',['cityvorming','suburbanisatie','ontgroening'],
+ 'Gentrificatie: sociaal-economische opwaardering, maar de oorspronkelijke bewoners worden verdrongen.',['Wat is een nadeel van gentrificatie voor de oorspronkelijke bewoners?','De wijk wordt te duur en ze verliezen hun buren (sociale cohesie).',['Er komen minder voorzieningen.','De woningen worden slechter.','De wijk wordt minder veilig.']]);
+O('p41','tq41a',TV,'Vergelijk Berlijn met het model van een westerse stad. Noem een verschil en verklaar dat verschil.','Berlijn past niet helemaal in het model van een westerse stad. Noem een verschil en leg uit hoe dat komt.',
+ ['Verschil: Berlijn heeft twee centra (de oude historische binnenstad in het oosten én het centrum rond de Kurfürstendamm in het westen), terwijl het model één centrum heeft. Of: midden in de stad lagen lege stroken (niemandsland) waar nu een nieuw cbd en regeringscentrum staan.','Verklaring: door de Muur (1961–1989) lag het oude centrum in Oost-Berlijn, dus kreeg West-Berlijn een eigen nieuw centrum; langs de Muur werden gebouwen gesloopt.'],
+ [['Welk verschil met het model?','twee centra/tweede centrum/kurfurstendamm/niemandsland/lege strook/potsdamer/cbd',0],['Hoe komt dat?','muur/deling/verdeeld/oost/west',1]]);
+O('p41','tq41b',TV,'Stelling: “Stedelijke vernieuwing is voor iedereen in Kreuzberg goed.” Geef een argument vóór en een argument tegen deze stelling.','Is stedelijke vernieuwing in Kreuzberg goed voor iedereen? Geef een argument vóór en een argument tegen.',
+ ['Vóór: huizen, straten en voorzieningen worden opgeknapt, dus de leefbaarheid neemt toe.','Tegen: de woningen worden tot 70% duurder, waardoor oorspronkelijke bewoners moeten vertrekken (gentrificatie) en buren kwijtraken.'],
+ [['Argument vóór','opgeknapt/opknap/beter/leefbaar/voorziening/mooier',0],['Argument tegen','duur/huur/70/vertrek/verdre/gentrific/protest',0]]);
+O('p41','tq41c',TV,'Geef een gevolg van de val van de Muur voor Berlijn vanuit de politieke dimensie en een gevolg vanuit de economische dimensie. Noteer de dimensies bij je antwoorden.','De val van de Muur: noem een politiek en een economisch gevolg voor Berlijn, met de dimensie erbij.',
+ ['Politieke dimensie: Oost- en West-Berlijn (en Duitsland) werden weer één; Berlijn kreeg een nieuw regeringscentrum met het parlement (de Rijksdag).','Economische dimensie: op de lege stroken kwam een nieuw zakencentrum met winkels en kantoren (Potsdamer Platz, cityvorming); Berlijn werd de schakel tussen West- en Oost-Europa.'],
+ [['Politiek gevolg','politiek|hereni/een land/een stad/regering/rijksdag/parlement/hoofdstad',0],['Economisch gevolg','econom|zakencentrum/cbd/kantoren/winkels/potsdamer/handel/schakel/bedrijv',0]]);
+O('p41','tq41d',TV,'In §4.2 leerde je over demografische krimp in Oost-Duitsland. Leg uit waarom Berlijn, dat ook deels in het oosten ligt, juist groeit.','Oost-Duitsland krimpt, maar Berlijn groeit. Hoe kan dat?',
+ ['Berlijn is een groeigebied: als grote stad en hoofdstad is er werk, en de opgeknapte oude woonwijken trekken jongeren aan (re-urbanisatie).','Doordat er veel jongeren komen, is er een hoger geboortecijfer en zelfs natuurlijke bevolkingsgroei. In de rest van Oost-Duitsland vertrekken mensen juist door de werkloosheid.'],
+ [['Waarom trekken mensen naar Berlijn?','werk/hoofdstad/groeigebied/jong/re-urban/opgeknapt',0],['Wat is het gevolg voor de bevolking?','geboorte/kinderen/natuurlijke|groei/meer/hoger',1]]);
 
 /* ===== §4.2 Duitsland ===== */
 M('p42','h42a',LB,'Welke industrieën ontwikkelden zich na de Tweede Wereldoorlog vooral in Duitsland?','chemie (met medicijnen), luchtvaart en auto’s',['steenkool, staal en scheepsbouw','kleding, fietsen en meubels','landbouw, visserij en mijnbouw'],
