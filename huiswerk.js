@@ -78,8 +78,15 @@ window.HUISWERK=[
   {id:'2026-11-19-ne',d:'2026-11-19',vak:'nederlands',t:'Voorbereiden toets USO leesvaardigheid',wat:['Dit is een vaardighedentoets: er is geen stof om te leren.','Kijk opnieuw naar de gemaakte opdrachten in het hoofdstuk Meer dan lezen en oefen zo nodig nog een keer.'],min:30},
   /* vrijdag 20 november: Grieks. HB p. 112 (vormen regelmatig werkwoord + εἰμί) en ergon 1 en 2 (HB p. 113) staan nog niet in de app: foto's nodig. */
   {id:'2026-11-20-gr',d:'2026-11-20',vak:'grieks',t:'Vormen regelmatig werkwoord + εἰμί, ergon 1 en 2',wat:['# Leerwerk','Vormen van het regelmatige werkwoord + het onregelmatige werkwoord εἰμί (HB p. 112)','# Maakwerk','Ergon 1 en 2 (HB p. 113)','# Meenemen','Argo Tekstboek en Argo Hulpboek','Schrift en schrijfmateriaal'],min:35},
+  /* maandag 23 november */
+  {id:'2026-11-23-na',d:'2026-11-23',vak:'natuurkunde',t:'L5.07',wat:['Maken ✎ o.36-40','Maken ★ o.39-41, 43','Uitwerken H5P3','# In de app','De opgaven staan in de app. Het uitwerken van practicum H5P3 doe je in je schrift.'],min:40,app:'na',par:'5.3',opg:[36,37,38,39,40,41,43]},
+  /* dinsdag 24 november */
+  {id:'2026-11-24-na',d:'2026-11-24',vak:'natuurkunde',t:'L5.08',wat:['Maken ✎ o.57, 58, 61, 62, 64, 67','Maken ★ o.58, 61, 62, 64, 66, 67'],min:35,app:'na',par:'5.5',opg:[57,58,61,62,64,66,67]},
   /* vrijdag 27 november: inleveren vlog PO Frans (in het document staat 2027, bedoeld is 2026) */
   {id:'2026-11-27-fa-po',d:'2026-11-27',vak:'frans',t:'PO C’est moi: vlog inleveren op Teams',wat:['Lever je vlog in op Teams, vóór 27 november. Is hij nog niet af in de les, maak hem dan thuis af.','# Checklist','Moi: naam, leeftijd, woonplaats, hobby’s','Ma famille: minstens twee familieleden','Ma maison: minstens twee kamers','Minstens 8 bijvoeglijke naamwoorden en 5 werkwoorden op -er','2–3 minuten, met beeldmateriaal'],min:10},
+  /* Toetsweek 2 (7-11 december), rooster SOMtoday. Toetsdata horen in Cijfers, niet hier.
+     ma 7 dec: Duits 9:00, aardrijkskunde 10:30 · di 8 dec: Engels 9:00, geschiedenis 10:30
+     wo 9 dec: natuurkunde 9:00, Nederlands 10:30 · do 10 dec: Grieks 9:00 · vr 11 dec: wiskunde 9:00, levensbeschouwing 10:30 */
   /* donderdag 10 december (toetsweek 2): Repetitie Grieks TW2 (grote toets). Toetsdatum hoort in Cijfers, niet hier.
      Stof: alle woorden t/m les 11 (nadruk les 9 en 11) · alle grammatica t/m les 11 (nadruk les 11, ook grammatica Thema 2 herhalen)
      · cultuur: proloog Thema 3 en les 11 (TB p. 54 en 56) · Griekse tekst les 11.
