@@ -689,7 +689,7 @@ window.Oefen=(()=>{
         if(ok&&Oefen.ctx.nakijk&&R.rid){R.nk=(R.nk||0)+1;Oefen.ctx.nakijk({vak:vid,qid:q.id,rid:R.rid,mode:R.mode,par:R.par||null,toets:R.title,
           vraag:schoon(String(q.tv||q.q).replace(/<button[\s\S]*?<\/button>/g,'')).slice(0,600),jij:String(jij||'(op papier)').slice(0,800),goed:schoon(goedHtml.replace(/<br>/g,'\n')).slice(0,800)})}
         finishCustom(q,it,ok,ok?`<div class="fb ok"><div class="head">Goed!</div>Zelf opgeschreven, zoals op de toets.${Oefen.ctx.nakijk&&R.rid?' Je ouder kijkt dit antwoord nog na.':''}</div>`:`<div class="fb bad"><div class="head">Fout</div>${box.innerHTML?'':`<div><b>Het goede antwoord is:</b></div><div class="res">${goedHtml}</div>`}${uitleg}</div>`,jij||'(op papier)')};
-      if(vak){const vals=ins.map(x=>x.value.trim()),lv=vals.map((v,i)=>v?tvMatch(v,[q.tvA[i]]):null),jij=vals.some(Boolean)?vals.map(v=>v||'…').join(', '):'';
+      if(vak){const vals=ins.map(x=>x.value.trim()),lv=vals.map((v,i)=>v?tvMatch(v,String(q.tvA[i]).split(/\s*\/\s*/)):null),jij=vals.some(Boolean)?vals.map(v=>v||'…').join(', '):'';
         if(!lv.every(Boolean))return zelf(jij);
         ins.forEach((x,j)=>{x.classList.add(lv[j]==='goed'?'ok':'bad');if(lv[j]!=='goed')x.insertAdjacentHTML('afterend',`<small class="tv-c">→ ${q.tvA[j]}</small>`)});
         const ok=lv.every(x=>x==='goed');
