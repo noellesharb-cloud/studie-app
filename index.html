@@ -221,6 +221,7 @@ input.in.q{border-style:dashed}
 input.dt,select.sel,input.nm,input.tm{font:inherit;font-size:.9rem;border:1.5px solid var(--line);border-radius:8px;padding:5px 6px;background:var(--card);color:var(--ink)}
 input.nm{width:100%}
 .x{background:none;border:0;color:var(--soft);font-size:1.1rem;padding:2px 6px}
+.dtw{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}.dtw .x{padding:2px 4px}
 .note{background:var(--tip);border-radius:14px;padding:12px 14px;font-size:.92rem;display:flex;flex-direction:column;gap:6px}
 .state{color:var(--soft);font-size:.9rem}
 /* vandaag */
@@ -1108,6 +1109,9 @@ function rCijfers(){
     <span>Weet ze nog niet wat ze moet leren, vink dan bij die toets 'stof nog niet bekend' aan: dan plant de pagina er nog geen leertijd voor. Haal het vinkje weg zodra de stof bekend is.</span>
     <span>Een weging met een stippelrand komt niet uit het PTO en staat voorlopig op 1. Vraag de docent hoe vaak de toets meetelt. Vul ook de datum van elke toets in: dan plant de pagina het leren.</span>
   </div>`;
+  /* datum via de eigenschap zetten, niet als attribuut (18 nov): de knop 'Herstel' op de iPhone zet een datumveld terug op het attribuut.
+     Stond de gekozen datum in het attribuut, dan bleef hij staan. Nu is het attribuut leeg en wist 'Herstel' de datum. */
+  document.querySelectorAll('#v-cijfers input.dt[data-val]').forEach(el=>el.value=el.dataset.val);
   document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet(['doel']);render()});
   document.querySelectorAll('#v-cijfers details.tt').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.v):open.delete(d.dataset.v)});
   document.querySelectorAll('#v-cijfers details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
@@ -1119,7 +1123,7 @@ function vakHtml(v,c,i){
   const rows=(v.toetsen||[]).map(t=>{const cf=num(t.cijfer);return `<tr>
     <td class="p">P${esc(t.periode)}</td>
     <td class="n">${t.eigen&&canWrite?`<input class="nm" id="n-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="naam" value="${esc(t.naam)}" aria-label="Naam toets">`:esc(t.naam)}${dubbelVan(v,t)?`<small class="sub" style="display:block;white-space:normal;font-size:.8rem">Zelfde toets als ${esc(dubbelVan(v,t).naam)} (zelfde dag). De stof en de planning staan daar; vul het cijfer daar in. Is het toch een aparte toets, geef hem dan een andere datum.</small>`:`${t.datum&&cf==null?`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stofOnbekend" ${t.stofOnbekend?'checked':''} ${dis}> stof nog niet bekend</label>`:''}${cf==null?ptoDet(v.id,t,'Wat er getoetst wordt (PTO)',tPto(v.id,t)):''}${t.datum&&cf==null&&window.VAKDATA&&VAKDATA[v.id]?stofHtml(v,t,dis):''}`}</td>
-    <td><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" value="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}></td>
+    <td><span class="dtw"><input class="dt" type="date" id="d-${v.id}-${t.id}" data-v="${v.id}" data-t="${t.id}" data-f="datum" data-val="${esc(t.datum||'')}" aria-label="Datum ${esc(t.naam)}" ${dis}>${t.datum&&canWrite?`<button class="x" data-wisd="${v.id}|${t.id}" aria-label="Datum wissen" title="Datum wissen">×</button>`:''}</span></td>
     <td><input class="in w${t.wegingOnzeker?' q':''}" id="w-${v.id}-${t.id}" inputmode="decimal" data-v="${v.id}" data-t="${t.id}" data-f="weging" value="${esc(t.weging)}" aria-label="Weging ${esc(t.naam)}" ${dis}></td>
     <td><input class="in${cf!=null&&cf<5.5?' low':''}" id="c-${v.id}-${t.id}" inputmode="decimal" placeholder="–" data-v="${v.id}" data-t="${t.id}" data-f="cijfer" value="${esc(t.cijfer??'')}" aria-label="Cijfer ${esc(t.naam)}" ${dis}></td>
     <td>${t.eigen&&canWrite?`<button class="x" data-del="${v.id}|${t.id}" aria-label="Verwijder toets">×</button>`:''}</td></tr>`}).join('');
@@ -1203,8 +1207,8 @@ function stofHtml(v,t,dis){const D=VAKDATA[v.id],ps=Oefen.pars(v.id),st=(t.stof|
     <label class="so">Voldoende bij <input class="in" style="width:4em" inputmode="numeric" placeholder="55" data-v="${v.id}" data-t="${t.id}" data-f="norm" value="${esc(t.norm??'')}" ${dis}>% goed</label>
     <span class="sub" style="font-size:.8rem;white-space:normal">Niets aangevinkt = alle onderdelen. Leeg = gewoon cijfer (55% goed is een 6).</span></div></details>`}
 /* ---------- invoer cijfers ---------- */
-$('#v-cijfers').addEventListener('change',e=>{
-  const el=e.target;if(!el.dataset.f||!el.dataset.v)return;
+function cijferInvoer(e){
+  const el=e.target;if(!el.dataset||!el.dataset.f||!el.dataset.v)return;
   const v=vakOf(el.dataset.v);if(!v)return;
   if(el.dataset.f==='lesuren'){const n=num(el.value);v.lesuren=n==null?null:Math.max(0,Math.round(n));saveVak(v);render();return}
   const t=v.toetsen.find(x=>x.id===el.dataset.t);if(!t)return;
@@ -1218,10 +1222,13 @@ $('#v-cijfers').addEventListener('change',e=>{
     if(f==='weging')t.wegingOnzeker=false;}
   if(f==='datum')val=val||null;
   if(t[f]===val)return;
-  t[f]=val;stateEl.textContent='';saveVak(v);render();
-});
+  t[f]=val;stateEl.textContent='';if(f==='datum')SCHED=null;saveVak(v);render();
+}
+$('#v-cijfers').addEventListener('change',cijferInvoer);
+$('#v-cijfers').addEventListener('focusout',e=>{if(e.target.matches&&e.target.matches('input.dt'))cijferInvoer(e)});
 $('#v-cijfers').addEventListener('click',e=>{
-  const a=e.target.closest('[data-add]'),d=e.target.closest('[data-del]');
+  const a=e.target.closest('[data-add]'),d=e.target.closest('[data-del]'),w=e.target.closest('[data-wisd]');
+  if(w){const [vid,tid]=w.dataset.wisd.split('|');const v=vakOf(vid),t=v&&v.toetsen.find(x=>x.id===tid);if(t&&t.datum){t.datum=null;SCHED=null;saveVak(v);render()}return}
   if(a){const v=vakOf(a.dataset.add);v.toetsen.push({id:'e'+Date.now().toString(36),periode:2,naam:'Overhoring',weging:1,cijfer:null,datum:null,eigen:true});open.add(v.id);saveVak(v);render();}
   if(d){const [vid,tid]=d.dataset.del.split('|');const v=vakOf(vid);v.toetsen=v.toetsen.filter(t=>t.id!==tid);saveVak(v);render();}
 });
