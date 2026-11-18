@@ -126,7 +126,7 @@ window.Oefen=(()=>{
     <h2>${V.naam}</h2>
     ${bh?`<div class="card stack plan"><span class="tag">Bijhouden · ${V.PN[focusPar]||focusPar}</span>
       <p>Dit heb je net in de les en als huiswerk gehad. Zo blijft het hangen:</p>
-      ${tbAan?(tbKlaar?`<p class="sub" style="font-size:.9rem;margin:0">✓ Terugblik van vandaag gedaan.</p>`:tbIds.length?`<button class="btn" id="bh-tb">1. Terugblik: oude stof (${tbIds.length} ${tbN()===5?'sommen':'vragen'}, ongeveer 5 min)</button>`:`<p class="sub" style="font-size:.9rem;margin:0">Terugblik: vandaag niets. Wat je eerder leerde, zit nog vers.</p>`):''}
+      ${tbAan?(tbKlaar?`<p class="sub" style="font-size:.9rem;margin:0">✓ Terugblik van vandaag gedaan.</p>`:tbIds.length?`<button class="btn" id="bh-tb">1. Terugblik: oude stof (${tbIds.length} ${tbN()===5?'sommen':'vragen'}, ongeveer ${V.openTerug?8:5} min)</button>`:`<p class="sub" style="font-size:.9rem;margin:0">Terugblik: vandaag niets. Wat je eerder leerde, zit nog vers.</p>`):''}
       <button class="btn${tbIds.length&&!tbKlaar?' ghost':''}" id="bh-her">${tbIds.length&&!tbKlaar?'2. ':''}Herhaalronde (10 vragen)</button>
       ${tbIds.length&&!tbKlaar?'<p class="sub" style="font-size:.9rem;margin:0">De terugblik haalt stof uit eerdere paragrafen op, door elkaar. Dat voelt lastiger, en juist daardoor onthoud je het.</p>':''}
       <p class="sub" style="font-size:.9rem;margin:0">Herhaalronde: niet de vragen die je net als huiswerk maakte, maar eerst wat je daarin fout had en dan andere vragen uit deze paragraaf. Elke keer een nieuwe mix. Of kies zelf:</p>
@@ -222,15 +222,20 @@ window.Oefen=(()=>{
   function srRec(id,ok){const S=ST.sr=ST.sr||{},o=S[id]||[-1,''],st=ok?Math.min(Math.max(o[0],0)+1,SR_DAGEN.length-1):0;S[id]=[st,plusDag(SR_DAGEN[st])]}
   const tbN=()=>tvVak()?5:8;
   function terugPool(p){const ps=leerPars().filter(x=>x!==p&&!(V.basis&&x===V.basis.par));
-    return V.Q.filter(q=>ps.includes(secOf(q.o).par)&&q.t!=='open')}
+    return V.Q.filter(q=>ps.includes(secOf(q.o).par)&&(q.t!=='open'||V.openTerug))}
   /* door elkaar: na elkaar zo min mogelijk dezelfde paragraaf */
   function rits(ids){const G={};shuf(ids).forEach(id=>{const k=secOf(QM[id].o).par;(G[k]=G[k]||[]).push(id)});
     const L=Object.values(G).sort((a,b)=>b.length-a.length),R=[];while(L.some(x=>x.length))L.forEach(x=>{if(x.length)R.push(x.shift())});return R}
-  function terugIds(p){const n=tbN(),t=vandaag(),S=ST.sr||{},pool=terugPool(p),fout=new Set(ST.wrong);
-    const due=pool.filter(q=>S[q.id]&&S[q.id][1]<=t).sort((a,b)=>(fout.has(b.id)-fout.has(a.id))||(S[a.id][1]<S[b.id][1]?-1:S[a.id][1]>S[b.id][1]?1:0)).map(q=>q.id);
-    const R=due.concat(shuf(pool.filter(q=>!S[q.id]&&fout.has(q.id)).map(q=>q.id))).slice(0,n);
-    if(R.length<n){const nieuw=rits(pool.filter(q=>!S[q.id]&&!fout.has(q.id)).map(q=>q.id));R.push(...nieuw.slice(0,n-R.length))}
-    return rits(R)}
+  /* open vragen (uitleggen, redeneren) doen mee bij vakken met V.openTerug = hoeveel per terugblik (afspraak 18 nov, aardrijkskunde:
+     2/3 van de toets zijn begripsvragen; die kwamen alleen in de paragraaftoets terug). De rest van de plekken: gesloten vragen. */
+  function terugIds(p){const n=tbN(),t=vandaag(),S=ST.sr||{},alle=terugPool(p),fout=new Set(ST.wrong),no=V.openTerug||0;
+    const kies=(pool,m)=>{if(m<=0)return [];
+      const due=pool.filter(q=>S[q.id]&&S[q.id][1]<=t).sort((a,b)=>(fout.has(b.id)-fout.has(a.id))||(S[a.id][1]<S[b.id][1]?-1:S[a.id][1]>S[b.id][1]?1:0)).map(q=>q.id);
+      const R=due.concat(shuf(pool.filter(q=>!S[q.id]&&fout.has(q.id)).map(q=>q.id))).slice(0,m);
+      if(R.length<m){const nieuw=rits(pool.filter(q=>!S[q.id]&&!fout.has(q.id)).map(q=>q.id));R.push(...nieuw.slice(0,m-R.length))}
+      return R};
+    const O=kies(alle.filter(q=>q.t==='open'),no);
+    return rits([...kies(alle.filter(q=>q.t!=='open'),n-O.length),...O])}
   const tbGedaan=()=>ST.tbDag===vandaag();
   function terugblik(p){const ids=terugIds(p);if(!ids.length)return home();
     if(!ST.tbIntro)return tbIntro(()=>terugblik(p));
@@ -242,7 +247,7 @@ window.Oefen=(()=>{
       <p><b>Wat je moet ophalen uit je geheugen, onthoud je.</b> Wat je alleen terugleest, vergeet je weer. Daarom begint bijhouden voortaan met een paar vragen uit eerdere paragrafen, door elkaar.</p>
       <p><b>Dit voelt moeilijker dan de stof van deze week.</b> Dat is precies de bedoeling: juist die moeite zorgt dat het blijft hangen. Een fout is hier niet erg.</p>
       <p>Wat je goed hebt, komt pas later terug: na 3 dagen, dan na een week, dan na twee weken. Wat fout gaat, komt morgen nog eens. Zo hoef je voor de toets veel minder opnieuw te leren.</p>
-      <p>Het is kort: ${tbN()===5?'hooguit 5 sommen':'hooguit 8 vragen'}, ongeveer 5 minuten. Het hoort bij je bijhouden, het komt er niet bij.</p></div>
+      <p>Het is kort: ${tbN()===5?'hooguit 5 sommen':'hooguit 8 vragen'}, ongeveer ${V.openTerug?8:5} minuten${V.openTerug?`. Daarvan zijn er ${V.openTerug} uitlegvragen: op de toets zijn dat de meeste punten`:''}. Het hoort bij je bijhouden, het komt er niet bij.</p></div>
     <div class="stack"><button class="btn" id="tbbegin">Begin de terugblik</button><button class="btn ghost" id="tbterug">Terug</button></div>`;
     el.querySelector('#back').onclick=home;el.querySelector('#tbterug').onclick=home;
     el.querySelector('#tbbegin').onclick=()=>{ST.tbIntro=1;save();verder()};scrollTo(0,0)}
