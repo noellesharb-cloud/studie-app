@@ -178,11 +178,12 @@ const NAAM=(w,a)=>/ … \(/.test(w)?w.replace(' … ',` <b>${a}</b> `):`${w} <b>
 const POOL=['aan','op','van','voor','met','tegen','over','in','naar','bij','tot','om'];
 const vzSec=(n,van,tot,c)=>({id:'vz'+n,par:'vz',nr:String(n),name:`Vaste voorzetsels ${van}–${tot}`,c,sub:`Woordenlijst · ${van} t/m ${tot} · welk voorzetsel hoort erbij?`,
   rules:VZ.slice(van-1,tot).map((x,i)=>[`${van+i}. ${NAAM(x[0],x[1])}`,'',x[2]||''])});
-SECS.push(vzSec(1,1,40,'--c1'),vzSec(2,41,80,'--c2'),vzSec(3,81,120,'--c3'));
+/* groepjes van 20 (afspraak 19 nov 2026): huiswerk en toets zijn 1–60, 1–80 enz., dan kan ze precies de groepjes kiezen die nodig zijn */
+['--c1','--c2','--c3','--c4','--c5','--c1'].forEach((c,i)=>SECS.push(vzSec(i+1,i*20+1,i*20+20,c)));
 VZ.forEach(([w,a,vb],i)=>{const nr=i+1,uit=NIET[nr]||[],pool=POOL.filter(x=>x!==a&&!uit.includes(x)),f=[];
   for(let k=0;f.length<3;k++)f.push(pool[(nr*5+k*7)%pool.length]),f.splice(0,f.length,...new Set(f));
   const kaal=w.includes('…')?w:w+' …',zin=vb?vb.replace(` ${a} `,' … '):null;
-  Q.push({id:'vz'+nr,o:'vz'+(nr<=40?1:nr<=80?2:3),nr:`Woordenlijst ${nr}`,q:`Welk vast voorzetsel hoort erbij?${S(kaal)}`,a,
+  Q.push({id:'vz'+nr,o:'vz'+Math.ceil(nr/20),nr:`Woordenlijst ${nr}`,q:`Welk vast voorzetsel hoort erbij?${S(kaal)}`,a,
     f:f.map(x=>[x,`Niet ${x}. Het is: ${NAAM(w,a)}.`]),tv:`Vul het vaste voorzetsel in.${S(kaal)}`,tvIn:['voorzetsel'],tvA:[a],
     u:`${NAAM(w,a)}${vb?S(vb):''}`,v:{q:zin?`Vul het vaste voorzetsel in.${S(zin)}`:`Vul aan met het vaste voorzetsel:${S(kaal)}`}})});
 
