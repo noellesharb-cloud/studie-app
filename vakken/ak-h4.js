@@ -1,7 +1,7 @@
 /* Aardrijkskunde H4 Grenzeloos Europa, §4.1–4.3 (toetsstof periode 2, afspraak 18 nov 2026).
    Bron: leerboektekst §4.2 en §4.3 met de Basisboeknummers (PDF's van de ouder), de Start-opdrachten van H4 en B13 Dimensies (foto's).
    §4.1 Berlijn: de leerboektekst ontbreekt nog; daar staan nu de Start-opdrachten, de dimensies en de schaalniveaus.
-   De werkboekopdrachten van §4.1–4.3 ontbreken nog: vragen hier heten 'Leerboek', 'Begrip', 'Start …' of 'Toetsvraag'.
+   Werkboek §4.1 en §4.2 (opdrachten 1–11) staan erin met hun opdrachtnummer; werkboek §4.3 ontbreekt nog. Andere vragen heten 'Leerboek', 'Begrip', 'Start …' of 'Toetsvraag'.
    Wordt na ak.js, ak-ko.js en ak-toets.js geladen. Sleutelwoorden: kleine letters, zonder accenten. */
 (()=>{
 const V=VAKDATA.ak;
@@ -334,6 +334,153 @@ O('p42','tq42d',TV,'Zeche Zollverein was een kolenmijn in het Ruhrgebied en is n
 O('p42','tq42e',TV,'In §3.2 leerde je over Dubai als wereldstad. Waarom zitten in Frankfurt én in Dubai veel bedrijven van dezelfde soort dicht bij elkaar? Gebruik het begrip agglomeratievoordelen.','Waarom vestigen banken zich graag in Frankfurt, dicht bij andere banken? Gebruik het begrip agglomeratievoordelen.',
  ['Gelijksoortige bedrijven profiteren van elkaars aanwezigheid: er is personeel met de juiste kennis, gespecialiseerde toeleveranciers (zoals advocaten) en ze kunnen ideeën uitwisselen.','Die voordelen van het bij elkaar zitten heten agglomeratievoordelen; ze komen vooral voor in stedelijke gebieden.'],
  [['Waarvan profiteren de bedrijven als ze dicht bij elkaar zitten?','personeel/kennis/toelever/advocat/ideeen/uitwissel/samenwerk/opleiding',0],['Welk begrip?','agglomeratievoordel',0]]);
+
+/* ---- werkboek §4.2 Duitsland (opdrachten 1–11, PDF's van de ouder, 19 nov 2026) ----
+   Kleur- en tekenopdrachten op kaarten (3a kleuren, 5a–c, 8a, 8c, 9a–b) staan hier in eigen vorm of niet.
+   Nog niet in de app (bron uit het leerboek ontbreekt): 2e (bron 7), 10c (bron W11). */
+const DE_PROJ=(lon,lat)=>[Math.round((lon-5.6)*37.8+8),Math.round((55.2-lat)*60+6)];
+const DE_RAND=[[7.0,53.6],[8.0,53.6],[8.5,53.9],[9.0,54.0],[8.6,54.9],[9.9,54.8],[10.2,54.4],[11.0,54.1],[11.5,54.0],[12.1,54.2],[13.0,54.4],[13.4,54.6],[14.2,53.9],[14.4,53.3],[14.6,52.6],[14.7,51.9],[15.0,51.1],[14.3,50.9],[12.9,50.4],[12.1,50.3],[12.4,49.7],[13.0,49.3],[13.8,48.8],[13.4,48.3],[13.0,47.5],[12.2,47.7],[11.0,47.4],[10.2,47.3],[9.6,47.5],[8.6,47.7],[7.6,47.6],[7.55,48.1],[7.8,48.5],[8.2,48.97],[7.0,49.1],[6.4,49.2],[6.4,49.5],[6.1,50.1],[6.0,50.8],[6.0,51.8],[6.9,52.2],[7.0,52.6],[7.2,53.2]];
+const DE_DDR=[[10.9,54.0],[10.7,53.5],[11.3,53.0],[10.95,52.6],[10.6,52.0],[10.5,51.6],[10.0,51.3],[10.1,50.7],[10.7,50.4],[11.5,50.4],[12.1,50.3]];
+const DE_RIJN=[[7.6,47.6],[7.55,48.1],[7.8,48.5],[8.2,48.97],[8.4,49.5],[8.27,50.0],[7.6,50.36],[7.1,50.73],[6.96,50.94],[6.77,51.23],[6.76,51.43],[6.2,51.85]];
+/* nummers zoals in opdracht 1a (bron W4); [naam, lon, lat, dx, dy] = plek van het nummer naast de stip */
+const DE_STAD=[['Berlijn',13.40,52.52,8,4],['Hamburg',9.99,53.55,8,4],['München',11.58,48.14,8,4],['Keulen',6.96,50.94,7,9,6,9],['Frankfurt',8.68,50.11,8,4],
+ ['Stuttgart',9.18,48.78,8,4],['Düsseldorf',6.77,51.23,-13,13,-50,12],['Dortmund',7.47,51.51,7,3],['Essen',7.01,51.46,1,-6,-8,-7],['Bremen',8.80,53.08,8,4],
+ ['Dresden',13.74,51.05,8,4],['Leipzig',12.37,51.34,8,4],['Hannover',9.73,52.37,8,4],['Duisburg',6.76,51.43,-17,3,-46,1],['Nürnberg',11.08,49.45,8,4]];
+const DE_PAD=l=>l.map((p,i)=>(i?'L':'M')+DE_PROJ(p[0],p[1]).join(',')).join(' ');
+const DKAART=(o={})=>{const nr=o.nr!==false,naam=!!o.naam;
+ const st=DE_STAD.map(([n,lo,la,dx,dy,ndx,ndy],i)=>{const [x,y]=DE_PROJ(lo,la);if(naam&&ndx!==undefined){dx=ndx;dy=ndy}return `<circle cx="${x}" cy="${y}" r="3" class="stip"/>`+(nr?`<text x="${x+dx}" y="${y+dy}" font-size="${naam?9.5:11}" font-weight="700" class="lbl">${naam?T(n):i+1}</text>`:'')}).join('');
+ return `<figure class="bron"><figcaption><b>Bron</b> Duitsland${o.ddr?' met de voormalige grens tussen West- en Oost-Duitsland':''} (eigen schets naar bron W4, niet precies)</figcaption><div class="bronbox"><svg class="bronkaart" viewBox="0 0 380 490" role="img" aria-label="Kaart van Duitsland met steden">
+<rect width="380" height="490" class="zee"/><path d="${DE_PAD(DE_RAND)}Z" fill="#E6EDB8" stroke="#5B6784" stroke-width="1.2"/>
+<path d="${DE_PAD(DE_RIJN)}" class="riv"/><text x="${DE_PROJ(7.75,49.9)[0]}" y="${DE_PROJ(7.75,49.9)[1]}" font-size="9" class="lbl" fill="#2E7BCF">Rijn</text>
+${o.ddr?`<path d="${DE_PAD(DE_DDR)}" fill="none" stroke="#1D2842" stroke-width="2" stroke-dasharray="6 3"/><text x="${DE_PROJ(12.3,52.9)[0]}" y="${DE_PROJ(12.3,52.9)[1]}" font-size="10" class="lbl">Oost (DDR)</text><text x="${DE_PROJ(7.6,52.6)[0]}" y="${DE_PROJ(7.6,52.6)[1]}" font-size="10" class="lbl">West (BRD)</text>`:''}
+<text x="${DE_PROJ(6.0,54.6)[0]}" y="${DE_PROJ(6.0,54.6)[1]}" font-size="10" class="lbl" fill="#2E7BCF">Noordzee</text><text x="${DE_PROJ(12.0,54.85)[0]}" y="${DE_PROJ(12.0,54.85)[1]}" font-size="10" class="lbl" fill="#2E7BCF">Oostzee</text>
+${st}</svg></div></figure>`};
+
+/* 1a topografie: welke stad is nummer …? */
+const DNAMEN=DE_STAD.map(s=>s[0]);
+DE_STAD.forEach(([n],i)=>{
+  M('p42','w42_1a'+(i+1),'1a',`Welke stad is nummer ${i+1} op de kaart?`,n,pick(DNAMEN,3,n),`Nummer ${i+1} = ${n}.`,
+    [`Welk nummer heeft ${n} op de kaart?`,`nummer ${i+1}`,pick(DNAMEN.map((x,j)=>'nummer '+(j+1)),3,'nummer '+(i+1))],{tv:T(`Welke stad is nummer ${i+1} op de kaart?`)});
+  met(()=>DKAART(),V.Q[V.Q.length-1]);
+});
+M('p42','w42_1ar','1a','Welke steden op de kaart liggen in het Ruhrgebied?','Duisburg, Essen en Dortmund',['Keulen, Frankfurt en Stuttgart','Hamburg, Bremen en Hannover','Dresden, Leipzig en Berlijn'],
+ 'Het Ruhrgebied ligt in het westen, langs de Rijn en de Ruhr: Duisburg, Essen, Dortmund (en Bochum, Gelsenkirchen). Düsseldorf en Keulen liggen er net onder.',
+ ['Welke stad op de kaart ligt in het Ruhrgebied?','Essen',['München','Hannover','Leipzig']],{mc:1});
+met(()=>DKAART({naam:true}),V.Q[V.Q.length-1]);
+/* 1b de voormalige grens */
+[['Dresden','Oost-Duitsland (DDR)','Hannover'],['Leipzig','Oost-Duitsland (DDR)','Nürnberg'],['Hannover','West-Duitsland (BRD)','Dresden'],['Hamburg','West-Duitsland (BRD)','Leipzig']].forEach(([s,a,s2],i)=>{
+  const b=a[0]==='O'?'West-Duitsland (BRD)':'Oost-Duitsland (DDR)',a2=b;
+  M('p42','w42_1b'+(i+1),'1b',`Lag ${s} tot 1990 in West- of in Oost-Duitsland?`,a,[b],`${s} lag in ${a}. De grens liep van de Oostzee bij Lübeck naar het zuiden, ten oosten van Hamburg, Hannover, Kassel en Nürnberg.`,
+    [`Lag ${s2} tot 1990 in West- of in Oost-Duitsland?`,a2,[a]]);
+  met(()=>DKAART({naam:true,ddr:true}),V.Q[V.Q.length-1]);
+});
+M('p42','w42_1b5','1b','Hoe zat het met Berlijn tussen 1961 en 1989?','Berlijn lag in Oost-Duitsland; West-Berlijn hoorde bij West-Duitsland en was ommuurd.',['Berlijn lag helemaal in West-Duitsland.','Berlijn lag precies op de grens tussen West- en Oost-Duitsland.','Berlijn was de hoofdstad van West-Duitsland.'],
+ 'West-Berlijn was een stukje West-Duitsland midden in de DDR, met de Muur eromheen (§4.1).',['Waar lag West-Berlijn?','midden in Oost-Duitsland (de DDR)',['op de grens met Polen','aan de Noordzee','tegen de grens met West-Duitsland aan']]);
+met(()=>DKAART({naam:true,ddr:true}),V.Q[V.Q.length-1]);
+
+/* 2 Industriële grootmacht */
+O('p42','w42_2a','2a','Welke bedrijfstakken horen, net als de industrie, tot de secundaire sector?','Noem bedrijfstakken die net als de industrie tot de secundaire sector horen.',
+ ['De bouw, de energievoorziening (bijvoorbeeld een elektriciteitscentrale) en de ambachten (zoals een bakker of een timmerman). (Basisboek B195)'],
+ [['Noem minstens twee','bouw/energie/elektriciteit/ambacht/bakker/timmer/smid/nutsbedrijf',0]]);
+O('p42','w42_2b','2b','Welke twee onderdelen van de Duitse industrie zijn het sterkst ontwikkeld?','Noem twee industrieën waarin Duitsland heel sterk is.',
+ ['De chemische industrie (met medicijnen).','De auto-industrie. (Ook goed: de luchtvaartindustrie; het leerboek noemt deze drie.)'],
+ [['Industrie 1','chemi/medicijn/farma/luchtvaart/vliegtu/auto',0],['Industrie 2','chemi/medicijn/farma/luchtvaart/vliegtu/auto',0]]);
+M('p42','w42_2c','2c','Wat is het belangrijkste kenmerk van deze industrieën in Duitsland?','Het is hightechindustrie: hooggeschoolde werknemers, veel onderzoek en moderne technieken (robots).',['Er werken vooral laaggeschoolde werknemers.','Er worden vooral ruwe grondstoffen verwerkt.','Ze zitten allemaal in het oosten van Duitsland.'],
+ 'Hightechindustrie: hoogstaande kennis en ingewikkelde productietechnieken, met hooggeschoolde werknemers.',['Waarom heet de Duitse auto-industrie hightechindustrie?','Er werken hooggeschoolde mensen en er wordt veel onderzoek gedaan.',['Er worden veel ruwe grondstoffen gebruikt.','De fabrieken zijn heel oud.','Er wordt alleen met de hand gewerkt.']]);
+O('p42','w42_2d','2d','Welke invloed heeft dit kenmerk uit vraag 2c op de kwaliteit en de waarde van de producten?','Wat betekent hightech voor de kwaliteit en de prijs van Duitse auto’s en medicijnen?',
+ ['Door de kennis, het onderzoek en de moderne technieken is de kwaliteit van de producten hoog.','Daardoor hebben de producten een hoge waarde: ze zijn duur en er wordt veel aan verdiend.'],
+ [['Kwaliteit','hoog/goed/beter',0],['Waarde','hoog/duur/veel geld/waardevol/veel waard',0]]);
+
+/* 3 Auto-industrie */
+const MERK=[['Volkswagen','Wolfsburg'],['BMW','München'],['Mercedes-Benz','Stuttgart'],['Porsche','Stuttgart'],['Audi','Ingolstadt'],['Opel','Rüsselsheim']];
+const MSTAD=['Wolfsburg','München','Stuttgart','Ingolstadt','Rüsselsheim','Hamburg','Dresden','Keulen'];
+MERK.forEach(([m,s],i)=>M('p42','w42_3a'+(i+1),'3a',`In welke Duitse stad heeft het automerk ${m} zijn thuisbasis (hoofdkantoor)?`,s,pick(MSTAD.filter(x=>x!==s&&!(s==='Stuttgart'&&x==='Stuttgart')),3,s),
+  `${m}: ${s}. Volkswagen in Wolfsburg (Nedersaksen), Opel in Rüsselsheim (bij Frankfurt), BMW en Audi in Beieren, Mercedes-Benz en Porsche in Stuttgart (Baden-Württemberg).${m==='Audi'?' Audi is in 1909 in Zwickau (Oost-Duitsland) begonnen en verhuisde na de oorlog naar Ingolstadt.':''}`,
+  [`Welk automerk komt uit ${s}?`,m,pick(MERK.map(x=>x[0]).filter(x=>MERK.find(y=>y[0]===x)[1]!==s),3)]));
+O('p42','w42_3b','3b','Beschrijf de ruimtelijke spreiding van de thuissteden van de Duitse automerken. Wat valt op?','Waar in Duitsland liggen de thuissteden van de automerken, en wat valt op?',
+ ['De meeste thuissteden liggen in het zuiden (Stuttgart, München, Ingolstadt) en het westen (Rüsselsheim, Keulen); Wolfsburg ligt in het noorden.','Opvallend: er ligt geen enkele in het oosten (de vroegere DDR). De auto-industrie zit vooral in het zuiden (Baden-Württemberg en Beieren).'],
+ [['Waar liggen de meeste?','zuid/beieren/baden/stuttgart/munchen|west/zuid/beieren/baden',0],['Wat valt op?','oost/ddr|niet/geen/weinig/nauwelijks',0]]);
+
+/* 4 Agglomeratievoordelen: het schema van bron W6 */
+const W6=[['aandrijving: chassis, …, banden, versnelling','motor','aandrijving'],['veiligheid: …, veiligheidsriemen','airbags','veiligheid'],['interieur: airco, …, bekleding','stoelen','interieur'],
+ ['… zoals robots en automaten om de auto in elkaar te zetten','kapitaalgoederen','machines om de auto in elkaar te zetten'],['verkoop en na de verkoop: financiering, verkoop, onderhoud, verzekering, …','garage','verkoop en na de verkoop'],
+ ['… en ontwikkeling: nieuwe materialen, universiteit, ingenieursbureau','onderzoek','nieuwe materialen, universiteit, ingenieursbureau'],['logistiek en …: brengen en halen van onderdelen en auto’s','transport','brengen en halen van onderdelen en auto’s']];
+const W6W=W6.map(x=>x[1]),W6L=W6.map(x=>x[2]);
+W6.forEach(([vak,w,l],i)=>M('p42','w42_4a'+(i+1),'4a',`Een autofabriek krijgt van veel bedrijven onderdelen en diensten (bron W6). Welk woord hoort op de puntjes? — ${vak}`,w,pick(W6W,3,w),
+  'Het schema: aandrijving (motor), veiligheid (airbags), interieur (stoelen), kapitaalgoederen (robots), verkoop (garage), onderzoek en ontwikkeling, logistiek en transport. Kapitaalgoederen zijn gebouwen, installaties en machines.',
+  [`Bij welk vakje in het schema van toeleveranciers van een autofabriek hoort “${w}”?`,l,pick(W6L,3,l)]));
+M('p42','w42_4b','4b','Wat zijn agglomeratievoordelen?','de voordelen die bedrijven hebben doordat ze dicht bij elkaar zitten',['de voordelen van een vestiging in een ander land','de voordelen van lage lonen','de voordelen van veel grondstoffen in de bodem'],
+ 'Agglomeratievoordelen: snel en op tijd leveren, kennis delen, personeel in de buurt; daardoor lagere kosten (Basisboek B213).',['Banken in Frankfurt zitten dicht bij elkaar en profiteren daarvan. Hoe heet dat?','agglomeratievoordelen',['globalisering','suburbanisatie','de-industrialisatie']]);
+O('p42','w42_4c','4c','Gebruik bron W5. Welke agglomeratievoordelen zijn er voor een bedrijf uit Stuttgart dat robots maakt voor de auto-industrie in Duitsland?','Waarom is Stuttgart een goede plek voor een bedrijf dat robots maakt voor autofabrieken? Noem twee agglomeratievoordelen.',
+ ['De klanten zitten dichtbij: in Stuttgart zelf zitten Mercedes-Benz en Porsche, en in Beieren BMW en Audi. Het bedrijf kan dus snel leveren en onderhoud doen; dat scheelt transportkosten.','Er zijn in de buurt universiteiten en andere toeleveranciers: goed opgeleid personeel, samen onderzoek doen en kennis uitwisselen.'],
+ [['Voordeel 1: de klanten','klant/autofabriek/mercedes/porsche/daimler/bmw/audi|dichtbij/snel/leveren/kort/transport/onderhoud',0],['Voordeel 2: kennis of personeel','universiteit/onderzoek/kennis/personeel/werknemer/ingenieur/toelever/samenwerk',0]]);
+
+/* 5 De Volkswagen Group */
+O('p42','w42_5d','5d','Welke twee dingen vallen je op aan de spreiding van de vestigingen van Volkswagen?','Kijk naar de fabrieken van Volkswagen op de wereldkaart. Welke twee dingen vallen op?',
+ ['Volkswagen heeft fabrieken over de hele wereld, in alle werelddelen: het is een multinational.','De meeste fabrieken staan in Europa (vooral in Duitsland zelf) en in China; in Afrika en Australië zijn er weinig of geen.'],
+ [['Waar zijn er vestigingen?','wereld/overal/werelddelen/continent/veel landen/multinational',0],['Waar de meeste?','europa/duitsland/china/azie',0]]);
+O('p42','w42_5e','5e','Verklaar de spreiding van de innovatiecentra van de Volkswagen Group.','Waarom zitten de innovatiecentra van Volkswagen in plaatsen als San Francisco, Tel Aviv, Tokio, Shanghai en Wolfsburg?',
+ ['De innovatiecentra liggen in (wereld)steden met veel hightechbedrijven, universiteiten en kennis, zoals San Francisco (Silicon Valley), Tel Aviv en Tokio. Daar kan Volkswagen hoogopgeleide mensen vinden en samenwerken (agglomeratievoordelen).','Ook liggen ze bij grote markten: in China (Beijing, Shanghai) worden veel auto’s verkocht, en in Wolfsburg zit het hoofdkantoor.'],
+ [['Wat is er in die steden te vinden?','hightech/kennis/universiteit/onderzoek/hoogopgeleid/technolog/silicon/start-up',0],['Nog een reden','china/markt/afzet/verkoop/klant/hoofdkantoor/wolfsburg/samenwerk/agglomeratie',0]]);
+M('p42','w42_5f','5f','Welk begrip uit deze paragraaf past het beste bij bron W8 (de vestigingen en innovatiecentra van Volkswagen over de hele wereld)?','multinational',['agglomeratievoordelen','hightechindustrie','vestigingsoverschot'],
+ 'Een multinational is een onderneming die in veel landen actief is, zoals de Volkswagen Group.',['Hoe heet een onderneming die in veel landen actief is?','multinational',['toeleverancier','dienstensector','planeconomie']]);
+
+/* 6 Dienstensector */
+O('p42','w42_6a','6a','Uit welke twee onderdelen bestaat de dienstensector?','Welke twee soorten dienstverlening zijn er?',
+ ['De tertiaire sector: commerciële dienstverlening, gericht op winst (banken, winkels, horeca, transport).','De quartaire sector: niet-commerciële (publieke) dienstverlening (onderwijs, zorg, brandweer, rechtspraak). (Basisboek B208)'],
+ [['Onderdeel 1','tertia/commerci',0],['Onderdeel 2','quarta/kwarta/niet-commerci/niet commerci/publiek/overheid',0]]);
+M('p42','w42_6b','6b','Banken en advocatenkantoren, zoals in Frankfurt: bij welk onderdeel van de dienstensector horen ze?','de tertiaire (commerciële) dienstverlening',['de quartaire (niet-commerciële) dienstverlening','de secundaire sector','de primaire sector'],
+ 'Banken en advocaten willen winst maken: commerciële dienstverlening (tertiaire sector).',['Bij welk onderdeel van de dienstensector hoort een openbare school of een ziekenhuis?','de quartaire (niet-commerciële) dienstverlening',['de tertiaire (commerciële) dienstverlening','de secundaire sector','de primaire sector']]);
+O('p42','w42_6c','6c','Wat is een belangrijk kenmerk van de internationale dienstverlening in Duitsland?','Wat voor diensten levert Duitsland vooral aan het buitenland, en waar zitten ze?',
+ ['Het zijn vooral hoogwaardige diensten (zoals banken, verzekeraars en advocaten), waarvoor hoogopgeleide mensen nodig zijn. Ze zitten vooral in Frankfurt, het centrum van de Duitse en Europese financiële dienstverlening.'],
+ [['Wat voor diensten?','hoogwaardig/hoogopgeleid/bank/financ/advoca/verzeker/kennis',0]]);
+
+/* 7 Regionale verschillen */
+O('p42','w42_7a','7a','Wat zijn twee kenmerken van de zware industrie?','Noem twee kenmerken van zware industrie, zoals hoogovens en staalfabrieken.',
+ ['Er worden veel (ruwe) grondstoffen verwerkt, zoals steenkool en ijzererts, en er is veel energie nodig.','Het zijn grote fabrieken met grote, zware producten (zoals staal); ze zitten vaak bij de grondstoffen of bij een haven, en vervuilen veel. (Basisboek B207)'],
+ [['Kenmerk 1','grondstof/steenkool/erts/energie',0],['Kenmerk 2','groot/zwaar/vervuil/haven/mijn/veel ruimte/grondstof/energie',0]]);
+O('p42','w42_7b','7b','Wat betekenen deze kenmerken uit vraag 7a voor de waarde van de producten?','Zijn producten van de zware industrie, zoals staal, veel waard per kilo? Leg uit.',
+ ['De producten zijn halffabricaten (zoals staal) waar nog niet veel kennis in zit: de waarde per kilo is laag (lage toegevoegde waarde), anders dan bij hightechproducten.'],
+ [['Waarde?','laag/lager/weinig/goedkoop/niet veel',0]]);
+M('p42','w42_7c','7c','In welke twee regio’s in Duitsland is veel zware industrie gevestigd?','het Ruhrgebied en Saarland',['Beieren en Baden-Württemberg','Hamburg en Bremen','Berlijn en Brandenburg'],
+ 'Daar lagen steenkoolmijnen: de zware industrie vestigde zich bij de grondstof.',['Waarom ontstond in het Ruhrgebied en Saarland zware industrie?','Er was steenkool in de bodem.',['Er waren veel universiteiten.','Er lag een grote luchthaven.','Daar woonden de meeste hoogopgeleiden.']]);
+O('p42','w42_7d','7d','Geef twee verklaringen waardoor de ooit zo belangrijke regio’s met zware industrie nu tot de economisch zwakke regio’s in Duitsland worden gerekend.','Waarom zijn het Ruhrgebied en Saarland nu economisch zwakker dan het zuiden? Geef twee verklaringen.',
+ ['Na 1960 konden steenkool en staal goedkoper uit het buitenland worden gehaald: mijnen en staalfabrieken gingen dicht, de werkloosheid steeg.','Er was weinig andere (moderne) industrie: de werknemers waren niet opgeleid voor hightech of diensten, en de oude industrie is vervuilend en verouderd. Nieuwe bedrijven kozen liever voor het zuiden.'],
+ [['Verklaring 1: wat ging er mis met steenkool en staal?','buitenland/goedkoper/import/concurrent|dicht/sluit/gesloten/werkloos',0],['Verklaring 2','hightech/dienst/opgeleid/scholing/verouder/oud/vervuil/eenzijdig/andere industrie/nieuwe bedrijven/werkloos',0]]);
+
+/* 8 Werkloosheid in Duitsland */
+O('p42','w42_8b','8b','Welke tweedeling zie je in bron W9 (de werkloosheid per deelstaat)?','Waar in Duitsland is de werkloosheid hoog en waar laag?',
+ ['In het oosten (de vroegere DDR) en in het noorden is de werkloosheid hoger; in het zuiden (Beieren en Baden-Württemberg) is die het laagst. Er is dus een tweedeling tussen oost en west, en tussen noord en zuid.'],
+ [['Waar hoog en waar laag?','oost/noord|zuid/west/beieren/baden',0]]);
+O('p42','w42_8d','8d','Verklaar de zichtbare regionale verschillen in bron W10 (sterke en minder sterke economische gebieden) aan de hand van bron W9 (werkloosheid).','Waarom zijn de gebieden met hoge werkloosheid de economisch minder sterke gebieden?',
+ ['In de minder sterke gebieden (het oosten, het Ruhrgebied en Saarland) is de werkloosheid hoog: de oude industrie verdween en er kwamen niet genoeg nieuwe banen.','In de sterke gebieden (vooral het zuiden: Beieren, Baden-Württemberg; ook Hamburg) is de werkloosheid laag dankzij de hightechindustrie en de diensten.'],
+ [['Minder sterke gebieden','oost/ruhr/saar|werkloos/weinig werk/banen',0],['Sterke gebieden','zuid/beieren/baden/munchen/stuttgart/hamburg|werkloos/werk/hightech/dienst/laag',0]]);
+
+/* 9 Sociale bevolkingsontwikkeling */
+O('p42','w42_9c','9c','Bedenk waarom de pijlen in bron W10 (migratie binnen Duitsland) niet allemaal even dik zijn.','Wat betekent een dikke pijl op een migratiekaart?',
+ ['De dikte van een pijl laat zien hoeveel mensen er verhuizen: hoe dikker de pijl, hoe meer migranten.'],
+ [['Waar staat de dikte voor?','aantal/hoeveel/veel/meer|mens/migrant/verhuiz/mensen',0]]);
+O('p42','w42_9d','9d','Welke twee hoofdbewegingen van migratie zie je in bron W10?','Noem de twee belangrijkste migratiestromen binnen Duitsland.',
+ ['Van Oost-Duitsland naar het westen en zuiden (en naar Berlijn).','Van de oude industriegebieden (het Ruhrgebied en Saarland) naar de sterke gebieden in het zuiden (Stuttgart, München).'],
+ [['Beweging 1','oost|west/zuid/berlijn',0],['Beweging 2','ruhr/saar/industrie|zuid/stuttgart/munchen',0]]);
+O('p42','w42_9e','9e','Vergelijk bron W10 met bron W11. Welke gebieden in Duitsland hebben een vertrekoverschot en welke een vestigingsoverschot?','Welke Duitse gebieden hebben een vertrekoverschot, en welke een vestigingsoverschot?',
+ ['Vertrekoverschot: Oost-Duitsland (buiten Berlijn), het Ruhrgebied en Saarland.','Vestigingsoverschot: het zuiden (rond Stuttgart en München), Hamburg en Berlijn.'],
+ [['Vertrekoverschot','oost/ruhr/saar/ddr',0],['Vestigingsoverschot','zuid/stuttgart/munchen/beieren/baden/hamburg/berlijn',0]]);
+M('p42','w42_9f','Begrip','Uit een gebied vertrekken meer mensen dan er komen wonen. Hoe heet dat?','vertrekoverschot',['vestigingsoverschot','geboorteoverschot','sterfteoverschot'],
+ 'Sociale bevolkingsgroei = vestiging min vertrek. Meer vertrek dan vestiging = vertrekoverschot (Basisboek B147).',['Er komen meer mensen in een gebied wonen dan er vertrekken. Hoe heet dat?','vestigingsoverschot',['vertrekoverschot','natuurlijke groei','geboorteoverschot']]);
+
+/* 10 Bevolkingsontwikkeling in Duitsland */
+O('p42','w42_10a','10a','Vergelijk bron W11 (bevolkingsgroei en -krimp) met bron W10 (sterke en minder sterke gebieden). Welk verband wordt duidelijk?','Welk verband is er tussen de economie van een gebied en de groei of krimp van de bevolking?',
+ ['In de economisch sterke gebieden groeit de bevolking; in de economisch minder sterke gebieden krimpt de bevolking.'],
+ [['Het verband','sterk/rijk/werk/welvaart|groei/toe/meer|zwak/minder sterk/krimp/af',0]]);
+O('p42','w42_10b','10b','Verklaar het verband uit vraag 10a.','Waarom krimpt de bevolking in economisch zwakke gebieden en groeit ze in sterke gebieden?',
+ ['In de economisch zwakke gebieden is weinig werk (hoge werkloosheid). Mensen, vooral jongeren, vertrekken daarom naar gebieden met werk: vertrekoverschot → krimp.','In de sterke gebieden is veel werk, dus komen er mensen bij: vestigingsoverschot → groei.'],
+ [['Waarom vertrekken mensen?','werk/werkloos/baan|vertrek/weg/verhuiz/trek',1],['Waar gaan ze heen, en wat is het gevolg?','vestig/groei/werk/sterk',0]]);
+
+/* 11 Ontgroening en vergrijzing */
+O('p42','w42_11','11','Leg uit dat zowel ontgroening als vergrijzing logische gevolgen zijn van het vertrekoverschot in grote delen van het oosten van Duitsland.','Waarom krijgt Oost-Duitsland door het vertrekoverschot te maken met ontgroening én vergrijzing?',
+ ['Vooral jongeren vertrekken uit het oosten om elders werk of een opleiding te zoeken (selectieve migratie).','Daardoor worden er ook minder kinderen geboren: het aandeel jongeren neemt af (ontgroening).','De ouderen blijven achter, dus het aandeel 65-plussers wordt groter (vergrijzing).'],
+ [['Wie vertrekken er vooral?','jong/jonger|vertrek/weg/trek',0],['Waarom ontgroening?','minder kinderen/geboren/geboorte/jongeren|minder/af/kleiner/weg',1],['Waarom vergrijzing?','ouder/65/bejaard|blijven/achter/aandeel/groter/meer',1]]);
 
 /* ===== §4.3 Europa ===== */
 M('p43','h43a',LB,'Welke landen richtten in 1957 de Europese Economische Gemeenschap (EEG) op?','België, Frankrijk, Italië, Luxemburg, Nederland en West-Duitsland',['Nederland, België, Luxemburg en het Verenigd Koninkrijk','Frankrijk, Duitsland, Polen en Spanje','alle 27 landen van de huidige EU'],
