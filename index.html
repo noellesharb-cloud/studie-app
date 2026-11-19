@@ -419,6 +419,11 @@ ul.pto{margin:4px 0 2px;padding-left:1.1em;font-size:.85rem;font-weight:400;whit
 .bronleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:.82rem}
 .bronleg span{display:inline-flex;align-items:center;gap:6px} .bronleg i{display:inline-block;width:16px;height:12px;border-radius:3px;border:1px solid #8A93A6}
 .bronnoot{margin:6px 0 0;font-size:.78rem;color:var(--sub,#5B6784)}
+.suc{border-left:4px solid var(--ok);padding:6px 0 6px 12px;display:flex;flex-direction:column;gap:6px}
+.suc+.suc{margin-top:6px}
+.suc-c{font-size:1.2rem;color:var(--ok)}
+.suc-o{background:var(--tip);border-radius:10px;padding:8px 10px;font-size:.92rem}
+.suc-hoe{font-size:.95rem}
 </style>
 
 </head>
@@ -877,6 +882,51 @@ function schuifRij(b){const e=b.schuif,v=vakOf(b.vak||b.cv),k=schuifSoort(b),pt=
   return `<div class="blk done schuif"><span class="ck">→</span>${v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:''}<span class="tx">${esc(b.titel)}<small>Doorgeschoven door je ouder. Hoeft vandaag niet af voor je reeks. ${waar}${b.prog?` Wat je al deed (${b.prog} min) telt wel.`:''}</small>${isOuder()&&canWrite?`<span class="row" style="margin-top:6px"><button class="link" data-ontschuif="${esc(b.key)}" data-stop>Terugzetten</button></span>`:''}</span><span class="mn"><s>${b.min} min</s></span></div>`}
 /* ---------- tab: vandaag ---------- */
 const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
+/* ---------- successen (afspraak 19 nov 2026): wat haar op school lukte, in haar eigen woorden, naast hoeveel ze daarvoor oefende.
+   Zo ziet ze zelf het verband tussen oefenen en resultaat. Opslag: oefen/successen = {lijst:[{id,d,vak,wat,cijfer,hoe,t,door}],seed}.
+   Alleen de dochter schrijft (zoals de rest van 'oefen'); de ouder kijkt mee. De eerste (wiskundesom 18 nov) zette de ouder via Claude klaar. */
+const SUC_SEED={id:'s-2026-11-18-wi',d:'2026-11-18',vak:'wi',wat:'Een hele moeilijke som in de les binnen de tijd helemaal goed. Compliment van de meester!',cijfer:'',hoe:'',door:'ouder',t:0};
+let SUC_OPEN=false,SUC_DRAFT={};/* concept bewaren: de app ververst elke minuut en dan zou half getypte tekst weg zijn */
+const sucLijst=()=>((((OEF.successen||{}).lijst)||[]).slice()).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:(b.t||0)-(a.t||0));
+function sucSave(){if(isOuder()||!db)return;const body=JSON.parse(JSON.stringify(OEF.successen));write(()=>db.collection('oefen').doc('successen').set(body))}
+function sucSeed(){if(isOuder()||!canWrite||!db||!GELADEN.oefen)return;const S=OEF.successen=OEF.successen||{lijst:[]};if(S.seed)return;S.seed=1;S.lijst=S.lijst||[];
+  if(!S.lijst.some(x=>x.id===SUC_SEED.id))S.lijst.push(Object.assign({},SUC_SEED));sucSave()}
+/* oefentijd voor dat vak in de 14 dagen ervoor, uit het log (app, huiswerk, leren, goedgekeurd) */
+function sucOefen(s){let m=0;const dagen=new Set();for(let i=1;i<=14;i++){const d=addDays(s.d,-i);
+  logDag(d).forEach(e=>{if(e.vak!==s.vak||NIETMEE.includes(e.soort))return;const x=e.sec?e.sec/60:(e.min||0);if(x>0){m+=x;dagen.add(d)}})}
+  return {min:Math.round(m),dagen:dagen.size}}
+function sucKaart(s){const v=vakOf(s.vak),o=sucOefen(s),ou=isOuder(),id=esc(s.id);
+  const chip=v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:'';
+  return `<div class="suc">
+    <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><span class="row" style="gap:8px;flex-wrap:nowrap">${chip}<span><b>${esc(v?.naam||s.vak)}</b> <span class="sub">${nice(s.d)}</span></span></span>${s.cijfer?`<b class="suc-c">${esc(s.cijfer)}</b>`:''}</div>
+    <div>${esc(s.wat)}</div>
+    ${s.hoe?`<div class="suc-hoe"><span class="sub">${ou?'Wat ze daarvoor deed':'Wat ik daarvoor deed'}:</span> ${esc(s.hoe)}</div>`
+      :!ou&&canWrite?`<div class="suc-hoe stack" style="gap:4px"><label class="sub" for="sh-${id}">Wat had je daarvoor gedaan?</label><span class="row" style="flex-wrap:nowrap"><input class="nm" style="flex:1;min-width:0" id="sh-${id}"><button class="btn ghost" data-sucok="${id}">Bewaar</button></span></div>`:''}
+    ${o.min>=5?`<div class="suc-o">In de twee weken daarvoor oefende${ou?' ze':' je'} <b>${mins(o.min)}</b> ${esc((v?.naam||'').toLowerCase())}, op <b>${o.dagen}</b> ${o.dagen===1?'dag':'dagen'}.</div>`:''}
+    ${s.door==='ouder'?`<small class="sub">${ou?'Alvast voor haar opgeschreven.':'Deze heeft je ouder alvast voor je opgeschreven.'}</small>`:''}
+    ${!ou&&canWrite?`<button class="link" style="align-self:flex-start" data-sucweg="${id}">Weghalen</button>`:''}
+  </div>`}
+function sucForm(){if(isOuder()||!canWrite)return '';
+  return `<details class="card" id="suc-f"${SUC_OPEN?' open':''}><summary style="cursor:pointer;font-weight:700">Iets gelukt op school?</summary>
+    <div class="stack" style="margin-top:10px;gap:10px">
+      <span class="sub" style="font-size:.9rem">Een goed cijfer, een compliment, een som die ineens lukte: schrijf het op in je eigen woorden. Het komt bij Cijfers onder <b>Wat ik al kon</b>.</span>
+      <div class="row">
+        <label class="stack" style="gap:2px;font-size:.9rem">Vak<select class="sel" id="sf-vak">${VAK.slice().sort((a,b)=>(a.volgorde??0)-(b.volgorde??0)).map(v=>`<option value="${v.id}">${esc(v.naam)}</option>`).join('')}</select></label>
+        <label class="stack" style="gap:2px;font-size:.9rem">Wanneer<input class="dt" type="date" id="sf-d"></label>
+        <label class="stack" style="gap:2px;font-size:.9rem">Cijfer (mag leeg)<input class="in" id="sf-c" inputmode="decimal" placeholder="–"></label></div>
+      <label class="stack" style="gap:2px;font-size:.9rem">Wat lukte er?<textarea class="nm" id="sf-wat" rows="2" style="width:100%"></textarea></label>
+      <label class="stack" style="gap:2px;font-size:.9rem">Wat had je daarvoor gedaan? (mag leeg)<input class="nm" id="sf-hoe" style="width:100%"></label>
+      <button class="btn" id="sf-add" style="align-self:flex-start">Bewaar</button></div></details>`}
+function sucBind(root){
+  root.querySelectorAll('#suc-f input,#suc-f select,#suc-f textarea,input[id^="sh-"]').forEach(el=>{if(SUC_DRAFT[el.id]!=null)el.value=SUC_DRAFT[el.id];el.oninput=el.onchange=()=>{SUC_DRAFT[el.id]=el.value}});
+  const f=root.querySelector('#suc-f');if(f){f.ontoggle=()=>{SUC_OPEN=f.open};const di=f.querySelector('#sf-d');if(di&&!di.value)di.value=today();
+    f.querySelector('#sf-add').onclick=()=>{const wat=f.querySelector('#sf-wat').value.trim();if(!wat){f.querySelector('#sf-wat').focus();return}
+      const S=OEF.successen=OEF.successen||{lijst:[]};S.lijst=S.lijst||[];const d=(di&&di.value)||today();
+      S.lijst.push({id:'s-'+Date.now().toString(36),d:d>today()?today():d,vak:f.querySelector('#sf-vak').value,wat,cijfer:f.querySelector('#sf-c').value.trim(),hoe:f.querySelector('#sf-hoe').value.trim(),t:Date.now()});
+      SUC_OPEN=false;['sf-vak','sf-d','sf-c','sf-wat','sf-hoe'].forEach(k=>delete SUC_DRAFT[k]);sucSave();render()}}
+  root.querySelectorAll('[data-sucok]').forEach(b=>b.onclick=()=>{const id=b.dataset.sucok,i=root.querySelector('#sh-'+CSS.escape(id)),x=sucLijst().find(s=>s.id===id);
+    if(!x||!i||!i.value.trim()){if(i)i.focus();return}x.hoe=i.value.trim();delete SUC_DRAFT['sh-'+id];sucSave();render()});
+  root.querySelectorAll('[data-sucweg]').forEach(b=>b.onclick=()=>{const S=OEF.successen;if(!S)return;S.lijst=(S.lijst||[]).filter(s=>s.id!==b.dataset.sucweg);sucSave();render()})}
 function rVandaag(){
   const B=blokStatus(dag),L=logDag(dag),open=B.filter(b=>!b.done&&!b.later);
   /* toch gedaan wat de ouder had doorgeschoven: dan hoeft het niet meer ingehaald te worden */
@@ -900,6 +950,8 @@ function rVandaag(){
     <div class="row" style="justify-content:space-between"><span><b>${mins(gedaan)}</b> <span class="sub">van ${mins(plan)} gedaan</span></span><span class="sub">Start om <b>${esc(SET.start)}</b></span></div>
     <div class="prog"><i style="width:${plan?Math.min(100,gedaan/plan*100):0}%"></i></div>
   </div>
+  ${(()=>{if(!isToday)return '';const r=sucLijst().filter(s=>s.d>=addDays(today(),-1));if(!r.length)return '';
+    return `<div class="card stack"><span class="tag">Gelukt!</span>${r.map(sucKaart).join('')}<span class="sub" style="font-size:.85rem">${isOuder()?'Ze vindt':'Je vindt'} ${r.length===1?'deze':'ze'} ook bij Cijfers onder <b>${isOuder()?'Wat ze al kon':'Wat ik al kon'}</b>.</span></div>`})()}
   ${(()=>{if(!isToday||vrijDag(dag))return '';const m=addDays(dag,1);if(vrijDag(m))return '';
     const BM=blokStatus(m).filter(b=>!b.later),open=BM.filter(b=>!b.done).reduce((a,b)=>a+b.min,0),max=vrijZa(m)?SET.maxDagWeekend:SET.maxDagSchool+(SET.rekMin??DEF.rekMin);
     if(!(open>max&&open>=60))return '';const kan=BM.filter(b=>b.hwt&&!b.done&&!b.hwt.klaar).sort((a,b)=>a.min-b.min);if(!kan.length)return '';
@@ -926,6 +978,7 @@ function rVandaag(){
       <span class="ck">${b.done?'✓':''}</span>${chip(v)}<span class="tx">${esc(b.titel)}<small>${esc(b.uit)}</small>${b.pto?`<small class="ptob">Op de toets volgens het PTO: ${b.pto.stof.map(x=>esc(x.t)).join(' · ')}</small>`:''}${b.ok?'<small style="color:var(--ok)">Goedgekeurd</small>':''}${!b.done&&afgewezen(dag,b.key)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}</span><span class="mn">${b.min} min</span></button>${gk?`<div style="margin:-6px 0 0 54px">${gk}</div>`:''}${b.done&&!b.ok?(()=>{const k=afwKnop(L.find(e=>e.key===b.key),false);return k?`<div style="margin:-6px 0 0 54px">${k}</div>`:''})():''}`})(b)).join('')}</div>
   ${isOuder()&&!gehaald(dag)&&dag<=today()&&dag>=startDag()?`<button class="btn ghost" id="dagok">Hele dag goedkeuren (telt mee voor de reeks)</button>`:''}
   ${extra.length?`<div class="card stack"><span class="tag">Zelf gelogd</span>${extra.map(e=>`<div class="row" style="justify-content:space-between"><span><b>${esc(vakOf(e.vak)?.naam||'Huiswerk')}</b> · ${esc(e.soort==='huiswerk'?'huiswerk gemaakt':e.soort==='leren'?'geleerd':e.soort)}</span><span><b>${e.min} min</b> ${canWrite?`<button class="x" data-dellog="${esc(e.key)}" aria-label="Verwijder">×</button>`:''}</span></div>`).join('')}</div>`:''}
+  ${isToday?sucForm():''}
   ${canWrite?`<details class="card"><summary style="cursor:pointer;font-weight:700">Iets anders gedaan? Zelf tijd toevoegen</summary>
     <div class="row" style="margin-top:10px">
       <label class="stack" style="gap:2px;font-size:.9rem">Vak<select class="sel" id="lg-vak">${VAK.slice().sort((a,b)=>(a.volgorde??0)-(b.volgorde??0)).map(v=>`<option value="${v.id}">${esc(v.naam)}</option>`).join('')}</select></label>
@@ -942,6 +995,7 @@ function rVandaag(){
   <div class="note"><b>Zo werkt een blok</b><span>Telefoon in een andere kamer, één taak tegelijk. Huiswerk tik je zelf af. Je begint met opwarmen: een rekensprint en 5 sommen rekenregels. Heb je huiswerk voor een vak dat in de app zit, dan doe je eerst 3 snelle vragen uit eerdere stof, en daarna oefen je 20 minuten dezelfde paragraaf in de app: zo blijft het hangen. Blokken in de app vinken zichzelf af: alleen de tijd dat je echt oefent telt (na 2 minuten niets doen stopt de klok). Je reeks gaat door als alle blokken van de dag af zijn; ${SET.maxDagWeekend>0?`op vrijdag en zaterdag is het plan ${SET.maxDagWeekend} minuten`:'op vrijdag en zaterdag is één sprint genoeg'}. In de vakantie staat je reeks op pauze.</span></div>`;
   document.querySelectorAll('#v-vandaag details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
   $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
+  sucBind($('#v-vandaag'));
   const keys=new Set(L.map(e=>e.key));
   document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
     if(keys.has(k))delLog(dag,k);else addLog({d:dag,key:k,vak:b.dataset.vak,soort:b.dataset.soort,min:+b.dataset.min,t:Date.now()})});
@@ -1038,7 +1092,7 @@ function rOefenen(){
   ${!isOuder()&&!nkF.length&&nkO.length?`<p class="sub" style="font-size:.9rem">${nkO.length} ${nkO.length===1?'antwoord wacht':'antwoorden wachten'} nog op nakijken door je ouder.</p>`:''}
   <span class="tag">Vakken in deze app</span>
   ${APPS().map(id=>{const V=VAKDATA[id],st=OEF[id]||{},ps=Oefen.pars(id),ok=ps.filter(p=>(st.ptoets||{})[p]&&st.ptoets[p].best>=7).length,v=vakOf(id);
-    return `<button class="sec" data-vak="${id}"><span class="sq" style="background:var(${COL[(v?.volgorde??0)%COL.length]})">${esc(V.afk)}</span><span><b>${esc(V.naam)}</b><small>${esc(V.kop)} · ${ok} van ${ps.length} paragrafen gehaald${(st.wrong||[]).length?` · <span style="color:var(--bad)">${st.wrong.length} fout</span>`:''}</small></span></button>`}).join('')}
+    return `<button class="sec" data-vak="${id}"><span class="sq" style="background:var(${COL[(v?.volgorde??0)%COL.length]})">${esc(V.afk)}</span><span><b>${esc(V.naam)}</b><small>${esc(V.kop)} · ${ok} van ${ps.length} paragrafen gehaald${(st.wrong||[]).length?` · <span style="color:var(--bad)">${st.wrong.length} fout</span>`:''}${(s=>s?`<br><span style="color:var(--ok)">★ Gelukt op school: ${esc(nice(s.d))}</span>`:'')(sucLijst().find(s=>s.vak===id))}</small></span></button>`}).join('')}
   <span class="tag">Sprints</span>
   <div class="row"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></div>
   <p class="sub" style="font-size:.9rem">Record rekensprint: <b>${sp.reken||0}</b> · woordjessprint: <b>${sp.woord||0}</b></p>
@@ -1102,6 +1156,7 @@ function rCijfers(){
     <div class="stat"><b>${f1(gems.length?gems.reduce((a,b)=>a+b,0)/gems.length:null)}</b><span>gemiddeld over ${gems.length} ${gems.length===1?'vak':'vakken'} met cijfers</span></div>
     <div class="stat"><b>${onv} / ${allG.length}</b><span>cijfers onder de 5,5</span></div>
     <div class="stat"><b>${risk}</b><span>${risk===1?'vak moet':'vakken moeten'} hoger dan je doel</span></div></div>`:''}
+  ${(()=>{const L=sucLijst();if(!L.length&&isOuder())return '';return `<div class="card stack"><span class="tag">${isOuder()?'Wat ze al kon':'Wat ik al kon'}</span>${L.length?L.slice(0,3).map(sucKaart).join('')+(L.length>3?`<details><summary class="sub" style="cursor:pointer">Alle ${L.length} bekijken</summary><div class="stack" style="margin-top:8px">${L.slice(3).map(sucKaart).join('')}</div></details>`:''):'<span class="sub">Nog leeg. Lukt er iets op school? Schrijf het op bij Vandaag → Iets gelukt op school?</span>'}</div>`})()}
   ${order.map(i=>vakHtml(VAK[i],cs[i],i)).join('')}
   <div class="note">
     <b>Zo rekent deze pagina</b>
@@ -1111,6 +1166,7 @@ function rCijfers(){
   </div>`;
   /* datum via de eigenschap zetten, niet als attribuut (18 nov): de knop 'Herstel' op de iPhone zet een datumveld terug op het attribuut.
      Stond de gekozen datum in het attribuut, dan bleef hij staan. Nu is het attribuut leeg en wist 'Herstel' de datum. */
+  sucBind($('#v-cijfers'));
   document.querySelectorAll('#v-cijfers input.dt[data-val]').forEach(el=>el.value=el.dataset.val);
   document.querySelectorAll('[data-doel]').forEach(b=>b.onclick=()=>{SET.doel=+b.dataset.doel;saveSet(['doel']);render()});
   document.querySelectorAll('#v-cijfers details.tt').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.v):open.delete(d.dataset.v)});
@@ -1244,6 +1300,7 @@ function render(){
      alleen een sprint), was de zaterdag 'niet af' en werd de stempel van vandaag gewist. Daarna werd de dag opnieuw gepland. */
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen&&GELADEN.set)stempelBij();
   verwerkNakijk();
+  sucSeed();
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
   ['vandaag','oefenen','cijfers','week'].forEach(t=>$('#v-'+t).hidden=t!==tab);
   const foc=document.activeElement&&document.activeElement.id;
