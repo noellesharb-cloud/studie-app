@@ -601,7 +601,9 @@ const zwaarT=(v,t)=>!isD(t)&&((num(t.weging)??1)>=3||druk(v));
 /* eigen leertijd per toets (afspraak 20 nov: Engels leesvaardigheid valt niet te leren, 60 min oefentekst maken). Leeg = de gewone regel. */
 const eigenLT=t=>{const n=num(t.leertijd);return n!=null&&n>=0?Math.round(n):null};
 function leertijd(v,t){if(eigenLT(t)!=null)return eigenLT(t);if(isD(t)){const b=SET.totD??DEF.totD;return druk(v)?Math.round(b*1.5/5)*5:b}
-  return zwaarT(v,t)?SET.totZwaar:SET.totNormaal}
+  return zwaarT(v,t)?(LT_ZWAAR_VAK[v.id]??SET.totZwaar):SET.totNormaal}
+/* 20 nov: zware toets 5 uur (instelling), wiskunde blijft 6 uur: daar heeft ze de meeste moeite mee (afspraak met de ouder) */
+const LT_ZWAAR_VAK={wi:360};
 /* dagen tot de eerstvolgende toets (met datum, nog zonder cijfer) na dag s; 1e9 = geen komende toets.
    Zonder komende toets geen bijhouden en geen dagelijks oefenen voor dat vak: dan alleen het huiswerk. */
 function dagenTotToets(vid,s){let best=1e9;(vakOf(vid)?.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null){const n=diffDays(s,t.datum);if(n>0&&n<best)best=n}});return best}
@@ -1315,7 +1317,7 @@ function rWeek(){
       <label for="s-blok">Lengte van een blok (min)</label><input class="in" id="s-blok" data-s="blok" inputmode="numeric" value="${SET.blok}" ${dis}>
       <label for="s-td">Leertijd D-toets (overhoring in de les, min)</label><input class="in" id="s-td" data-s="totD" inputmode="numeric" value="${SET.totD??DEF.totD}" ${dis}>
       <label for="s-tn">Leertijd afsluitende toets (min)</label><input class="in" id="s-tn" data-s="totNormaal" inputmode="numeric" value="${SET.totNormaal}" ${dis}>
-      <label for="s-tz">Leertijd zware afsluitende toets (min)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
+      <label for="s-tz">Leertijd zware afsluitende toets (min, wiskunde altijd 360)</label><input class="in" id="s-tz" data-s="totZwaar" inputmode="numeric" value="${SET.totZwaar}" ${dis}>
       <label for="s-ms">Maximaal per schooldag, alles samen (min)</label><input class="in" id="s-ms" data-s="maxDagSchool" inputmode="numeric" value="${SET.maxDagSchool}" ${dis}>
       <label for="s-rk">Extra als toetsvoorbereiding anders niet past (min)</label><input class="in" id="s-rk" data-s="rekMin" inputmode="numeric" value="${SET.rekMin??DEF.rekMin}" ${dis}>
       <label for="s-mw">Leren op vrijdag en zaterdag, standaard (min)</label><input class="in" id="s-mw" data-s="maxDagWeekend" inputmode="numeric" value="${SET.maxDagWeekend}" ${dis}>
