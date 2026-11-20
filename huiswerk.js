@@ -87,8 +87,11 @@ window.HUISWERK=[
   {id:'2026-11-23-na',d:'2026-11-23',vak:'natuurkunde',t:'L5.07',wat:['Maken ✎ o.36-40','Maken ★ o.39-41, 43','Uitwerken H5P3','# In de app','De opgaven staan in de app. Het uitwerken van practicum H5P3 doe je in je schrift.'],min:40,app:'na',par:'5.3',opg:[36,37,38,39,40,41,43]},
   /* dinsdag 24 november */
   {id:'2026-11-24-na',d:'2026-11-24',vak:'natuurkunde',t:'L5.08',wat:['Maken ✎ o.57, 58, 61, 62, 64, 67','Maken ★ o.58, 61, 62, 64, 66, 67'],min:35,app:'na',par:'5.5',opg:[57,58,61,62,64,66,67]},
+  {id:'2026-11-24-gr',d:'2026-11-24',vak:'grieks',t:'Rijtjes λύω en εἰμί, ergon 3 en 4',wat:['# Leerwerk','Rijtjes van λύω en εἰμί (HB p. 112)','# Maakwerk','Ergon 3 en 4 (HB p. 113)','Rijtjes van λύω en εἰμί 3x volledig overnemen in je schrift','# Meenemen','Argo Tekstboek en Argo Hulpboek','Schrift en schrijfmateriaal'],min:40},
   /* woensdag 25 november (SOMtoday, foto 20 nov) */
   {id:'2026-11-25-ne',d:'2026-11-25',vak:'nederlands',t:'Spelling werkwoorden §11: opdracht 4 t/m 7 (als het in de les nog niet af is)',wat:['In de les nog niet af? Maak van Spelling werkwoorden §11 (p. 263):','Opdracht 4 t/m 7','# In de app','Opdracht 4 t/m 7 staan in de app. Heb je ze in de les al in je schrift gemaakt? Doe ze dan in de app als controle en verbeter je schrift met „Antwoorden voor je schrift”.'],min:25,app:'ne',par:'s11',opg:[4,5,6,7]},
+  /* donderdag 26 november */
+  {id:'2026-11-26-la',d:'2026-11-26',vak:'latijn',t:'Bronnen lezen voor het PO + opzet',wat:['Lees je bronnen voor het PO.','Maak aantekeningen.','Maak dan een opzet/kladversie van het stukje dat je volgende week in de les gaat schrijven.','(Stond ook al voor 19 november. Is het al af, dan is dit snel klaar.)'],min:30},
   /* vrijdag 27 november: inleveren vlog PO Frans (in het document staat 2027, bedoeld is 2026) */
   {id:'2026-11-27-fa-po',d:'2026-11-27',vak:'frans',t:'PO C’est moi: vlog inleveren op Teams',wat:['Lever je vlog in op Teams, vóór 27 november. Is hij nog niet af in de les, maak hem dan thuis af.','# Checklist','Moi: naam, leeftijd, woonplaats, hobby’s','Ma famille: minstens twee familieleden','Ma maison: minstens twee kamers','Minstens 8 bijvoeglijke naamwoorden en 5 werkwoorden op -er','2–3 minuten, met beeldmateriaal'],min:10},
   /* Toetsweek 2 (7-11 december), rooster SOMtoday. Toetsdata horen in Cijfers, niet hier.
