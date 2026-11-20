@@ -1131,5 +1131,8 @@ window.Oefen=(()=>{
       if(it.mode==='toets'){const o=st.toetsR,r=o&&o.rondes.find(x=>x.rid===it.rid);
         if(eenKeer(r)){r.g--;r.p=Math.round(r.g/r.t*100);st.best=st.best||{};st.best.toets=Math.max(o.oud==null?0:o.oud,...o.rondes.map(x=>x.p))}}},
     pars(id){const v=vw(id);return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
+    /* alle onderdelen, ook die nog niet zijn opgegeven (gate). Voor de toetsstof in Cijfers en de beheersing (fix 20 nov:
+       Grieks les 11 telde niet mee, waardoor alles 'gehaald' leek en de toetsvoorbereiding te kort werd) */
+    allePars(id){const v=VAKDATA[id];if(!v)return [];return v.leer||[...new Set(v.SECS.filter(s=>s.par!=='mix').map(s=>s.par))]},
     stop(){Oefen.cur=null}};
 })();

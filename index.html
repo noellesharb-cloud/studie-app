@@ -449,7 +449,7 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="huiswerk.js?v=202611201520"></script>
 <script src="pto.js?v=202611201440"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611182300"></script>
+<script src="oefen/engine.js?v=202611201545"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>
@@ -623,7 +623,7 @@ function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchool
   const m=R.length?Math.min(SET.bijMin,Math.floor(room/R.length/5)*5):0;
   R.forEach(x=>x.min=m);return R}
 /* beheersing: hoeveel van de paragrafen heeft ze met een 7 of hoger afgesloten? Dat maakt de toetsvoorbereiding korter */
-function beheersing(vid,t){const al=Oefen.pars(vid),ps=t&&t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al,st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
+function beheersing(vid,t){const al=Oefen.allePars?Oefen.allePars(vid):Oefen.pars(vid),ps=t&&t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al,st=OEF[vid]||{},pt=st.ptoets||{},g=ps.filter(p=>pt[p]&&pt[p].best>=7).length;
   const proef=(st.best||{}).toets,proefOk=proef!=null&&1+9*proef/100>=7,frac=ps.length?g/ps.length:0;
   return {g,n:ps.length,proefOk,f:Math.max(0.3,1-0.5*frac-(frac===1&&proefOk?0.2:0))}}
 /* korte regel over de toetsvoorbereiding (afspraak 19 nov: de ouder wil in één oogopslag zien hoeveel tijd er nog is en wat behaalde paragrafen schelen) */
@@ -1269,9 +1269,9 @@ var STOF_OPEN=new Set();
 /* wat er volgens het PTO getoetst wordt (afspraak 14 nov): in Cijfers, bij de toetsen op Vandaag en bij de toetsvoorbereiding */
 function ptoDet(vid,t,kop,P,key){P=P||(window.ptoVan&&t?ptoVan(vid,t):null);if(!P)return '';const k='pto|'+(key||vid+'|'+(t&&t.id));
   return `<details class="stof" data-k="${esc(k)}" ${STOF_OPEN.has(k)?'open':''}><summary>${esc(kop)}</summary>${ptoLijst(P)}<span class="sub" style="font-size:.8rem;white-space:normal;display:block">De docent geeft de echte toetsstof in de les; staat daar iets anders, dan geldt dat.</span></details>`}
-function stofHtml(v,t,dis){const D=VAKDATA[v.id],ps=Oefen.pars(v.id),st=(t.stof||[]).filter(p=>ps.includes(p));
+function stofHtml(v,t,dis){const D=VAKDATA[v.id],ps=Oefen.allePars?Oefen.allePars(v.id):Oefen.pars(v.id),open_=new Set(Oefen.pars(v.id)),st=(t.stof||[]).filter(p=>ps.includes(p));
   return `<details class="stof" data-k="${v.id}|${t.id}" ${STOF_OPEN.has(v.id+'|'+t.id)?'open':''}><summary>Stof in de app: ${st.length?st.length+' van '+ps.length+' onderdelen':'alles'}${t.norm?` · voldoende bij ${esc(t.norm)}%`:''}</summary>
-    <div class="stack" style="gap:4px;margin-top:6px">${ps.map(p=>`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stof" data-p="${esc(p)}" ${st.includes(p)?'checked':''} ${dis}> ${esc(D.PN&&D.PN[p]||p)}</label>`).join('')}
+    <div class="stack" style="gap:4px;margin-top:6px">${ps.map(p=>`<label class="so"><input type="checkbox" data-v="${v.id}" data-t="${t.id}" data-f="stof" data-p="${esc(p)}" ${st.includes(p)?'checked':''} ${dis}> ${esc(D.PN&&D.PN[p]||p)}${open_.has(p)?'':' <span class="sub">(nog niet opgegeven als huiswerk, gaat dan open)</span>'}</label>`).join('')}
     <label class="so">Voldoende bij <input class="in" style="width:4em" inputmode="numeric" placeholder="55" data-v="${v.id}" data-t="${t.id}" data-f="norm" value="${esc(t.norm??'')}" ${dis}>% goed</label>
     <span class="sub" style="font-size:.8rem;white-space:normal">Niets aangevinkt = alle onderdelen. Leeg = gewoon cijfer (55% goed is een 6).</span></div></details>`}
 /* ---------- invoer cijfers ---------- */
