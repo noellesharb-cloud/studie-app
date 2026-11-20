@@ -785,7 +785,7 @@ SNAP.ap=[['Hoe onthoud ik de Akkusativ?','Tip uit het boek (SB blz. 28): <b>Mask
 const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)'],['di 10 nov','Kapitel 4 Mein Tag: Arbeitsbuch blz. 32 en 39','opdracht 1a, 1b en 2a (blz. 32), woorden Deine Wörter 4 (blz. 39), extra klokken'],['za 14 nov','Toetsweek 2: stofoverzicht en Grammatikübersicht','Zahlen bis 100, Personalpronomen und Verben, W-Fragen, Ja/Nein-Fragen, Artikel en Nominativ/Akkusativ, Redemittel SB blz. 12, 20, 28 en 42']];
 const LIJST=[];[...T21,...W4A,...W4B,...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
 return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Toetsweek 2 (SB blz. 12, 20, 28, 42) · Kapitel 4 Mein Tag (AB blz. 32 en 39) · Arbeitsbuch blz. 19, 24, 26 en 27 · Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
-  leer:['tw','k4','ab','ws','ex'],reken:false,volledig:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
+  leer:['tw','k4','ab','ws','ex'],reken:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
   custom:{rij:drawRij,zin:drawZin,volg:drawVolg},
   PN:{tw:'Toetsweek 2 · Zahlen, Grammatik en Redemittel (SB blz. 12, 20, 28, 42)',k4:'Kapitel 4 Mein Tag · AB blz. 32 en woorden blz. 39',ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
 })();
