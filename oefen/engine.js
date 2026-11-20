@@ -651,7 +651,7 @@ window.Oefen=(()=>{
   const GRIEKS=/[\u0370-\u03ff\u1f00-\u1fff]/;
   const VORMVRAAG=/^(wat betekent|wat is het [a-z]+ voor|hoe zeg je|welke vorm|wat is de |der, die of das|vul in|vul het|welke naamval|benoem|schrijf het rijtje|maak het rijtje|bij welk persoon)/i;
   /* een antwoord met … ('we moeten …') is een patroon, geen vaste vorm: dan kijkt ze zelf na (wat precies klopt, is meteen goed) */
-  function streng(q){if(q.tvIn)return true;if(!V.woorden||q.tvVrij)return false;const a=schoon(goedTxt(q));
+  function streng(q){if(q.tvIn)return !q.tvVrij; /* tvVrij bij vakjes: leeg laten en op papier mag (Grieks, 20 nov) */if(!V.woorden||q.tvVrij)return false;const a=schoon(goedTxt(q));
     return VORMVRAAG.test(schoon(q.tv||q.q))&&a.length<=45&&!/[.!?:;=()…]/.test(a)&&!GRIEKS.test(a)&&a.split(/\s*[,/]\s*/).every(p=>p.split(/\s+/).length<=3)}
   function schrijfVorm(q,it){if(!V.toetsvorm||(R.mode!=='ptoets'&&R.mode!=='toets')||it.retry)return false;
     if(q.type)return !!q.tvIn||(V.tvCustom||[]).includes(q.type);

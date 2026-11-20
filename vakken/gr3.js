@@ -1,8 +1,9 @@
 /* Grieks, aanvulling (20 nov 2026): rijtjes van λύω en εἰμί (HB p. 112), leerwerk voor dinsdag 24 november.
    HB p. 112 lag op school: de vormen komen NIET van een foto maar uit de standaardgrammatica (tegenwoordige tijd, plus infinitief
    en gebiedende wijs). Accenten of de ν aan het eind kunnen in het boek net anders staan: met een foto van p. 112 aanpassen.
-   Eigen vraagsoort rij: zes vakjes (ik … zij), vormen aantikken, met nepvormen ertussen. Grieks typen op een telefoon is lastig,
-   daarom in de toetsvorm géén typvakjes maar ook daar aantikken. */
+   Eigen vraagsoort rij: zes vakjes (ik … zij), vormen aantikken, met nepvormen ertussen. In de toetsvorm (paragraaftoets, proeftoets)
+   zes typvakjes: ze werkt op haar laptop. Typt ze alles, dan kijkt de app na (een accent anders = fout, zoals op de toets);
+   laat ze vakjes leeg, dan schrijft ze op papier en kijkt ze zelf na (tvVrij). */
 (()=>{
 const V=VAKDATA.gr;if(!V)return;
 const G=s=>`<span class="gr">${s}</span>`;
@@ -59,6 +60,8 @@ function drawRijG(q,it,box,api){
       :`<div class="fb bad"><div class="head">Niet goed</div><div class="mistake">De rode vakjes kloppen niet. Het goede antwoord staat erachter. Schrijf het rijtje nog een keer goed in je schrift.</div><div class="why">${r.u}</div></div>`,S.slots.map(c=>c.w).join(', '))};
 }
 
+Q.forEach(q=>{if(q.type==='rij'){q.tvIn=PERS;q.tvVrij=true;q.tvA=RIJ[q.w].f.map(f=>f.includes('(ν)')?f.replace('(ν)','')+' / '+f.replace('(ν)','ν'):f);
+  q.tv=`Schrijf het rijtje van ${G(q.w)} (${RIJ[q.w].nl}) op. Typ de vormen in het Grieks, of schrijf ze op papier en laat de vakjes leeg.`}});
 V.SECS.push(...SECS);V.Q.push(...Q);
 V.custom=Object.assign({},V.custom||{},{rij:drawRijG});
 V.leer=(V.leer||[]).filter(p=>p!=='ww').concat('ww');
