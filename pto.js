@@ -60,7 +60,7 @@ window.PTO={
  fa:[{p:1,stof:[{t:'H0, H1 en H2'}]},{p:2,stof:[{t:'Praktische opdracht H3'}]},{p:3,stof:[{t:'H5'}]},{p:4,stof:[{t:'H6'}]},{p:5,stof:[{t:'H7'}]}],
  gs:[{p:1,stof:[{t:'Reformatie en Opstand'}]},{p:2,stof:[{t:'Gouden Eeuw',app:'H2 De Gouden Eeuw staat in de app'}]},
   {p:3,stof:[{t:'Democratische revoluties en industrialisatie'}]},{p:5,stof:[{t:'Politiek-maatschappelijke stromingen'}]}],
- gr:[{p:1,stof:[{t:'Les 7 en 8'}]},{p:2,stof:[{t:'Les 9 t/m 11',app:'Les 9 staat in de app, les 10 en 11 nog niet'}]},{p:4,stof:[{t:'Les 12 t/m 15'}]},{p:5,stof:[{t:'Les 16 en 17'}]}],
+ gr:[{p:1,stof:[{t:'Les 7 en 8'}]},{p:2,stof:[{t:'Les 9 t/m 11',app:'Les 9, 10 en 11 staan in de app (les 11 komt vrij zodra het huiswerk het opgeeft)'}]},{p:4,stof:[{t:'Les 12 t/m 15'}]},{p:5,stof:[{t:'Les 16 en 17'}]}],
  la:[{p:1,stof:[{t:'H6'}]},{p:2,stof:[{t:'Het dagelijks leven in Rome'}]},{p:3,stof:[{t:'H7 en H8',app:'H7A staat in de app'}]},{p:4,stof:[{t:'H9 en H10'}]},{p:5,stof:[{t:'H11 t/m H13'}]}],
  lv:[
   {p:1,stof:[{t:'Hoofdstuk 5 Hoofdwaarden',k:/H5|hoofdstuk|hoofdwaard|toets/i},{t:'Praktische opdracht 1: casus + discussie (telt 2× mee)',k:/PO|praktisch|casus|discussie/i},{t:'Levensvisieboekopdracht: hoofdwaarden',k:/levensvisie/i}]},

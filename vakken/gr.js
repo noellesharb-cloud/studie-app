@@ -348,6 +348,6 @@ const W8=[
 }
 
 return {woorden:{taal:'Grieks',alle:W.map((w,i)=>[w[0],w[1],'w'+i]).filter((x,i)=>W[i][2]).concat(W8.map((w,i)=>[w[0],w[1],'l8w'+i]).filter((x,i)=>W8[i][2])),get lijst(){const b=window.Gate?Gate.beh('gr'):null;return this.alle.filter(x=>!b||b.has(x[2])).map(x=>[x[0],x[1]])}},gate:true,id:'gr',naam:'Grieks',afk:'GR',kop:'Les 9 Argonautentocht',SECS,SNAP,BEG:W.map(w=>[w[0],w[1],'9w']).concat(W8.map(w=>[w[0],w[1],'8w'])),Q,snapHtml,
-  leer:['8w','9w','pv','9t','hb9'],reken:false,toetsvorm:true,volledig:false,snapInVraag:false,
+  leer:['8w','9w','pv','9t','hb9'],reken:false,toetsvorm:true,snapInVraag:false,
   PN:{'8w':'Les 8 · Woorden (herhalen)','9w':'Les 9 · Woorden','pv':'Persoonlijk voornaamwoord (HB p. 106)','9t':'Tekst 9 ΣΤΟΛΟΣ','hb9':'Hulpboek les 9 · opdrachten','mix':'Door elkaar'}};
 })();

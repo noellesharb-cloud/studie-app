@@ -447,7 +447,7 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
 <script src="huiswerk.js?v=202611192210"></script>
-<script src="pto.js?v=202611170800"></script>
+<script src="pto.js?v=202611201400"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
 <script src="oefen/engine.js?v=202611182300"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
@@ -462,7 +462,7 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="vakken/ak-bron.js?v=202611181400"></script>
 <script src="vakken/ak-toets.js?v=202611181320"></script>
 <script src="vakken/ak-h4.js?v=202611190930"></script>
-<script src="vakken/gr.js?v=202611091700"></script>
+<script src="vakken/gr.js?v=202611201400"></script>
 <script src="vakken/gr2.js?v=202611091700"></script>
 <script src="vakken/lv.js?v=202611170800"></script>
 <script src="vakken/lv-ko.js?v=202611051500"></script>
@@ -650,8 +650,12 @@ function schedule(){
   if(SCHED)return SCHED;
   const F=eersteOpen(),credit={};
   for(let d=startDag()||F,k=0;d<F&&k<400;d=addDays(d,1),k++)(prepGedaan(d)||[]).forEach(x=>{const id=x.vid+'|'+x.tid;credit[id]=(credit[id]||0)+(x.min||0)});
+  const gedaan={...credit};
   Object.entries(inhaalPrep(F)).forEach(([id,m])=>credit[id]=(credit[id]||0)+m);
-  return SCHED=maakSchedule(F,credit);
+  SCHED=maakSchedule(F,credit);
+  /* 'nog' in de regel bij de toetsvoorbereiding: alleen wat ze echt deed telt als gedaan; een ingepland inhaalblok staat nog open (20 nov) */
+  Object.entries(SCHED._tot||{}).forEach(([id,x])=>x.nog=Math.max(0,x.tot-(gedaan[id]||0)));
+  return SCHED;
 }
 function maakSchedule(van,credit){
   const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+lesMin(d)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
@@ -691,7 +695,9 @@ function inhaalVoor(s){const R=[];Object.values(LOG).forEach(w=>((w&&w.entries)|
     return Object.assign({key:'inh-'+e.d+'-'+String(e.key).slice(7),vak:i.vid,soort:app?'oefenen':'leren',auto:app?i.vid:null,mode:i.mode||null,min:i.min,par:i.par||null,inh:e,
     titel:'Inhalen: '+i.titel,uit:`Doorgeschoven van ${nice(e.d)}.${t?` Toets op ${nice(t.datum)}.`:''} ${app?`Oefen ${i.min} minuten in de app. De tijd telt vanzelf mee.`:'Overhoor jezelf en tik het blok daarna af.'}`},i.prep?{prep:i.prep}:{})})}
 /* toetsvoorbereiding die als inhaalblok al op een komende dag staat: niet nog een keer inplannen */
-function inhaalPrep(van){const c={};Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.inh&&e.inh.prep&&e.naar>=van){const id=e.inh.prep.vid+'|'+e.inh.prep.tid;c[id]=(c[id]||0)+e.inh.min}}));return c}
+/* fix 20 nov: een inhaalblok dat zelf weer is doorgeschoven, telde dubbel (het oude en het nieuwe inhaalblok). Alleen het laatste telt. */
+function inhaalPrep(van){const c={},verder=new Set();Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven')verder.add(String(e.key))}));
+  Object.values(LOG).forEach(w=>((w&&w.entries)||[]).forEach(e=>{if(e.soort==='doorgeschoven'&&e.inh&&e.inh.prep&&e.naar>=van&&!verder.has('schuif-inh-'+e.d+'-'+String(e.key).slice(7))){const id=e.inh.prep.vid+'|'+e.inh.prep.tid;c[id]=(c[id]||0)+e.inh.min}}));return c}
 /* eerstvolgende toets van een vak in deze periode (met datum, zonder cijfer, ná dag s) */
 function toetsVan(vid,s){const e=periodeEind(s);return (vakOf(vid)?.toetsen||[]).filter(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>0&&t.datum<=e).sort((a,b)=>a.datum<b.datum?-1:1)[0]||null}
 /* paragrafen in de app die bij de toetsstof horen (vinkjes bij de toets in Cijfers; niets aangevinkt = alles) */
