@@ -779,11 +779,19 @@ window.Oefen=(()=>{
   }
   function askOpen(q,it,s){
     const ko=V.KO&&V.KO[q.id];if(ko&&ko.length===q.k.length)return askOpenKO(q,it,s,ko);
+    const stapHulp=!R.exam&&hasSt(q);
     el.innerHTML=`${kop(it,q,s,false)}
     <div class="card stack">${tvVak()?'<p class="sub" style="font-size:.9rem"><b>Leg uit = geef de reden.</b> Na “omdat” moet iets staan wat nog niet in de vraag stond.</p>':''}<label class="sub" for="ans">Schrijf je antwoord op, hier of in je schrift:</label>
       <textarea id="ans" class="ta" placeholder="Mijn antwoord…"></textarea>
+      ${stapHulp?`<details class="denk" id="osh"><summary>Lukt het niet? Stap voor stap</summary><p class="sub" style="margin:0 0 6px">Met deze hulp komt de vraag morgen nog een keer terug. Op de toets krijg je deze hulp niet.</p><div id="oshs" class="stack"></div><button class="btn ghost" id="oshn" type="button">Volgende stap</button></details>`:''}
       <button class="btn" id="see">Bekijk het modelantwoord</button><div id="kp"></div></div><div id="fb"></div>`;
     el.querySelector('#stop').onclick=stopRonde;
+    /* 22 nov: een open vraag met stappen (natuurkunde) liet alleen het korte 'Hoe pak ik dit aan?' zien; de stappen bleven weg.
+       Nu kan ze ze één voor één openen. Telt als hulp (vraag komt morgen terug). */
+    if(stapHulp){let n=0;const d=el.querySelector('#osh'),L=el.querySelector('#oshs'),nb=el.querySelector('#oshn');
+      const toon=()=>{const x=q.st[n++],s=document.createElement('div');s.className='step';
+        s.innerHTML=`<span class="tag">Stap ${n} van ${q.st.length}</span><div>${fmt(x.t)}</div>${x.s?`<div class="why">${fmt(x.s)}</div>`:''}`;L.appendChild(s);if(n>=q.st.length)nb.remove()};
+      d.ontoggle=()=>{if(d.open&&!n){R.helped[q.id]=true;toon()}};nb.onclick=toon}
     el.querySelector('#see').onclick=()=>{R.tRev=R.tRev||Date.now();el.querySelector('#see').remove();el.querySelector('#ans').readOnly=true;
       const box=el.querySelector('#kp');
       box.innerHTML=`<div class="tip stack"><b>Modelantwoord: vink aan wat jij ook had</b>
