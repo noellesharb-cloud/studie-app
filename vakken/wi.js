@@ -55,6 +55,7 @@ const LOG=[
  ['Dag 8','ma 16 nov','Uitleg van Van Neck "Omschrijven: algemene vorm en de twee handige vormen" (§3.3, onderdeel 9b) en antwoordenblad E20 t/m E26 vergeleken: E23 nu als tabellen zoals op het blad'],
  ['Dag 9','di 17 nov','Opdracht U1 van Teams (wet van Boyle, fietspomp; op het blad staat U2), huiswerk voor donderdag 19 november'],
  ['Dag 10','vr 20 nov','Oefenopdracht H3.4/H3.5 van Teams (hyperbool h, wortelgrafiek g, lijn door A(2, 11) en B(8, 1)). Antwoorden E27 t/m E32 vergeleken: komen overeen. S1c nu met de manier van de docent']
+ ['Dag 11','zo 22 nov','Opdracht G1 van Teams (Rainbow Bridge, parabool zoals S1), huiswerk voor dinsdag 24 november. Antwoorden vergeleken met het blad: 62 m, 9,375 m, minder dan 300 m (244,9)'],
 ];
 
 /* ---------- onderdelen ---------- */
@@ -248,6 +249,7 @@ const g9=(a,b,l)=>plot({x:[-1,13],y:[-2,6],u:14,lines:[{a,b}],label:l});
 /* ---------- hulpjes voor opgaven ---------- */
 const S=(t,s)=>({t,s});
 const C=(t,v,mc,s)=>({t,v,mc,s});
+const GB1=plot({x:[-140,140],y:[0,70],ux:1.3,uy:2.6,gx:25,gy:10,sx:50,sy:10,max:380,fns:[{f:x=>-0.003*x*x+60,from:-122.47,to:122.47},{f:()=>62,c:'as'}],pts:[[-75,43.125],[50,52.5],[-122.47,15],[122.47,15]],r:3,label:'boog h = −0,003x² + 60 met het wegdek op 62 m; P bij x = −75, R bij x = 50, A en B op 15 m hoogte'});
 const G23=plot({x:[-7,3],y:[-8,2],u:22,fns:[{f:x=>0.5*(x+6)*(x-2)}],label:'dalparabool met top bij x = −2'});
 const W26={x:[-2,5],y:[-6,4],u:18};
 const G26=pts=>plot({...W26,fns:[{f:x=>-x*x+4*x-1}],pts,label:'bergparabool met top (2, 3)'});
@@ -1330,6 +1332,19 @@ const Q=[
  denk:'Zo doet de docent het: hoe breed is de hangar op 2,5 meter hoogte? Vul $y = 2,5$ in en los de vergelijking op.',
  st:[S('Vul $y = 2,5$ in.','$2,5 = -0,025x² + 10$'),S('Min 10 aan beide kanten.','$2,5 = -0,025x² + 10$ &nbsp;|$-10$|<br>$-7,5 = -0,025x²$'),S('Omdraaien en delen door $-0,025$.','$-0,025x² = -7,5$ &nbsp;|$: -0,025$|<br>$x² = [[-7,5|-0,025]] = 300$'),S('Wortel: let op, er zijn twee oplossingen.','$x = √{300}$ &nbsp; OF &nbsp; $x = -√{300}$<br>$x ≈ 17,32$ &nbsp; OF &nbsp; $x ≈ -17,32$'),S('Breedte op 2,5 m hoogte: van $-17,32$ tot $17,32$.','$2 × 17,32 = 34,64$ m'),S('Vergelijk met de spanwijdte.','$34,64 < 35$: nee, het vliegtuig past niet'),S('Andere manier (ook goed): bereken de hoogte bij een vleugelpunt, $x = 17,5$.','$-0,025 · 17,5² + 10 ≈ 2,34$ m, lager dan 2,5 m: past niet')],
  a:'Nee: op 2,5 m hoogte is de hangar maar $2 × 17,32 = 34,64$ m breed, en dat is minder dan 35 m',f:[['Ja: 35 meter is minder dan 40 meter','Op de grond is de hangar breed genoeg, maar de vleugels zitten 2,5 m hoog. Vul $y = 2,5$ in: hoe breed is de hangar daar?'],['Ja: op 2,5 m hoogte is de hangar 300 m breed','300 is $x²$. Neem nog de wortel: $x ≈ ±17,32$, dus $2 × 17,32 = 34,64$ m breed.'],['Ja: op 2,5 m hoogte is de hangar 17,32 m breed, en dat is de helft van 35','17,32 is maar de helft van de breedte (van 0 tot 17,32). De hele breedte is $2 × 17,32 = 34,64$ m, en dat is minder dan 35.']]},
+/* ===== Opdracht G1 (Teams, huiswerk di 24 nov): de Rainbow Bridge. Eigen tekening, niet het plaatje van de uitgever. ===== */
+{id:'g1a',o:'snij',nr:'Opdracht G1a',q:'De Rainbow Bridge over de Niagara heeft een boog met de formule $h = -0,003x² + 60$. Hierin is h de hoogte in meter boven de rivier en x in meter. Het wegdek ligt 2 meter boven het hoogste punt van de boog.<br>'+GB1+'<br>Hoeveel meter ligt het wegdek boven de rivier?',
+ denk:'a is negatief: een bergparabool. Het hoogste punt is de top, en die ligt op de h-as ($x = 0$).',
+ st:[S('Bergparabool, top op de h-as.','het hoogste punt is bij $x = 0$'),S('Vul $x = 0$ in.','$h = -0,003 · 0² + 60 = 60$'),S('Het wegdek ligt 2 meter hoger.','$60 + 2 = 62$ m')],
+ a:'62 meter',f:[['60 meter','60 m is het hoogste punt van de boog. Het wegdek ligt 2 meter hoger.'],['58 meter','Het wegdek ligt 2 meter <b>boven</b> de boog: $60 + 2$, niet $60 - 2$.'],['2 meter','2 meter is de afstand tussen boog en wegdek. Bereken eerst de hoogte van de top.']]},
+{id:'g1b',o:'snij',nr:'Opdracht G1b',q:'Rainbow Bridge: boog $h = -0,003x² + 60$, wegdek op 62 m boven de rivier.<br>'+GB1+'<br>De stalen balk PQ staat bij $x = -75$, de balk RS bij $x = 50$. Ze lopen van de boog omhoog tot het wegdek.<br>Bereken hoeveel meter PQ langer is dan RS.',
+ denk:'Bereken de hoogte van P en van R op de boog. Een balk loopt van de boog tot het wegdek: lengte $= 62 - h$.',
+ st:[S('Hoogte van P: vul $x = -75$ in. Kwadraat eerst.','$(-75)² = 5625$<br>$h = -0,003 · 5625 + 60 = -16,875 + 60 = 43,125$'),S('Lengte PQ.','$62 - 43,125 = 18,875$ m'),S('Hoogte van R: vul $x = 50$ in.','$50² = 2500$<br>$h = -0,003 · 2500 + 60 = -7,5 + 60 = 52,5$'),S('Lengte RS.','$62 - 52,5 = 9,5$ m'),S('Verschil.','$18,875 - 9,5 = 9,375$ m')],
+ a:'PQ is $9,375$ m langer dan RS',f:[['PQ is $9,375$ m korter dan RS','Bij $x = -75$ is de boog lager dan bij $x = 50$ (verder van de top). Dan is de balk PQ juist langer.'],['PQ is $25$ m langer dan RS','$75 - 50 = 25$ is het verschil in x. Je moet de hoogtes berekenen met de formule.']]},
+{id:'g1c',o:'snij',nr:'Opdracht G1c',q:'Rainbow Bridge: boog $h = -0,003x² + 60$.<br>'+GB1+'<br>Op 15 meter boven de rivier is de boog bij de punten A en B in de oever verankerd.<br>Is de afstand tussen A en B meer of minder dan 300 meter?',
+ denk:'A en B liggen op hoogte 15. Vul $h = 15$ in en los de vergelijking op. Er zijn twee oplossingen.',
+ st:[S('Vul $h = 15$ in.','$15 = -0,003x² + 60$'),S('Min 60 aan beide kanten.','$15 = -0,003x² + 60$ &nbsp;|$-60$|<br>$-45 = -0,003x²$'),S('Omdraaien en delen door $-0,003$.','$-0,003x² = -45$ &nbsp;|$: -0,003$|<br>$x² = [[-45|-0,003]] = 15 000$'),S('Wortel: let op, er zijn twee oplossingen.','$x = √{15 000}$ &nbsp; OF &nbsp; $x = -√{15 000}$<br>$x ≈ 122,47$ &nbsp; OF &nbsp; $x ≈ -122,47$'),S('Afstand AB: van $-122,47$ tot $122,47$.','$2 × 122,47 ≈ 244,9$ m'),S('Vergelijk met 300.','$244,9 < 300$: minder dan 300 meter')],
+ a:'Minder: $AB = 2 × √{15 000} ≈ 244,9$ m, en dat is minder dan 300 m',f:[['Meer: $AB = 15 000$ m','15 000 is $x²$. Neem nog de wortel: $x ≈ ±122,47$, dus $AB ≈ 244,9$ m.'],['Minder: $AB ≈ 122,5$ m','122,47 is maar de helft (van 0 tot B). De hele afstand is $2 × 122,47 ≈ 244,9$ m. Het antwoord ‘minder’ klopt wel.'],['Meer: $AB = 2 × √{25 000} ≈ 316$ m','Je hebt $60 + 15 = 75$ gedaan. Het is $15 - 60 = -45$, dus $x² = -45 : -0,003 = 15 000$.']]},
 {id:'r1b',o:'ab',nr:'Opdracht R1b',q:'Lijn m: $y = -[[24|19]]x + [[231|19]]$.<br>Ligt het punt $R(3, [[1|3]])$ op lijn m? Toon het aan met een berekening.',
  denk:'Vul $x = 3$ in en kijk of er $[[1|3]]$ uitkomt.',
  st:[S('Vul $x = 3$ in.','$-[[24|19]]·3 = -[[72|19]]$'),S('Plus b.','$-[[72|19]] + [[231|19]] = [[159|19]] = 8[[7|19]]$'),S('Vergelijk.','$8[[7|19]] ≠ [[1|3]]$, dus R ligt niet op m')],
