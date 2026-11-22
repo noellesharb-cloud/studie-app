@@ -847,12 +847,36 @@ window.Oefen=(()=>{
   function hwIds(nrs,par){const want=nrs.map(Number);
     return V.Q.filter(q=>{const n=nrNum(q);return n&&want.includes(n[0])&&(!par||secOf(q.o).par===par)})
       .map((q,i)=>({q,i,n:nrNum(q)})).sort((a,b)=>a.n[0]-b.n[0]||(a.n[1]<b.n[1]?-1:a.n[1]>b.n[1]?1:a.i-b.i)).map(x=>x.q.id)}
+  /* 'Leren heel H3' (afspraak 22 nov): niet alleen 'leer het hoofdstuk', want dan raakt ze verlamd. In het huiswerk:
+     L.check = [par,...]: één som per onderdeel (een check), daarna L.zwak = {n, per}: de n onderdelen waar ze de meeste moeite mee
+     heeft of het minst aan deed, per onderdeel 'per' sommen. De keuze wordt per huiswerk bewaard (ST.hwPick), zodat hij niet verspringt. */
+  function hwPickOf(key){ST.hwPick=ST.hwPick||{};return ST.hwPick[key]=ST.hwPick[key]||{}}
+  function checkIds(H,L,vast){const pk=hwPickOf(H.key);if(pk.c&&pk.c.every(id=>QM[id]))return pk.c;
+    const ids=[];V.SECS.filter(s=>L.check.includes(s.par)).forEach(s=>{const l=V.Q.filter(q=>q.o===s.id&&q.t!=='open'&&!q.type&&!vast.has(q.id)),d=l.filter(q=>q.diag);
+      const q=(d.length?d:shuf(l))[0];if(q)ids.push(q.id)});pk.c=ids;save();return ids}
+  function zwakPick(H,L,vast,delen){const pk=hwPickOf(H.key);if(pk.z&&pk.z.ids.every(id=>QM[id]))return pk.z;
+    const c=delen.find(d=>d.check);if(!c)return null;const antw=(ST.hwAns||{})[H.key]||{};
+    if(!c.ids.every(id=>antw[id]||(ST.hw[H.key]||[]).includes(id)))return null;
+    const gezien={};(ST.inzet||[]).forEach(r=>(r.q||[]).forEach(x=>{const q=QM[x.i];if(q)gezien[q.o]=(gezien[q.o]||0)+1}));
+    const secs=V.SECS.filter(s=>c.ids.some(id=>QM[id].o===s.id)).map(s=>{const cf=c.ids.filter(id=>QM[id].o===s.id&&!(antw[id]&&antw[id].ok)).length,
+      wr=ST.wrong.filter(id=>QM[id]&&QM[id].o===s.id).length,gz=gezien[s.id]||0;
+      const why=cf?'fout in de check':wr?wr+' foute '+(wr===1?'vraag':'vragen'):gz<5?'nog weinig geoefend':'';return {s,sc:cf*10+wr*2+(gz<5?3:0)-gz/100,why}})
+      .sort((a,b)=>b.sc-a.sc).slice(0,L.zwak.n||3);
+    const ids=[];secs.forEach(({s})=>{const l=V.Q.filter(q=>q.o===s.id&&q.t!=='open'&&!vast.has(q.id)&&!c.ids.includes(q.id)),f=l.filter(q=>ST.wrong.includes(q.id));
+      [...shuf(f),...shuf(l.filter(q=>!f.includes(q)))].slice(0,L.zwak.per||4).forEach(q=>ids.push(q.id))});
+    pk.z={secs:secs.map(x=>[x.s.id,x.why||'dit ging het minst goed']),ids};save();return pk.z}
   function hwHome(H){
     Oefen.cur=vid;
     /* leerwerk hoort bij het huiswerk: H.leer = [{titel, o:sectie-id} of {titel, ids:[...]}], na de opdrachten, in dezelfde voortgang */
     const opgIds=hwIds(H.nrs,H.par),delen=[{titel:null,ids:opgIds}];
-    (H.leer||[]).forEach(L=>{const li=(L.ids||V.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).filter(id=>QM[id]&&!delen.some(d=>d.ids.includes(id)));if(li.length)delen.push({titel:L.titel,ids:li})});
-    const ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),rest=ids.filter(id=>!gedaan.includes(id));
+    const vast=new Set(opgIds);(H.leer||[]).forEach(L=>{if(L.ids)L.ids.forEach(x=>vast.add(x));else if(L.o)V.Q.forEach(q=>{if(q.o===L.o)vast.add(q.id)})});
+    (H.leer||[]).forEach(L=>{
+      if(L.check){delen.push({titel:L.titel,ids:checkIds(H,L,vast),check:1});return}
+      if(L.zwak){const z=zwakPick(H,L,vast,delen);delen.push({titel:L.titel,ids:z?z.ids:[],zwak:z,wacht:!z});return}
+      const li=(L.ids||V.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).filter(id=>QM[id]&&!delen.some(d=>d.ids.includes(id)));if(li.length)delen.push({titel:L.titel,ids:li})});
+    /* een deel dat nog wacht op de check (zwakste onderdelen): eerst alleen wat ervoor staat */
+    const wi=delen.findIndex(d=>d.wacht),ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),
+      rest=(wi<0?ids:delen.slice(0,wi).flatMap(d=>d.ids)).filter(id=>!gedaan.includes(id));
     const deelVan=id=>delen.find(d=>d.ids.includes(id)),antw=(ST.hwAns||{})[H.key]||{};
     const ontbreekt=H.nrs.filter(n=>!ids.some(id=>(nrNum(QM[id])||[])[0]===+n));
     const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>{const d=deelVan(q.id);if(d&&d.titel)return d.titel.charAt(0).toLowerCase()+d.titel.slice(1);return /^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1)};
@@ -863,18 +887,19 @@ window.Oefen=(()=>{
     <div class="card stack plan"><span class="tag">${tagTxt}</span>
       <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af. Geen boek bij je? Maak het hier. Als de opdrachten af zijn, staan bij <b>Antwoorden voor je schrift</b> jouw antwoorden met de verbeteringen onder elkaar.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
       ${delen.length>1?`<p>${H.nrs.length?'Daarna doe je in de app':'In de app doe je'}${delen.slice(1).map(d=>' <b>'+d.titel.charAt(0).toLowerCase()+d.titel.slice(1)+'</b>').join(' en')}. Dat hoort ook bij je huiswerk. Pas als alles hieronder af is, is je huiswerk klaar.</p>
-      <ol class="hwdelen">${delen.filter(d=>d.ids.length).map((d,i)=>{const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span></li>`}).join('')}</ol>`:''}
+      <ol class="hwdelen">${delen.filter(d=>d.ids.length||d.wacht).map((d,i)=>{const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${d.wacht?'komt na de check':g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span>${d.check?`<br><span class="sub" style="font-size:.9rem">Eén som per onderdeel. Zo ziet de app waar je moeite mee hebt.</span>`:''}${d.zwak?`<br><span class="sub" style="font-size:.9rem">${d.zwak.secs.map(([sid,why])=>`<b>${esc(secOf(sid).name)}</b> (${why})`).join(', ')}</span>`:''}</li>`}).join('')}</ol>`:''}
+      ${wi>=0?`<p class="sub" style="font-size:.9rem">Na de check kiest de app je zwakste onderdelen. Daarna gaat het huiswerk verder.</p>`:''}
       <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
-    <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>'}
+    <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):(wi>=0?'':'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>')}
       ${(opgIds.length?opgIds:ids).every(id=>gedaan.includes(id)||antw[id])?'<button class="btn'+(rest.length?' ghost':'')+'" id="hwantw">Antwoorden voor je schrift</button>':''}
       ${gedaan.length&&!(Oefen.ctx.ouder&&Oefen.ctx.ouder())?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
       <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
     el.querySelectorAll('[data-hwm]').forEach(b=>b.onclick=()=>{const m=b.dataset.hwm;if(kies){ST.hwVorm=m;save()}start(m,rest,titel+(m==='tvorm'?' · zelf op papier':''),null,null,H.key)});
     const aw=el.querySelector('#hwantw');if(aw)aw.onclick=()=>hwAntw(H,delen.filter(d=>d.ids.length));
-    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
+    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];if(ST.hwPick)delete ST.hwPick[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
     el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
     Oefen._hw=H;scrollTo(0,0);
   }
@@ -1123,7 +1148,8 @@ window.Oefen=(()=>{
     huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwTotaal(id,H){const D=VAKDATA[id];if(!D)return 0;const so=x=>D.SECS.find(s=>s.id===x)||{},want=(H.opg||[]).map(Number),ids=new Set();
       D.Q.forEach(q=>{const n=nrNum(q);if(n&&want.includes(n[0])&&(!H.par||so(q.o).par===H.par))ids.add(q.id)});
-      (H.leer||[]).forEach(L=>(L.ids||D.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).forEach(x=>ids.add(x)));return ids.size},
+      let extra=0;(H.leer||[]).forEach(L=>{if(L.check){extra+=D.SECS.filter(s=>L.check.includes(s.par)).length;return}if(L.zwak){extra+=(L.zwak.n||3)*(L.zwak.per||4);return}
+        (L.ids||D.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).forEach(x=>ids.add(x))});return ids.size+extra},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
     /* vanuit het dagplan: opwarmvragen voor een vak, en de rekenregels van vandaag (tijd telt niet mee voor het vak zelf) */

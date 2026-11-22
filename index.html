@@ -446,10 +446,10 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="config.js?v=202611061200"></script>
-<script src="huiswerk.js?v=202611221915"></script>
+<script src="huiswerk.js?v=202611221945"></script>
 <script src="pto.js?v=202611201440"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611221630"></script>
+<script src="oefen/engine.js?v=202611221945"></script>
 <script src="oefen/reken.js?v=202611042008"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>
@@ -975,7 +975,7 @@ const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true">
 const SUC_SEED={id:'s-2026-11-18-wi',d:'2026-11-18',vak:'wi',wat:'Een hele moeilijke som in de les binnen de tijd helemaal goed. Compliment van de meester!',cijfer:'',hoe:'',door:'ouder',t:0};
 let SUC_OPEN=false,SUC_DRAFT={};/* concept bewaren: de app ververst elke minuut en dan zou half getypte tekst weg zijn */
 const sucLijst=()=>((((OEF.successen||{}).lijst)||[]).slice()).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:(b.t||0)-(a.t||0));
-function sucSave(){if(isOuder()||!db)return;const body=JSON.parse(JSON.stringify(OEF.successen));write(()=>db.collection('oefen').doc('successen').set(body))}
+function sucSave(){if(isOuder()||!db||!GELADEN.oefen)return;const body=JSON.parse(JSON.stringify(OEF.successen));write(()=>db.collection('oefen').doc('successen').set(body))}
 function sucSeed(){if(isOuder()||!canWrite||!db||!GELADEN.oefen)return;const S=OEF.successen=OEF.successen||{lijst:[]};if(S.seed)return;S.seed=1;S.lijst=S.lijst||[];
   if(!S.lijst.some(x=>x.id===SUC_SEED.id))S.lijst.push(Object.assign({},SUC_SEED));sucSave()}
 /* oefentijd voor dat vak in de 14 dagen ervoor, uit het log (app, huiswerk, leren, goedgekeurd) */
@@ -1200,10 +1200,13 @@ function openVak(id,par,mode,tid){fromSprint=false;show('oefenen');const v=vakOf
 function openSprint(kind){fromSprint=true;show('oefenen');Oefen.sprint($('#v-oefenen'),kind,SET.sprintMin*60)}
 const saveT={};
 function oefenCtx(){return {
-  state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{}};return OEF[id]},
+  /* fout 22 nov: de oefenstand van wiskunde was gewist. Opende ze een vak voordat de oefenstand geladen was, dan maakte state() een lege
+     stand, sloeg het laden die over (Oefen.cur) en schreef save() de lege stand over haar echte. Nu: zo'n lege stand heet _leeg, wordt
+     niet opgeslagen zolang de oefenstand niet geladen is, en krijgt bij het laden haar echte gegevens. */
+  state:id=>{OEF[id]=OEF[id]||{best:{},wrong:[],wrongB:[],ptoets:{},_leeg:!GELADEN.oefen};return OEF[id]},
   /* de ouder kijkt alleen mee: niets van wat de ouder in het oefenen doet, komt in haar oefenstand (fout 10 nov: 'Alles opnieuw' wiste haar huiswerk) */
   ouder:()=>isOuder(),
-  save:id=>{if(isOuder())return;clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(OEF[id]));write(()=>db.collection('oefen').doc(id).set(body))},1200)},
+  save:id=>{if(isOuder()||!GELADEN.oefen)return;clearTimeout(saveT[id]);saveT[id]=setTimeout(()=>{if(!GELADEN.oefen||!OEF[id])return;const body=JSON.parse(JSON.stringify(OEF[id]));delete body._leeg;write(()=>db.collection('oefen').doc(id).set(body))},1200)},
   metToets:id=>heeftToets(id,today()),
   /* voldoende-grens (%) van de eerstvolgende toets met datum en zonder cijfer, zodat elk cijfer in de app dezelfde schaal heeft */
   norm:id=>{const s=today(),ts=(vakOf(id)?.toetsen||[]).filter(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>=0).sort((a,b)=>a.datum<b.datum?-1:1);return ts.length?ts[0].norm:null},
@@ -1212,7 +1215,7 @@ function oefenCtx(){return {
   wacht:vid=>nkOpen().filter(x=>x.vak===vid&&Date.now()-(x.t||0)<NK_DAGEN*864e5).map(x=>x.rid),
   klaar:k=>{const d=today();if(!isOuder()&&!logDag(d).some(e=>e.key==='klaar-'+k))addLog({d,key:'klaar-'+k,vak:'opwarm',soort:'opwarm',min:0,t:Date.now()},true)},
   sprintDone:(kind,score)=>{const sp=OEF.sprints=OEF.sprints||{},oud=sp[kind]||0;
-    if(score>oud&&!isOuder()){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
+    if(score>oud&&!isOuder()&&GELADEN.oefen){sp[kind]=score;const body=Object.assign({},sp);write(()=>db.collection('oefen').doc('sprints').set(body))}
     if(!isOuder())addLog({d:today(),key:'sprint-'+kind+'-'+Date.now().toString(36),vak:'sprint',soort:'sprint',min:SET.sprintMin,score,t:Date.now()},true);
     return {oud}},
   home:()=>{Oefen.stop();if(fromSprint){fromSprint=false;tab='vandaag'}render()}}}
@@ -1488,7 +1491,7 @@ async function startDb(){
     render();
   },()=>{clearTimeout(timer);stateEl.textContent='De cijfers konden niet geladen worden.'});
   db.collection('instellingen').doc('plan').onSnapshot(s=>{const x=s.exists?s.data():{};SET=Object.assign({},DEF,x);GELADEN.set=1;SCHED=null;if((x.v||1)<2){SET.maxDagWeekend=0;SET.v=2}if((SET.v||1)<3){SET.maxDagSchool=150;SET.bijMin=20;SET.v=3}if(!busy())render()},()=>{});
-  db.collection('oefen').onSnapshot(snap=>{GELADEN.oefen=1;snap.docs.forEach(d=>{if(Oefen.cur!==d.id)OEF[d.id]=JSON.parse(JSON.stringify(d.data()))});if(!busy())render()},()=>{});
+  db.collection('oefen').onSnapshot(snap=>{GELADEN.oefen=1;snap.docs.forEach(d=>{const x=JSON.parse(JSON.stringify(d.data()));if(Oefen.cur!==d.id)OEF[d.id]=x;else if(OEF[d.id]&&OEF[d.id]._leeg){const o=OEF[d.id];Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,x)}});if(!busy())render()},()=>{});
   db.collection('nakijk').onSnapshot(snap=>{const o={};snap.docs.forEach(d=>o[d.id]=JSON.parse(JSON.stringify(d.data())));NK=o;GELADEN.nakijk=1;
     const a=document.activeElement;if(Oefen.cur==='nakijk'){if(!(a&&a.classList&&a.classList.contains('nk-opm')))rNakijk()}else if(!busy())render()},()=>{});
   db.collection('log').onSnapshot(snap=>{const L={};snap.docs.forEach(d=>L[d.id]=JSON.parse(JSON.stringify(d.data())));LOG=L;GELADEN.log=1;if(!busy())render()},()=>{});
