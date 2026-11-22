@@ -851,7 +851,7 @@ window.Oefen=(()=>{
      L.check = [par,...]: één som per onderdeel (een check), daarna L.zwak = {n, per}: de n onderdelen waar ze de meeste moeite mee
      heeft of het minst aan deed, per onderdeel 'per' sommen. De keuze wordt per huiswerk bewaard (ST.hwPick), zodat hij niet verspringt. */
   function hwPickOf(key){ST.hwPick=ST.hwPick||{};return ST.hwPick[key]=ST.hwPick[key]||{}}
-  function checkIds(H,L,vast){const pk=hwPickOf(H.key);if(pk.c&&pk.c.every(id=>QM[id]))return pk.c;
+  function checkIds(H,L,vast){const pk=hwPickOf(H.key);if(pk.c&&pk.c.every(id=>QM[id]&&secOf(QM[id].o)&&L.check.includes(secOf(QM[id].o).par)))return pk.c;
     const ids=[];V.SECS.filter(s=>L.check.includes(s.par)).forEach(s=>{const l=V.Q.filter(q=>q.o===s.id&&q.t!=='open'&&!q.type&&!vast.has(q.id)),d=l.filter(q=>q.diag);
       const q=(d.length?d:shuf(l))[0];if(q)ids.push(q.id)});pk.c=ids;save();return ids}
   function zwakPick(H,L,vast,delen){const pk=hwPickOf(H.key),zk='z'+(H.leer||[]).indexOf(L);if(pk[zk]&&pk[zk].ids.every(id=>QM[id]))return pk[zk];
@@ -871,13 +871,19 @@ window.Oefen=(()=>{
     /* leerwerk hoort bij het huiswerk: H.leer = [{titel, o:sectie-id} of {titel, ids:[...]}], na de opdrachten, in dezelfde voortgang */
     const opgIds=hwIds(H.nrs,H.par),delen=[{titel:null,ids:opgIds}];
     const vast=new Set(opgIds);(H.leer||[]).forEach(L=>{if(L.ids)L.ids.forEach(x=>vast.add(x));else if(L.o)V.Q.forEach(q=>{if(q.o===L.o)vast.add(q.id)})});
+    /* 22 nov: L.kaart = [..] een schrijfopdracht in haar schrift (samenvattingskaartjes). Ze vinkt hem zelf af (ST.hwK); de vragen
+       daarna komen pas als dit deel af is, zodat de volgorde klopt (eerst het kaartje, dan oefenen). */
+    const kd=(ST.hwK||{})[H.key]||[],ouder=!!(Oefen.ctx.ouder&&Oefen.ctx.ouder());
     (H.leer||[]).forEach(L=>{
+      if(L.kaart){const i=(H.leer||[]).indexOf(L);delen.push({titel:L.titel,ids:[],kaart:L.kaart,ki:i,kd:kd.includes(i)});return}
       if(L.check){delen.push({titel:L.titel,ids:checkIds(H,L,vast),check:1});return}
       if(L.zwak){const z=zwakPick(H,L,vast,delen);delen.push({titel:L.titel,ids:z?z.ids:[],zwak:z,wacht:!z});return}
       const li=(L.ids||V.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).filter(id=>QM[id]&&!delen.some(d=>d.ids.includes(id)));if(li.length)delen.push({titel:L.titel,ids:li})});
     /* een deel dat nog wacht op de check (zwakste onderdelen): eerst alleen wat ervoor staat */
-    const wi=delen.findIndex(d=>d.wacht),ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),
-      rest=(wi<0?ids:delen.slice(0,wi).flatMap(d=>d.ids)).filter(id=>!gedaan.includes(id));
+    const wi=delen.findIndex(d=>d.wacht),wk=delen.findIndex(d=>d.kaart&&!d.kd),stp=[wi,wk].filter(x=>x>=0),st=stp.length?Math.min(...stp):-1,
+      ids=delen.flatMap(d=>d.ids),gedaan=(ST.hw[H.key]||[]).filter(id=>ids.includes(id)),
+      rest=(st<0?ids:delen.slice(0,st).flatMap(d=>d.ids)).filter(id=>!gedaan.includes(id));
+    const kaartNu=wk>=0&&wk===st&&!rest.length?delen[wk]:null,kaartKnop=d=>ouder?'':`<button class="btn${kaartNu===d?'':' ghost'}" data-hwk="${d.ki}">Klaar: dit staat in mijn schrift</button>`;
     const deelVan=id=>delen.find(d=>d.ids.includes(id)),antw=(ST.hwAns||{})[H.key]||{};
     const ontbreekt=H.nrs.filter(n=>!ids.some(id=>(nrNum(QM[id])||[])[0]===+n));
     const W=V.reken===false?'opdracht':'opgave',Wc=W[0].toUpperCase()+W.slice(1),nl=q=>{const d=deelVan(q.id);if(d&&d.titel)return d.titel.charAt(0).toLowerCase()+d.titel.slice(1);return /^\d/.test(q.nr)?W+' '+q.nr:q.nr.charAt(0).toLowerCase()+q.nr.slice(1)};
@@ -887,20 +893,22 @@ window.Oefen=(()=>{
     <h2>${H.titel||'Je huiswerk'}</h2>
     <div class="card stack plan"><span class="tag">${tagTxt}</span>
       <p>${V.reken===false?'Je doet de opdrachten uit je werkboek één voor één. Bij een fout zie je waarom. Schrijf je antwoorden ook in je werkboek: dan heb je je huiswerk meteen af. Geen boek bij je? Maak het hier. Als de opdrachten af zijn, staan bij <b>Antwoorden voor je schrift</b> jouw antwoorden met de verbeteringen onder elkaar.':'Je kiest zelf hoe je het doet. <b>Stap voor stap:</b> bij elke stap kies je zelf, en bij een fout zie je waarom. <b>Zelf op papier:</b> je maakt de som eerst helemaal in je schrift, zoals op een toets, en kijkt daarna na met de uitwerking. Gaat een som dan mis, dan krijg je hem later nog eens stap voor stap. Je kunt per keer kiezen.'}</p>
-      ${delen.length>1?`<p>${H.nrs.length?'Daarna doe je in de app':'In de app doe je'}${delen.slice(1).map(d=>' <b>'+d.titel.charAt(0).toLowerCase()+d.titel.slice(1)+'</b>').join(' en')}. Dat hoort ook bij je huiswerk. Pas als alles hieronder af is, is je huiswerk klaar.</p>
-      <ol class="hwdelen">${delen.filter(d=>d.ids.length||d.wacht).map((d,i)=>{const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${d.wacht?'komt na de check':g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span>${d.check?`<br><span class="sub" style="font-size:.9rem">Eén som per onderdeel. Zo ziet de app waar je moeite mee hebt.</span>`:''}${d.zwak?`<br><span class="sub" style="font-size:.9rem">${d.zwak.secs.map(([sid,why])=>`<b>${esc(secOf(sid).name)}</b> (${why})`).join(', ')}</span>`:''}</li>`}).join('')}</ol>`:''}
+      ${delen.length>1?`<p>${H.nrs.length?'Daarna doe je in de app':'In de app doe je'}${delen.slice(1).filter(d=>!d.kaart).map(d=>' <b>'+d.titel.charAt(0).toLowerCase()+d.titel.slice(1)+'</b>').join(' en')}.${delen.some(d=>d.kaart)?' Tussendoor maak je in je schrift je samenvatting: de kaartjes staan hieronder op de plek waar ze aan de beurt zijn.':''} Dat hoort ook bij je huiswerk. Pas als alles hieronder af is, is je huiswerk klaar.</p>
+      <ol class="hwdelen">${delen.filter(d=>d.ids.length||d.wacht||d.kaart).map((d,i)=>{if(d.kaart)return `<li><b>${esc(d.titel)}</b> <span class="sub">${d.kd?'✓ klaar':'in je schrift'}</span>${d.kd?'':`<ul style="font-size:.9rem;margin:4px 0">${d.kaart.map(k=>`<li>${esc(k)}</li>`).join('')}</ul>`}</li>`;const g=d.ids.filter(id=>gedaan.includes(id)).length;return `<li><b>${d.titel||nrsTxt}</b> <span class="sub">${d.wacht?'komt na de check':g===d.ids.length?'✓ klaar':g+' van '+d.ids.length}</span>${d.check?`<br><span class="sub" style="font-size:.9rem">Eén som per onderdeel. Zo ziet de app waar je moeite mee hebt.</span>`:''}${d.zwak?`<br><span class="sub" style="font-size:.9rem">${d.zwak.secs.map(([sid,why])=>`<b>${esc(secOf(sid).name)}</b> (${why})`).join(', ')}</span>`:''}</li>`}).join('')}</ol>`:''}
+      ${H.kaartHulp&&delen.some(d=>d.kaart)?`<details${delen.some(d=>d.kd)?'':' open'}><summary><b>Hoe maak je een kaartje?</b></summary>${H.kaartHulp.map(l=>`<p style="font-size:.95rem;margin:6px 0">${esc(l)}</p>`).join('')}</details>`:''}
       ${wi>=0?`<p class="sub" style="font-size:.9rem">Na de check kiest de app je zwakste onderdelen. Daarna gaat het huiswerk verder.</p>`:''}
       <div class="bar"><i style="width:${ids.length?Math.round(gedaan.length/ids.length*100):0}%"></i></div>
       <p class="sub" style="font-size:.9rem">${gedaan.length} van ${ids.length} vragen klaar${gedaan.length&&rest.length?'. Je gaat verder waar je was.':''}</p>
       ${ontbreekt.length?`<p class="sub" style="font-size:.9rem">${Wc} ${ontbreekt.join(', ')} staat nog niet in de app. Die maak je uit je boek.</p>`:''}</div>
-    <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):(wi>=0?'':'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>')}
+    <div class="stack">${rest.length?(kies?[['stap','Stap voor stap, met hulp'],['tvorm','Zelf op papier, daarna nakijken']].sort((a,b)=>(b[0]===vorm)-(a[0]===vorm)).map(([m,t],i)=>`<button class="btn${i?' ghost':''}" data-hwm="${m}">${t}: ${gedaan.length?'verder met '+nl(QM[rest[0]]):'begin met '+nl(QM[rest[0]])}</button>`).join(''):`<button class="btn" data-hwm="stap">${gedaan.length?'Verder met '+nl(QM[rest[0]]):'Begin met '+nl(QM[rest[0]])}</button>`):kaartNu?`<div class="card stack"><b>Nu in je schrift: ${esc(kaartNu.titel)}</b><ul style="margin:0">${kaartNu.kaart.map(k=>`<li>${esc(k)}</li>`).join('')}</ul><span class="sub" style="font-size:.9rem">Kijk bij ‘Hoe maak je een kaartje?’ hierboven. Daarna gaat je huiswerk in de app verder.</span>${kaartKnop(kaartNu)}</div>`:(wi>=0?'':'<div class="card"><b>Alles klaar!</b> Goed gedaan.</div>')}
       ${(opgIds.length?opgIds:ids).every(id=>gedaan.includes(id)||antw[id])?'<button class="btn'+(rest.length?' ghost':'')+'" id="hwantw">Antwoorden voor je schrift</button>':''}
       ${gedaan.length&&!(Oefen.ctx.ouder&&Oefen.ctx.ouder())?'<button class="btn ghost" id="hwopn">Alles opnieuw, vanaf het begin</button>':''}
       <button class="btn ghost" id="hwvak">Naar alle onderdelen van ${V.naam}</button></div>`;
     el.querySelector('#back').onclick=()=>{done();Oefen.ctx.home()};
     el.querySelectorAll('[data-hwm]').forEach(b=>b.onclick=()=>{const m=b.dataset.hwm;if(kies){ST.hwVorm=m;save()}start(m,rest,titel+(m==='tvorm'?' · zelf op papier':''),null,null,H.key)});
+    el.querySelectorAll('[data-hwk]').forEach(b=>b.onclick=()=>{const i=+b.dataset.hwk;ST.hwK=ST.hwK||{};const l=ST.hwK[H.key]=ST.hwK[H.key]||[];if(!l.includes(i))l.push(i);save();hwHome(H)});
     const aw=el.querySelector('#hwantw');if(aw)aw.onclick=()=>hwAntw(H,delen.filter(d=>d.ids.length));
-    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];if(ST.hwPick)delete ST.hwPick[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
+    const op=el.querySelector('#hwopn');if(op)op.onclick=()=>{ST.hw[H.key]=[];if(ST.hwAns)delete ST.hwAns[H.key];if(ST.hwPick)delete ST.hwPick[H.key];if(ST.hwK)delete ST.hwK[H.key];save();start(vorm,ids,titel+(vorm==='tvorm'?' · zelf op papier':''),null,null,H.key)};
     el.querySelector('#hwvak').onclick=()=>{focusPar=H.par||null;focusMode=null;home()};
     Oefen._hw=H;scrollTo(0,0);
   }
