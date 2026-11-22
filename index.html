@@ -676,25 +676,30 @@ function schedule(){
 /* 20 nov: toetsvoorbereiding alleen in dezelfde periode als de toets (na de vorige toetsweek). Eerder kon geschiedenis van 12 feb
    in de toetsweek van december belanden, omdat het plan tot 70 dagen terug zocht naar ruimte. */
 const inPeriode=(t,d)=>t.datum<=periodeEind(d);
-function maakSchedule(van,credit){
+function maakSchedule(van,credit,zonderSeed){
   /* 22 nov: de vaste tijd per dag (huiswerk, opwarmen, bijhouden, les- en inhaalblokken) verandert niet tijdens het plannen.
      Eerst werd die bij elke poging opnieuw uitgerekend (tienduizenden keren); daardoor duurde terugklikken naar Vandaag seconden. */
   const VAST={},vast=d=>VAST[d]??(VAST[d]=huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+lesMin(d)+inhaalMin(d));
-  const A={},over=[],used=d=>vast(d)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  const A={},over=[],used=d=>vast(d)+(A[d]||[]).reduce((a,x)=>a+(x.uMin??x.min),0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend&&!dubbelVan(v,t))L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
   /* fix 20 nov: is ze vandaag al met een vak in de app bezig, dan blijft er vandaag toetsvoorbereiding voor dat vak staan.
      Anders kon het plan van vandaag halverwege omspringen (Nederlands werd natuurkunde na een wijziging in Cijfers).
      Wat ze vandaag meer deed dan het huiswerk, bijhouden, les- en inhaalblokken van dat vak, telt als toetsvoorbereiding van vandaag. */
-  const seed={};
-  if(van===today()&&!vrijDag(van)){const nd=volgendeSchooldag(van),wk=vrijZa(van);
+  /* fix 22 nov: oefende ze vandaag langer met een vak (geschiedenis), dan groeide dat blok elke 5 minuten mee en duwde het de
+     toetsvoorbereiding van een ander vak (wiskunde 30 min) uit het plan. Nu: eerst het plan zonder die extra tijd (basis); het blok van
+     dat vak blijft zo lang als in de basis; wat ze meer deed telt als gedaan en maakt latere dagen korter. Stond het vak vandaag niet in
+     de basis, dan is het blok wat ze deed, maar het telt niet mee in de leertijd van vandaag. Extra oefenen neemt dus geen plek van
+     andere vakken in. */
+  const seed={},B=zonderSeed||van!==today()?null:maakSchedule(van,credit,true);
+  if(!zonderSeed&&van===today()&&!vrijDag(van)){const nd=volgendeSchooldag(van),wk=vrijZa(van);
     logDag(van).filter(e=>e.soort==='oefenen'&&/^auto-/.test(e.key)).forEach(e=>{const vid=e.vak,gedaan=e.sec?e.sec/60:(e.min||0);
       const ander=(wk?0:hwVoor(nd).filter(h=>h.app===vid).reduce((a,h)=>a+(h.min||0),0))+bijhouden(van).filter(x=>x.vid===vid).reduce((a,x)=>a+x.min,0)
         +lesBlokken(van).filter(x=>x.vid===vid).reduce((a,x)=>a+x.min,0)+inhaalVoor(van).filter(x=>x.vak===vid&&!logDag(van).some(l=>l.key==='schuif-'+x.key)).reduce((a,x)=>a+x.min,0);
       const x=L.find(o=>o.v.id===vid&&o.t.datum>van&&inPeriode(o.t,van));if(!x||gedaan-ander<2)return;
-      const id=vid+'|'+x.t.id,m=Math.max(15,Math.ceil((gedaan-ander)/5)*5);seed[id]=m;
-      (A[van]=A[van]||[]).push({v:x.v,t:x.t,min:m,zwaar:zwaarT(x.v,x.t),n:diffDays(van,x.t.datum)})})}
+      const id=vid+'|'+x.t.id,m=Math.max(15,Math.ceil((gedaan-ander)/5)*5),bm=((B&&B[van])||[]).find(b=>b.t===x.t)?.min||0;seed[id]=Math.max(m,bm);
+      (A[van]=A[van]||[]).push({v:x.v,t:x.t,min:bm||m,uMin:bm,vast:1,zwaar:zwaarT(x.v,x.t),n:diffDays(van,x.t.datum)})})}
   const Q=[];
   L.forEach(({v,t})=>{const z=zwaarT(v,t),vol=leertijd(v,t);
     /* de oefenapp hoort bij de eerstvolgende toets van dat vak; alleen daar telt beheersing mee */
@@ -710,6 +715,7 @@ function maakSchedule(van,credit){
   while(bezig){bezig=false;
     for(const o of Q){if(o.tot<=0)continue;
       while(o.k<70&&o.d>=van&&inPeriode(o.t,o.d)){const d=o.d,e=(A[d]||[]).find(x=>x.t===o.t);
+        if(e&&e.vast){o.d=addDays(d,-1);o.k++;continue}
         const room=Math.min((o.z?60:45)-(e?e.min:0),capDag(d)-used(d),o.tot,STAP);
         if(e&&room>=5){e.min+=room;o.tot-=room;bezig=true;break}
         if(!e&&room>=15){(A[d]=A[d]||[]).push({v:o.v,t:o.t,min:room,zwaar:o.z,n:diffDays(d,o.t.datum)});o.tot-=room;bezig=true;break}
@@ -721,13 +727,13 @@ function maakSchedule(van,credit){
   over.forEach(o=>{const{v,t,z}=o,lim=z?60:45;
     const D=[];for(let d=addDays(t.datum,-1),k=0;d>=van&&k<70&&inPeriode(t,d);d=addDays(d,-1),k++)if(!vrijDag(d)&&!vrijZa(d))D.push(d);
     D.sort((a,b)=>used(a)-used(b)||(a<b?1:-1));
-    for(const d of D){if(o.tot<=0)break;const e=(A[d]||[]).find(x=>x.t===t),room=Math.min(lim-(e?e.min:0),capDag(d)+rek-used(d),o.tot);
+    for(const d of D){if(o.tot<=0)break;const e=(A[d]||[]).find(x=>x.t===t);if(e&&e.vast)continue;const room=Math.min(lim-(e?e.min:0),capDag(d)+rek-used(d),o.tot);
       if(room<10||!e&&room<15)continue;if(e)e.min+=room;else (A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});o.tot-=room}
     /* derde ronde (20 nov): past het dan nog niet, dan mag een vak op een dag met ruimte (vooral vrijdag, zaterdag of een dag met extra
        leertijd van de ouder) langer: tot 90 min (zwaar 120). Anders kon extra leertijd in het weekend niet gebruikt worden. */
     if(o.tot>0){const D2=[];for(let d=addDays(t.datum,-1),k=0;d>=van&&k<70&&inPeriode(t,d);d=addDays(d,-1),k++)if(!vrijDag(d))D2.push(d);
       D2.sort((a,b)=>(capDag(b)-used(b))-(capDag(a)-used(a))||(a<b?1:-1));
-      for(const d of D2){if(o.tot<=0)break;const e=(A[d]||[]).find(x=>x.t===t),room=Math.min((z?120:90)-(e?e.min:0),capDag(d)+(vrijZa(d)?0:rek)-used(d),o.tot);
+      for(const d of D2){if(o.tot<=0)break;const e=(A[d]||[]).find(x=>x.t===t);if(e&&e.vast)continue;const room=Math.min((z?120:90)-(e?e.min:0),capDag(d)+(vrijZa(d)?0:rek)-used(d),o.tot);
         if(room<10||!e&&room<15)continue;if(e)e.min+=room;else (A[d]=A[d]||[]).push({v,t,min:room,zwaar:z,n:diffDays(d,t.datum)});o.tot-=room}}
     if(o.tot>0&&t.datum>today())(A._rest=A._rest||[]).push({v,t,tot:o.tot});});
   return A;
