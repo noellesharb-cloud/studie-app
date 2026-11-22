@@ -854,17 +854,18 @@ window.Oefen=(()=>{
   function checkIds(H,L,vast){const pk=hwPickOf(H.key);if(pk.c&&pk.c.every(id=>QM[id]))return pk.c;
     const ids=[];V.SECS.filter(s=>L.check.includes(s.par)).forEach(s=>{const l=V.Q.filter(q=>q.o===s.id&&q.t!=='open'&&!q.type&&!vast.has(q.id)),d=l.filter(q=>q.diag);
       const q=(d.length?d:shuf(l))[0];if(q)ids.push(q.id)});pk.c=ids;save();return ids}
-  function zwakPick(H,L,vast,delen){const pk=hwPickOf(H.key);if(pk.z&&pk.z.ids.every(id=>QM[id]))return pk.z;
-    const c=delen.find(d=>d.check);if(!c)return null;const antw=(ST.hwAns||{})[H.key]||{};
-    if(!c.ids.every(id=>antw[id]||(ST.hw[H.key]||[]).includes(id)))return null;
-    const gezien={};(ST.inzet||[]).forEach(r=>(r.q||[]).forEach(x=>{const q=QM[x.i];if(q)gezien[q.o]=(gezien[q.o]||0)+1}));
-    const secs=V.SECS.filter(s=>c.ids.some(id=>QM[id].o===s.id)).map(s=>{const cf=c.ids.filter(id=>QM[id].o===s.id&&!(antw[id]&&antw[id].ok)).length,
-      wr=ST.wrong.filter(id=>QM[id]&&QM[id].o===s.id).length,gz=gezien[s.id]||0;
-      const why=cf?'fout in de check':wr?wr+' foute '+(wr===1?'vraag':'vragen'):gz<5?'nog weinig geoefend':'';return {s,sc:cf*10+wr*2+(gz<5?3:0)-gz/100,why}})
+  function zwakPick(H,L,vast,delen){const pk=hwPickOf(H.key),zk='z'+(H.leer||[]).indexOf(L);if(pk[zk]&&pk[zk].ids.every(id=>QM[id]))return pk[zk];
+    /* L.zwak.pars (zonder check): kiezen op wat ze eerder fout had (foute vragen, tussentoets, oefenen) en wat ze weinig deed */
+    const P=L.zwak.pars,c=P?{ids:[]}:delen.find(d=>d.check);if(!c)return null;const antw=(ST.hwAns||{})[H.key]||{};
+    if(!P&&!c.ids.every(id=>antw[id]||(ST.hw[H.key]||[]).includes(id)))return null;
+    const gezien={},fout={};(ST.inzet||[]).forEach(r=>(r.q||[]).forEach(x=>{const q=QM[x.i];if(q){gezien[q.o]=(gezien[q.o]||0)+1;if(!x.ok&&!x.f)fout[q.o]=(fout[q.o]||0)+1}}));
+    const secs=V.SECS.filter(s=>P?P.includes(s.par):c.ids.some(id=>QM[id].o===s.id)).map(s=>{const cf=c.ids.filter(id=>QM[id].o===s.id&&!(antw[id]&&antw[id].ok)).length,
+      wr=ST.wrong.filter(id=>QM[id]&&QM[id].o===s.id).length,gz=gezien[s.id]||0,fo=P?fout[s.id]||0:0;
+      const why=cf?'fout in de check':wr?wr+' foute '+(wr===1?'vraag':'vragen'):fo?'eerder fout':gz<5?'nog weinig geoefend':'';return {s,sc:cf*10+wr*2+fo+(gz<5?3:0)-gz/100,why}})
       .sort((a,b)=>b.sc-a.sc).slice(0,L.zwak.n||3);
     const ids=[];secs.forEach(({s})=>{const l=V.Q.filter(q=>q.o===s.id&&q.t!=='open'&&!vast.has(q.id)&&!c.ids.includes(q.id)),f=l.filter(q=>ST.wrong.includes(q.id));
       [...shuf(f),...shuf(l.filter(q=>!f.includes(q)))].slice(0,L.zwak.per||4).forEach(q=>ids.push(q.id))});
-    pk.z={secs:secs.map(x=>[x.s.id,x.why||'dit ging het minst goed']),ids};save();return pk.z}
+    pk[zk]={secs:secs.map(x=>[x.s.id,x.why||'dit ging het minst goed']),ids};save();return pk[zk]}
   function hwHome(H){
     Oefen.cur=vid;
     /* leerwerk hoort bij het huiswerk: H.leer = [{titel, o:sectie-id} of {titel, ids:[...]}], na de opdrachten, in dezelfde voortgang */
@@ -1148,7 +1149,7 @@ window.Oefen=(()=>{
     huiswerk(target,id,H){el=target;load(id,H.key);focusPar=H.par||null;focusMode=null;hwHome(H)},
     hwTotaal(id,H){const D=VAKDATA[id];if(!D)return 0;const so=x=>D.SECS.find(s=>s.id===x)||{},want=(H.opg||[]).map(Number),ids=new Set();
       D.Q.forEach(q=>{const n=nrNum(q);if(n&&want.includes(n[0])&&(!H.par||so(q.o).par===H.par))ids.add(q.id)});
-      let extra=0;(H.leer||[]).forEach(L=>{if(L.check){extra+=D.SECS.filter(s=>L.check.includes(s.par)).length;return}if(L.zwak){extra+=(L.zwak.n||3)*(L.zwak.per||4);return}
+      let extra=0;(H.leer||[]).forEach(L=>{if(L.check){extra+=D.SECS.filter(s=>L.check.includes(s.par)).length;return}if(L.zwak){extra+=(L.zwak.n||3)*Math.min(L.zwak.per||4,7);return}
         (L.ids||D.Q.filter(q=>q.o===L.o&&q.t!=='open').map(q=>q.id)).forEach(x=>ids.add(x))});return ids.size+extra},
     hwStand(id,key){const v=VAKDATA[id];if(!v)return null;const st=Oefen.ctx.state(id);return (st.hw&&st.hw[key]||[]).length},
     sprint,
