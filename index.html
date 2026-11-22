@@ -552,7 +552,9 @@ const APPS=()=>Object.keys(VAKDATA);
 const LOSSE={}; /* alle oefenapps zitten nu in de studie-app */
 /* toetsweek = een week met 4 of meer toetsen: dan geen gewoon huiswerk */
 function toetsDagen(){const m={};VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&!dubbelVan(v,t))m[t.datum]=(m[t.datum]||0)+1}));return m}
-function inToetsweek(s){const m=toetsDagen(),w=weekId(s);return Object.entries(m).filter(([d])=>weekId(d)===w).reduce((a,[,n])=>a+n,0)>=4}
+/* 22 nov: per render één keer uitrekenen (TWC wordt in render() leeggemaakt); eerst bij elke aanroep alle toetsen opnieuw */
+let TWC=null;
+function inToetsweek(s){if(!TWC){TWC={};Object.entries(toetsDagen()).forEach(([d,n])=>{const w=weekId(d);TWC[w]=(TWC[w]||0)+n})}return (TWC[weekId(s)]||0)>=4}
 function volgendeSchooldag(s){let d=addDays(s,1);while(!schooldag(d))d=addDays(d,1);return d}
 /* ---------- huiswerk uit SOMtoday (huiswerk.js) ---------- */
 const HW=()=>window.HUISWERK||[];
@@ -662,7 +664,7 @@ function prepVoor(s){const F=eersteOpen();if(s>=F)return schedule()[s]||[];
 const scheduleOud=()=>SCHED_OUD||(SCHED_OUD=maakSchedule(startDag()||today(),{}));
 function schedule(){
   if(SCHED)return SCHED;
-  const F=eersteOpen(),credit={};
+  TWC=null;const F=eersteOpen(),credit={};
   for(let d=startDag()||F,k=0;d<F&&k<400;d=addDays(d,1),k++)(prepGedaan(d)||[]).forEach(x=>{const id=x.vid+'|'+x.tid;credit[id]=(credit[id]||0)+(x.min||0)});
   const gedaan={...credit};
   Object.entries(inhaalPrep(F)).forEach(([id,m])=>credit[id]=(credit[id]||0)+m);
@@ -675,7 +677,10 @@ function schedule(){
    in de toetsweek van december belanden, omdat het plan tot 70 dagen terug zocht naar ruimte. */
 const inPeriode=(t,d)=>t.datum<=periodeEind(d);
 function maakSchedule(van,credit){
-  const A={},over=[],used=d=>huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+lesMin(d)+inhaalMin(d)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
+  /* 22 nov: de vaste tijd per dag (huiswerk, opwarmen, bijhouden, les- en inhaalblokken) verandert niet tijdens het plannen.
+     Eerst werd die bij elke poging opnieuw uitgerekend (tienduizenden keren); daardoor duurde terugklikken naar Vandaag seconden. */
+  const VAST={},vast=d=>VAST[d]??(VAST[d]=huiswerkMin(d)+opwarmMin(d)+bijhouden(d).reduce((a,x)=>a+x.min,0)+lesMin(d)+inhaalMin(d));
+  const A={},over=[],used=d=>vast(d)+(A[d]||[]).reduce((a,x)=>a+x.min,0);
   const L=[];VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(t.datum&&num(t.cijfer)==null&&!t.stofOnbekend&&!dubbelVan(v,t))L.push({v,t})}));
   L.sort((a,b)=>a.t.datum<b.t.datum?-1:a.t.datum>b.t.datum?1:0);
   const eerste=new Set();
@@ -1394,7 +1399,7 @@ const GELADEN={};
 /* vernieuwen: op het beginscherm van de iPhone is er geen adresbalk en dus geen herlaadknop (13 nov, vader). Eerst opslaan, dan herladen. */
 $('#herlaad').onclick=()=>{try{flushAct()}catch(e){};$('#herlaad').textContent='Bezig…';setTimeout(()=>location.reload(),1500)};
 function render(){
-  SCHED=null;SCHED_OUD=null;INH=null;for(const k in LESC)delete LESC[k];
+  SCHED=null;SCHED_OUD=null;INH=null;TWC=null;for(const k in LESC)delete LESC[k];
   /* fout gevonden 14 nov: stempelBij draaide ook als de instellingen nog niet binnen waren. Dan gold de standaard (vrijdag/zaterdag
      alleen een sprint), was de zaterdag 'niet af' en werd de stempel van vandaag gewist. Daarna werd de dag opnieuw gepland. */
   if(GELADEN.vakken&&GELADEN.log&&GELADEN.oefen&&GELADEN.set)stempelBij();
