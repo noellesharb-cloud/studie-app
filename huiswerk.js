@@ -22,6 +22,7 @@ window.HUISWERK=[
 
   /* dinsdag 3 november */
   {id:'2026-10-gr-oud',d:'2026-10-01',vak:'grieks',t:'Woorden les 2, 3, 4 en 6 (al gehad)',wat:['Woorden van les 2 Kosmos, 3 Kronos, 4 Zeus en 6 Goden: al behandeld vóór de app. Staat hier zodat de app weet dat ze dit mag oefenen (toets 10 dec: alle woorden t/m les 11).'],min:0,klaar:true,app:'gr',beh:['ow']},
+  {id:'2026-10-gr-th2',d:'2026-10-01',vak:'grieks',t:'Grammatica Thema 2 (al gehad)',wat:['Grammatica-overzicht Thema 2 Olympos (HB p. 97–109, ergon 1–19): al behandeld vóór de app. Staat hier zodat de app weet dat ze dit mag oefenen (toets 10 dec: ook grammatica Thema 2 herhalen).'],min:0,klaar:true,app:'gr',beh:['th2']},
   {id:'2026-10-gr-les8',d:'2026-10-30',vak:'grieks',t:'Les 8 Argonauten (al gehad)',wat:['Woorden les 8 en tekst 8 ΑΡΓΟΝΑΥΤΑΙ: al behandeld vóór de app. Staat hier zodat de app weet dat ze dit mag oefenen.'],min:0,klaar:true,app:'gr',beh:['8w','8t']},
   {id:'2026-11-03-gr',d:'2026-11-03',vak:'grieks',t:'Les 9 en tekst 9 t/m regel 12',wat:['# Leerwerk','Beginnen aan de woorden van les 9','Herhalen: alle rijtjes van het persoonlijk voornaamwoord (HB p. 106)','# Maakwerk','Benoemen en vertalen (B&V): tekst 9 t/m regel 12','# Meenemen','Argo Tekstboek en Argo Hulpboek','Benoemblad tekst 9 en kleurtjes','Schrift en schrijfmateriaal'],min:35,app:'gr',par:'9w',beh:['w9l','w9o','t9a','iq18','iq19','iq20']},
   {id:'2026-11-03-lv',d:'2026-11-03',vak:'levensbeschouw',t:'Opdracht 7 en 9',wat:['Opdracht 7 en 9 (blz. 119 af)'],min:15,app:'lv',par:'2'},
@@ -119,6 +120,6 @@ window.HUISWERK=[
      · cultuur: proloog Thema 3 en les 11 (TB p. 54 en 56) · Griekse tekst les 11.
      In de app (gr.js t/m gr4.js): woorden les 2, 3, 4, 6, 8, 9, 11 · persoonlijk vnw · tekst 8, 9, 11 · HB-opdrachten les 8–11, epiloog, proloog Thema 3
      · grammatica les 11 (HB p. 112–115, ERGA 1–7).
-     Les 1, 5, 7 en 10 hebben geen woordenlijst (ouder, 23 nov). Niet in de app: grammatica-overzicht Thema 2. Les 10, epiloog, proloog en les 11 gaan pas open
+     Les 1, 5, 7 en 10 hebben geen woordenlijst (ouder, 23 nov). Grammatica Thema 2 (HB p. 97–109) staat in gr5.js. Les 10, epiloog, proloog en les 11 gaan pas open
      als een huiswerk ze opgeeft (gate). */
 ];

@@ -6,7 +6,7 @@
    Gate: ERGON 1–2 en 3–4 gaan open met het huiswerk van 20 en 24 nov; de woorden van les 2–6 zijn al behandeld (huiswerk.js);
    11.2 en ERGON 5–7 gaan pas open als een huiswerk ze opgeeft.
    Les 1, 5, 7 en 10 hebben geen woordenlijst (ouder, 23 nov): alle woorden t/m les 11 staan nu in de app.
-   Ontbreekt nog: het grammatica-overzicht van Thema 2. */
+   Het grammatica-overzicht van Thema 2 staat in gr5.js. */
 (()=>{
 const V=VAKDATA.gr;if(!V)return;
 const G=s=>`<span class="gr">${s}</span>`;
