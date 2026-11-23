@@ -337,7 +337,8 @@ O('p42','tq42e',TV,'In §3.2 leerde je over Dubai als wereldstad. Waarom zitten 
 
 /* ---- werkboek §4.2 Duitsland (opdrachten 1–11, PDF's van de ouder, 19 nov 2026) ----
    Kleur- en tekenopdrachten op kaarten (3a kleuren, 5a–c, 8a, 8c, 9a–b) staan hier in eigen vorm of niet.
-   Nog niet in de app (bron uit het leerboek ontbreekt): 2e (bron 7), 10c (bron W11). */
+   Aangevuld 23 nov 2026 met de foto's van de werkboekpagina's 111–116: Ford/Keulen bij 3a, 5a–c (bron W7, W8), 8c, 9a, 9b en 10c (bron W11).
+   Nog niet in de app (bron uit het leerboek ontbreekt): 2e (bron 7), 8a (bron 10). */
 const DE_PROJ=(lon,lat)=>[Math.round((lon-5.6)*37.8+8),Math.round((55.2-lat)*60+6)];
 const DE_RAND=[[7.0,53.6],[8.0,53.6],[8.5,53.9],[9.0,54.0],[8.6,54.9],[9.9,54.8],[10.2,54.4],[11.0,54.1],[11.5,54.0],[12.1,54.2],[13.0,54.4],[13.4,54.6],[14.2,53.9],[14.4,53.3],[14.6,52.6],[14.7,51.9],[15.0,51.1],[14.3,50.9],[12.9,50.4],[12.1,50.3],[12.4,49.7],[13.0,49.3],[13.8,48.8],[13.4,48.3],[13.0,47.5],[12.2,47.7],[11.0,47.4],[10.2,47.3],[9.6,47.5],[8.6,47.7],[7.6,47.6],[7.55,48.1],[7.8,48.5],[8.2,48.97],[7.0,49.1],[6.4,49.2],[6.4,49.5],[6.1,50.1],[6.0,50.8],[6.0,51.8],[6.9,52.2],[7.0,52.6],[7.2,53.2]];
 const DE_DDR=[[10.9,54.0],[10.7,53.5],[11.3,53.0],[10.95,52.6],[10.6,52.0],[10.5,51.6],[10.0,51.3],[10.1,50.7],[10.7,50.4],[11.5,50.4],[12.1,50.3]];
@@ -392,10 +393,10 @@ O('p42','w42_2d','2d','Welke invloed heeft dit kenmerk uit vraag 2c op de kwalit
  [['Kwaliteit','hoog/goed/beter',0],['Waarde','hoog/duur/veel geld/waardevol/veel waard',0]]);
 
 /* 3 Auto-industrie */
-const MERK=[['Volkswagen','Wolfsburg'],['BMW','München'],['Mercedes-Benz','Stuttgart'],['Porsche','Stuttgart'],['Audi','Ingolstadt'],['Opel','Rüsselsheim']];
+const MERK=[['Volkswagen','Wolfsburg'],['BMW','München'],['Mercedes-Benz','Stuttgart'],['Porsche','Stuttgart'],['Audi','Ingolstadt'],['Opel','Rüsselsheim'],['Ford','Keulen']];
 const MSTAD=['Wolfsburg','München','Stuttgart','Ingolstadt','Rüsselsheim','Hamburg','Dresden','Keulen'];
 MERK.forEach(([m,s],i)=>M('p42','w42_3a'+(i+1),'3a',`In welke Duitse stad heeft het automerk ${m} zijn thuisbasis (hoofdkantoor)?`,s,pick(MSTAD.filter(x=>x!==s&&!(s==='Stuttgart'&&x==='Stuttgart')),3,s),
-  `${m}: ${s}. Volkswagen in Wolfsburg (Nedersaksen), Opel in Rüsselsheim (bij Frankfurt), BMW en Audi in Beieren, Mercedes-Benz en Porsche in Stuttgart (Baden-Württemberg).${m==='Audi'?' Audi is in 1909 in Zwickau (Oost-Duitsland) begonnen en verhuisde na de oorlog naar Ingolstadt.':''}`,
+  `${m}: ${s}. Volkswagen in Wolfsburg (Nedersaksen), Opel in Rüsselsheim (bij Frankfurt), BMW en Audi in Beieren, Mercedes-Benz en Porsche in Stuttgart (Baden-Württemberg).${m==='Ford'?' Ford is een Amerikaans merk; de Duitse Ford-fabriek en het Duitse hoofdkantoor staan in Keulen.':''}${m==='Audi'?' Audi is in 1909 in Zwickau (Oost-Duitsland) begonnen en verhuisde na de oorlog naar Ingolstadt.':''}`,
   [`Welk automerk komt uit ${s}?`,m,pick(MERK.map(x=>x[0]).filter(x=>MERK.find(y=>y[0]===x)[1]!==s),3)]));
 O('p42','w42_3b','3b','Beschrijf de ruimtelijke spreiding van de thuissteden van de Duitse automerken. Wat valt op?','Waar in Duitsland liggen de thuissteden van de automerken, en wat valt op?',
  ['De meeste thuissteden liggen in het zuiden (Stuttgart, München, Ingolstadt) en het westen (Rüsselsheim, Keulen); Wolfsburg ligt in het noorden.','Opvallend: er ligt geen enkele in het oosten (de vroegere DDR). De auto-industrie zit vooral in het zuiden (Baden-Württemberg en Beieren).'],
@@ -416,6 +417,14 @@ O('p42','w42_4c','4c','Gebruik bron W5. Welke agglomeratievoordelen zijn er voor
  [['Voordeel 1: de klanten','klant/autofabriek/mercedes/porsche/daimler/bmw/audi|dichtbij/snel/leveren/kort/transport/onderhoud',0],['Voordeel 2: kennis of personeel','universiteit/onderzoek/kennis/personeel/werknemer/ingenieur/toelever/samenwerk',0]]);
 
 /* 5 De Volkswagen Group */
+M('p42','w42_5a1','5a','Bron W7: in welk land buiten Duitsland heeft de Volkswagen Group de meeste fabrieken?','China',['Brazilië','de Verenigde Staten','Polen'],
+ 'China heeft 18 fabrieken van de Volkswagen Group, bijna net zoveel als Duitsland zelf (19). Daarna komen Brazilië (7) en Polen (6).',['Bron W7: hoeveel fabrieken heeft de Volkswagen Group in China?','18',['7','5','3']]);
+M('p42','w42_5a2','5a','Bron W7: in welke twee landen in Zuid-Amerika heeft de Volkswagen Group fabrieken?','Brazilië en Argentinië',['Mexico en de Verenigde Staten','Spanje en Tsjechië','India en Maleisië'],
+ 'Brazilië (7) en Argentinië (3) liggen in Zuid-Amerika. Mexico (5) hoort bij Noord-Amerika.',['Bron W7: in welk land in Azië, naast China en India, heeft de Volkswagen Group 3 fabrieken?','Maleisië',['Zuid-Afrika','Mexico','Tsjechië']],{mc:1});
+M('p42','w42_5b','5b','Bron W7 en W8: in welk werelddeel heeft de Volkswagen Group de meeste fabrieken?','Europa',['Azië','Noord-Amerika','Afrika'],
+ 'Europa: Duitsland 19, Polen 6, Spanje 4, Tsjechië 3 en nog 19 in andere Europese landen, samen 51. Azië komt op de tweede plaats (China 18, India 3, Maleisië 3 en nog 3: samen 27).',['Bron W7 en W8: welk werelddeel heeft na Europa de meeste fabrieken van de Volkswagen Group?','Azië',['Noord-Amerika','Zuid-Amerika','Afrika']]);
+M('p42','w42_5c','5c','Bron W8: welke twee innovatiecentra van de Volkswagen Group liggen in China?','Beijing en Shanghai',['Tokio en Singapore','San Francisco en Wolfsburg','Tel Aviv en Tokio'],
+ 'De innovatiecentra: Beijing en Shanghai (China), San Francisco (VS), Singapore, Tel Aviv (Israël), Tokio (Japan) en Wolfsburg (Duitsland).',['Bron W8: in welk werelddeel liggen de meeste innovatiecentra van de Volkswagen Group?','Azië',['Europa','Noord-Amerika','Afrika']],{mc:1});
 O('p42','w42_5d','5d','Welke twee dingen vallen je op aan de spreiding van de vestigingen van Volkswagen?','Kijk naar de fabrieken van Volkswagen op de wereldkaart. Welke twee dingen vallen op?',
  ['Volkswagen heeft fabrieken over de hele wereld, in alle werelddelen: het is een multinational.','De meeste fabrieken staan in Europa (vooral in Duitsland zelf) en in China; in Afrika en Australië zijn er weinig of geen.'],
  [['Waar zijn er vestigingen?','wereld/overal/werelddelen/continent/veel landen/multinational',0],['Waar de meeste?','europa/duitsland/china/azie',0]]);
@@ -456,7 +465,21 @@ O('p42','w42_8d','8d','Verklaar de zichtbare regionale verschillen in bron W10 (
  ['In de minder sterke gebieden (het oosten, het Ruhrgebied en Saarland) is de werkloosheid hoog: de oude industrie verdween en er kwamen niet genoeg nieuwe banen.','In de sterke gebieden (vooral het zuiden: Beieren, Baden-Württemberg; ook Hamburg) is de werkloosheid laag dankzij de hightechindustrie en de diensten.'],
  [['Minder sterke gebieden','oost/ruhr/saar|werkloos/weinig werk/banen',0],['Sterke gebieden','zuid/beieren/baden/munchen/stuttgart/hamburg|werkloos/werk/hightech/dienst/laag',0]]);
 
+M('p42','w42_8c1','8c','Bron W10: is het zuiden van Duitsland (Baden-Württemberg en Beieren) een sterk of een minder sterk economisch gebied?','sterk gebied',['minder sterk gebied'],
+ 'Het zuiden is sterk: hightechindustrie (auto’s, chemie) en diensten, lage werkloosheid. Minder sterk zijn het oosten (de vroegere DDR), het Ruhrgebied en Saarland.',['Bron W10: is Oost-Duitsland (de vroegere DDR) een sterk of een minder sterk economisch gebied?','minder sterk gebied',['sterk gebied']]);
+M('p42','w42_8c2','8c','Bron W10: is het Ruhrgebied een sterk of een minder sterk economisch gebied?','minder sterk gebied',['sterk gebied'],
+ 'Het Ruhrgebied is een oud industriegebied: na het sluiten van de mijnen en staalfabrieken bleef de werkloosheid hoog. Daarom is het een minder sterk gebied, net als Saarland.',['Bron W10: is Saarland een sterk of een minder sterk economisch gebied?','minder sterk gebied',['sterk gebied']]);
+
 /* 9 Sociale bevolkingsontwikkeling */
+M('p42','w42_9a1','9a','Waar in Duitsland ligt Saarland?','in het zuidwesten, tegen Frankrijk en Luxemburg aan',['in het noordwesten, aan de Noordzee','in het oosten, tegen Polen aan','in het zuidoosten, tegen Oostenrijk aan'],
+ 'Saarland (met Saarbrücken) is een kleine deelstaat in het zuidwesten, tegen Frankrijk en Luxemburg aan. Het Ruhrgebied ligt in het westen, langs de Rijn, niet ver van Nederland.',['Waar in Duitsland ligt het Ruhrgebied?','in het westen, langs de Rijn, niet ver van Nederland',['in het zuiden, bij de Alpen','in het oosten, bij Dresden','in het noorden, bij Hamburg']]);
+M('p42','w42_9a2','9a','Welke twee van deze steden liggen in het sterke gebied in het zuiden: Berlijn, Hamburg, München, Stuttgart?','München en Stuttgart',['Berlijn en Hamburg','Hamburg en München','Berlijn en Stuttgart'],
+ 'München ligt in Beieren, Stuttgart in Baden-Württemberg: allebei in het zuiden. Hamburg ligt in het noorden, Berlijn in het (noord)oosten.',['Welke van deze steden ligt in Baden-Württemberg?','Stuttgart',['München','Hamburg','Berlijn']],{mc:1});
+M('p42','w42_9b1','9b','Bron W10: welke kleur krijgt de pijl van het Ruhrgebied naar Stuttgart?','rood: migratie vanuit een oud industriegebied',['blauw: migratie vanuit Oost-Duitsland of naar Berlijn'],
+ 'Rood = migratie vanuit een oud industriegebied (Ruhrgebied, Saarland). Blauw = migratie vanuit Oost-Duitsland of naar Berlijn.',['Bron W10: welke kleur krijgt een pijl van Oost-Duitsland naar het westen?','blauw: migratie vanuit Oost-Duitsland of naar Berlijn',['rood: migratie vanuit een oud industriegebied']]);
+M('p42','w42_9b2','9b','Bron W10: aan welke kant teken je de pijlpunt van de pijl tussen Saarland en Stuttgart?','bij Stuttgart: de mensen trekken naar Stuttgart',['bij Saarland: de mensen trekken naar Saarland'],
+ 'Mensen trekken van de minder sterke gebieden (met hoge werkloosheid) naar de sterke gebieden met werk. De pijlpunt wijst dus naar het sterke gebied.',['Bron W10: aan welke kant teken je de pijlpunt van een pijl tussen Oost-Duitsland en Berlijn?','bij Berlijn: de mensen trekken naar Berlijn',['bij Oost-Duitsland: de mensen trekken weg uit Berlijn']]);
+
 O('p42','w42_9c','9c','Bedenk waarom de pijlen in bron W10 (migratie binnen Duitsland) niet allemaal even dik zijn.','Wat betekent een dikke pijl op een migratiekaart?',
  ['De dikte van een pijl laat zien hoeveel mensen er verhuizen: hoe dikker de pijl, hoe meer migranten.'],
  [['Waar staat de dikte voor?','aantal/hoeveel/veel/meer|mens/migrant/verhuiz/mensen',0]]);
@@ -476,6 +499,10 @@ O('p42','w42_10a','10a','Vergelijk bron W11 (bevolkingsgroei en -krimp) met bron
 O('p42','w42_10b','10b','Verklaar het verband uit vraag 10a.','Waarom krimpt de bevolking in economisch zwakke gebieden en groeit ze in sterke gebieden?',
  ['In de economisch zwakke gebieden is weinig werk (hoge werkloosheid). Mensen, vooral jongeren, vertrekken daarom naar gebieden met werk: vertrekoverschot → krimp.','In de sterke gebieden is veel werk, dus komen er mensen bij: vestigingsoverschot → groei.'],
  [['Waarom vertrekken mensen?','werk/werkloos/baan|vertrek/weg/verhuiz/trek',1],['Waar gaan ze heen, en wat is het gevolg?','vestig/groei/werk/sterk',0]]);
+
+O('p42','w42_10c','10c','Bron W11 (verwachte bevolkingsgroei 2020–2040): welke gebieden in het noorden van Duitsland vormen de belangrijkste uitzondering op het verband uit vraag 10a?','Welke gebieden in het noorden van Duitsland groeien, ook al horen ze niet bij de sterke gebieden in het zuiden?',
+ ['Berlijn (met de omgeving) en de gebieden rond Hamburg en Bremen (Schleswig-Holstein en het westen van Niedersachsen). Daar groeit de bevolking, terwijl ze niet bij de sterke gebieden in het zuiden horen; Berlijn ligt zelfs midden in het oosten, waar de bevolking krimpt.'],
+ [['Welke gebieden?','berlijn/hamburg/bremen/schleswig/nieder',0]]);
 
 /* 11 Ontgroening en vergrijzing */
 O('p42','w42_11','11','Leg uit dat zowel ontgroening als vergrijzing logische gevolgen zijn van het vertrekoverschot in grote delen van het oosten van Duitsland.','Waarom krijgt Oost-Duitsland door het vertrekoverschot te maken met ontgroening én vergrijzing?',
