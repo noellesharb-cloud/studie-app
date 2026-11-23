@@ -119,6 +119,6 @@ window.HUISWERK=[
      · cultuur: proloog Thema 3 en les 11 (TB p. 54 en 56) · Griekse tekst les 11.
      In de app (gr.js t/m gr4.js): woorden les 2, 3, 4, 6, 8, 9, 11 · persoonlijk vnw · tekst 8, 9, 11 · HB-opdrachten les 8–11, epiloog, proloog Thema 3
      · grammatica les 11 (HB p. 112–115, ERGA 1–7).
-     Niet in de app: woorden les 1, 5, 7 en 10, grammatica-overzicht Thema 2. Les 10, epiloog, proloog en les 11 gaan pas open
+     Les 1, 5, 7 en 10 hebben geen woordenlijst (ouder, 23 nov). Niet in de app: grammatica-overzicht Thema 2. Les 10, epiloog, proloog en les 11 gaan pas open
      als een huiswerk ze opgeeft (gate). */
 ];
