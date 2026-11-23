@@ -1,6 +1,5 @@
 /* Grieks, aanvulling (20 nov 2026): rijtjes van λύω en εἰμί (HB p. 112), leerwerk voor dinsdag 24 november.
-   HB p. 112 lag op school: de vormen komen NIET van een foto maar uit de standaardgrammatica (tegenwoordige tijd, plus infinitief
-   en gebiedende wijs). Accenten of de ν aan het eind kunnen in het boek net anders staan: met een foto van p. 112 aanpassen.
+   De vormen zijn op 23 nov gecontroleerd met een foto van HB p. 112 en 114: ze kloppen met het boek.
    Eigen vraagsoort rij: zes vakjes (ik … zij), vormen aantikken, met nepvormen ertussen. In de toetsvorm (paragraaftoets, proeftoets)
    zes typvakjes: ze werkt op haar laptop. Typt ze alles, dan kijkt de app na (een accent anders = fout, zoals op de toets);
    laat ze vakjes leeg, dan schrijft ze op papier en kijkt ze zelf na (tvVrij). */
@@ -64,6 +63,7 @@ Q.forEach(q=>{if(q.type==='rij'){q.tvIn=PERS;q.tvVrij=true;q.tvA=RIJ[q.w].f.map(
   q.tv=`Schrijf het rijtje van ${G(q.w)} (${RIJ[q.w].nl}) op. Typ de vormen in het Grieks, of schrijf ze op papier en laat de vakjes leeg.`}});
 V.SECS.push(...SECS);V.Q.push(...Q);
 V.custom=Object.assign({},V.custom||{},{rij:drawRijG});
+V.RIJ=RIJ; /* gr4.js voegt ἥκω en πέμπω toe (Ergon 1) */
 V.leer=(V.leer||[]).filter(p=>p!=='ww').concat('ww');
 V.PN.ww='Werkwoorden λύω en εἰμί (HB p. 112)';
 })();
