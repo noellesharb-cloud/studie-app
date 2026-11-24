@@ -864,9 +864,9 @@ window.Oefen=(()=>{
     if(!(q.id in R.first))srRec(q.id,ok&&!R.helped[q.id]&&!R.stepErr[q.id]);
     R.ik=R.ik||nu.toString(36);let r=I.find(x=>x.k===R.ik);
     if(!r){r={k:R.ik,d:dagStr(new Date(R.tStart||nu)),m:R.mode,ti:schoon(R.title||'').slice(0,120),hw:R.hw||null,n:R.total,t0:R.tStart||nu,q:[]};I.push(r)}
-    const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,140)},pn=!(it.alt||q.gen)&&plaatjeNr(q,jij);if(pn!=null&&pn!==false)x.p=pn;const f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
+    const x={i:q.id,ok:ok?1:0,s:sec(nu-(R.t0||nu)),j:schoon(jij).slice(0,1000)},pn=!(it.alt||q.gen)&&plaatjeNr(q,jij);if(pn!=null&&pn!==false)x.p=pn;const f=(it.retry?'r':'')+(it.alt||q.gen?'v':'')+(R.helped[q.id]?'h':'')+(R.zelf?'z':'');
     if(f)x.f=f;if(R.tRev)x.w=sec(R.tRev-(R.t0||nu));if(R.stepErr[q.id])x.e=R.stepErr[q.id];
-    if(it.alt||q.gen){x.q=schoon(q.tv||q.q).slice(0,300);x.a=schoon(goedTxt(q)).slice(0,140)}
+    if(it.alt||q.gen){x.q=schoon(q.tv||q.q).slice(0,300);x.a=schoon(goedTxt(q)).slice(0,1500)}
     r.q.push(x);r.t1=nu;
     const grens=dagStr(new Date(nu-14*864e5));ST.inzet=I.filter(x=>x.d>=grens).slice(-300);save()}
   function hwMark(id){if(!R.hw)return;const l=ST.hw[R.hw]=ST.hw[R.hw]||[];if(!l.includes(id)){l.push(id);save()}}
@@ -1113,12 +1113,21 @@ window.Oefen=(()=>{
     return x.w!=null&&(x.f||'').includes('z')?x.w<(som?30:8):x.s<(som?12:3)}
   const nietTeZien=x=>(x.f||'').includes('z')&&x.ok&&(!x.j||x.j==='(op papier)');
   /* zelf goed gerekend, maar geen echt antwoord (of een vertaling van een paar woorden), of door de app alsnog fout gezet */
-  const geenAntw=(Q,x)=>x.ga||((x.f||'').includes('z')&&x.ok&&!!Q&&(geenPoging(x.j,Q)||kortVertaal(x.j,Q)));
+  /* (24 nov) zelf goed gerekend met een geraamte als '1. omdat 2. omdat 3. omdat ...': tel alleen echte woorden, zonder nummers en
+     opvulwoorden. Minder dan een kwart van het antwoord uit de app (dat minstens 12 woorden heeft) = te kort. Alleen voor het overzicht van de ouder. */
+  const VUL=new Set(['omdat','want','dus','en','de','het','een','er','is','dat','die']);
+  const echteW=t=>(String(t||'').toLowerCase().match(/[\p{L}\p{N}%]+/gu)||[]).filter(w=>!/^\d+$/.test(w)&&!VUL.has(w)).length;
+  const kortAntw=(j,Q,x)=>{const t=String(j||'').trim();if(!t||t==='(op papier)')return false;const m=nWoord(x&&x.a?x.a:modelTxt(Q));return m>=12&&echteW(t)<m*0.25};
+  const geenAntw=(Q,x)=>x.ga||((x.f||'').includes('z')&&x.ok&&!!Q&&(geenPoging(x.j,Q)||kortVertaal(x.j,Q)||kortAntw(x.j,Q,x)));
+  /* het antwoord uit de app voluit: tot 24 nov bewaarde de app bij een vraag in andere woorden maar 140 tekens */
+  const goedVol=(Q,x)=>{if(x.a==null)return fmt(goedTxt(Q));if(x.a.length<139||!Q)return esc(x.a);
+    const kand=[Q.v&&typeof Q.v!=='function'?form(Q,true):null,Q].filter(Boolean).map(q=>schoon(goedTxt(q)));
+    const vol=kand.find(t=>t.startsWith(x.a));return esc(vol||x.a+' …')};
   function inzetDag(dag){return VAKN().map(id=>{const D=VAKDATA[id],st=Oefen.ctx.state(id),QX=Object.fromEntries(D.Q.map(q=>[q.id,q]));
     const rs=(st.inzet||[]).filter(r=>r.d===dag).sort((a,b)=>a.t0-b.t0);
     const xs=rs.flatMap(r=>r.q.map(x=>({x,Q:QX[x.i]}))).filter(o=>o.Q),eerst=xs.filter(o=>!(o.x.f||'').includes('r'));
     return {id,D,st,QX,rs,n:eerst.length,goed:eerst.filter(o=>o.x.ok).length,snel:xs.filter(o=>snelX(D,o.Q,o.x)).length,
-      zelf:xs.filter(o=>nietTeZien(o.x)).length,kaart:rs.filter(r=>r.m==='kaart').reduce((a,r)=>a+r.q.filter(x=>!(x.f||'').includes('r')).length,0),ga:xs.filter(o=>geenAntw(o.Q,o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
+      zelf:xs.filter(o=>nietTeZien(o.x)).length,kaart:rs.filter(r=>r.m==='kaart').reduce((a,r)=>a+r.q.filter(x=>!(x.f||'').includes('r')).length,0),ga:xs.filter(o=>geenAntw(o.Q,o.x)).length,goed:eerst.filter(o=>o.x.ok&&!geenAntw(o.Q,o.x)).length,sec:xs.reduce((a,o)=>a+o.x.s,0)}}).filter(v=>v.rs.length)}
   const tijd=t=>{const d=new Date(t);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
   const secTxt=s=>s<60?s+' s':s<3600?Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''):'meer dan een uur';
   const MODEN={stap:'Huiswerk',tvorm:'Huiswerk, zelf op papier',oefen:'Oefenen',ptoets:'Paragraaftoets',ttoets:'Tussentoets',toets:'Proeftoets',fout:'Foute vragen',opwarm:'Opwarmen',diag:'Instaptoets'};
@@ -1126,23 +1135,23 @@ window.Oefen=(()=>{
     const V2=inzetDag(dag),hwOud=(o.hw||[]).map(h=>{const D=VAKDATA[h.app];if(!D)return null;const st=Oefen.ctx.state(h.app),A=(st.hwAns||{})[h.id];
       if(!A||!Object.keys(A).length||(st.inzet||[]).some(r=>r.hw===h.id&&r.d===dag))return null;return {h,D,A,QX:Object.fromEntries(D.Q.map(q=>[q.id,q]))}}).filter(Boolean);
     const vraagTxt=(Q,x)=>x.q?esc(x.q):fmt(String(Q.tv||Q.q).replace(/<button[\s\S]*?<\/button>/g,''));
-    const kaart=(D,Q,x)=>{const sn=snelX(D,Q,x),f=x.f||'',nz=nietTeZien(x),ga=geenAntw(Q,x),goed=x.a!=null?esc(x.a):fmt(goedTxt(Q));
+    const kaart=(D,Q,x)=>{const sn=snelX(D,Q,x),f=x.f||'',nz=nietTeZien(x),ga=geenAntw(Q,x),goed=goedVol(Q,x);
       const extra=[f.includes('r')?'herkansing':'',f.includes('v')?'in andere woorden of met andere getallen':'',f.includes('h')?'met stap-voor-stap-hulp':'',
         x.e?x.e+(x.e===1?' stap':' stappen')+' eerst fout':'',f.includes('z')?'zelf nagekeken':''].filter(Boolean);
       return `<div class="card stack antw ${x.ok?'aw-ok':'aw-bad'}${sn||nz||ga?' iz-let':''}"><span class="tag">${esc(nrTag(Q))}</span><div class="sub">${vraagTxt(Q,x)}</div>
         <div class="aw-r"><span class="aw-l">Zij</span><div class="aw-jij">${x.p!=null&&Q?plaatjeHtml(Q,x.p):x.j?fmt(esc(x.j)):'<span class="sub">(niets ingevuld)</span>'} <b class="aw-m">${x.ok?'✓':'✗'}</b>${x.ok?'':plaatjeWaarom(Q,x.p)}</div></div>
         ${!x.ok?`<div class="aw-r"><span class="aw-l">Goed</span><div class="res aw-pen">${goed}</div></div>`
           :f.includes('z')?`<div class="aw-r"><span class="aw-l">In de app</span><div class="res">${goed}</div></div>`:''}
-        <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}${ga?(x.ga?' · <b>zelf goed gerekend zonder echt antwoord; de app heeft hem alsnog fout gezet</b>':geenPoging(x.j,Q)?' · <b>zelf goed gerekend zonder echt antwoord</b>':' · <b>zelf goed gerekend, maar maar een paar woorden getypt: kijk in haar schrift</b>'):''}</div></div>`};
+        <div class="iz-t"><span class="${sn?'iz-snel':''}">${x.w!=null&&f.includes('z')?`uitwerking geopend na ${secTxt(x.w)}, klaar na ${secTxt(x.s)}`:secTxt(x.s)}${sn?' · snel':''}</span>${extra.length?' · '+extra.join(' · '):''}${nz?' · <b>zelf goed gerekend zonder iets in te typen: kijk in haar schrift</b>':''}${ga?(x.ga?' · <b>zelf goed gerekend zonder echt antwoord; de app heeft hem alsnog fout gezet</b>':geenPoging(x.j,Q)?' · <b>zelf goed gerekend zonder echt antwoord</b>':(isVertaal(Q)?' · <b>zelf goed gerekend, maar maar een paar woorden getypt: kijk in haar schrift</b>':' · <b>zelf goed gerekend, maar veel korter dan het antwoord uit de app: telt niet als goed in de telling</b>')):''}</div></div>`};
     const kRonde=r=>{const xs=r.q||[],e=xs.filter(x=>!(x.f||'').includes('r')),wist=e.filter(x=>x.ok).length,sn=e.filter(x=>x.w<2).length;
       return `<details class="card iz-r"${sn?' open':''}><summary><b>Begrippen-kaartjes</b>${r.ti?' · '+esc(r.ti):''}
         <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${e.length} van ${r.n} kaartjes bekeken, ${wist} keer meteen 'wist ik'${sn?` · <span class="iz-snel">${sn} binnen 2 s omgedraaid</span>`:''}</span></summary>
         <table class="tbl" style="width:100%;margin-top:8px;font-size:.92rem">${xs.map(x=>`<tr${x.w<2?' class="iz-snel"':''}><td>${esc(x.b)}${(x.f||'').includes('r')?' <span class="sub">(nog een keer)</span>':''}</td><td style="white-space:nowrap">${x.ok?'wist ik':'nog niet'}</td><td class="sub" style="white-space:nowrap">${x.w} s</td></tr>`).join('')}</table>
         <p class="sub" style="font-size:.85rem;margin:6px 0 0">De seconden = hoe lang het kaartje voor haar lag voordat ze het omdraaide. 'Wist ik' kiest ze zelf.</p></details>`};
-    const ronde=(v,r)=>{if(r.m==='kaart')return kRonde(r);const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok).length;
+    const ronde=(v,r)=>{if(r.m==='kaart')return kRonde(r);const xs=r.q.filter(x=>v.QX[x.i]),e=xs.filter(x=>!(x.f||'').includes('r')),uniek=new Set(e.map(x=>x.i)).size,g=e.filter(x=>x.ok&&!geenAntw(v.QX[x.i],x)).length;
       const sn=xs.filter(x=>snelX(v.D,v.QX[x.i],x)).length,nz=xs.filter(nietTeZien).length,ga=xs.filter(x=>geenAntw(v.QX[x.i],x)).length,let_=sn||nz||ga;
       return `<details class="card iz-r"${let_?' open':''}><summary>${(L=>`<b>${esc(L)}</b>${(t=>t&&t!==L?' · '+esc(t):'')(String(r.ti||'').replace(/^Huiswerk:\s*/,''))}`)(r.hw?'Huiswerk':MODEN[r.m]||'Oefenen')}
-        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}${ga?` · ${ga} zonder echt antwoord`:''}</span></summary>
+        <span class="sub" style="display:block;font-size:.9rem">${tijd(r.t0)}–${tijd(r.t1||r.t0)} · ${g} van ${e.length} in één keer goed${uniek<r.n&&!r.hw?` · gestopt na ${uniek} van ${r.n} vragen`:''}${sn?` · <span class="iz-snel">${sn} snel</span>`:''}${nz?` · ${nz} niet te controleren`:''}${ga?` · <span class="iz-snel">${ga} zelf goed gerekend zonder volledig antwoord</span>`:''}</span></summary>
         <div class="stack" style="margin-top:10px">${xs.map(x=>kaart(v.D,v.QX[x.i],x)).join('')}</div></details>`};
     const tot=V2.reduce((a,v)=>a+v.n,0),totS=V2.reduce((a,v)=>a+v.snel,0),totZ=V2.reduce((a,v)=>a+v.zelf,0);
     el.innerHTML=`${top('Terug','Inzet')}
@@ -1153,8 +1162,9 @@ window.Oefen=(()=>{
       <span>Schrijft ze bij een open vraag of vertaling iets als 'ik kan dit nu niet', dan kan ze hem sinds 14 november niet meer zelf goed rekenen: hij telt als fout. Eerdere gevallen zet de app alsnog fout en ze staan hier gemarkeerd. Een vertaling van maar een paar woorden die ze goed rekende, staat er ook gemarkeerd bij.</span>
       <span>Bij een vraag die ze <b>zelf nakeek</b> staat het antwoord uit de app eronder, ook als ze hem goed rekende. Zo kun je ze naast elkaar leggen; in andere woorden kan ook goed zijn.</span>
       <span>Sinds 14 november staan ook de <b>begrippen-kaartjes</b> erin: welk begrip, hoe lang ze keek voordat ze omdraaide, en of ze 'wist ik' koos. Binnen 2 seconden omdraaien is te snel om het begrip echt eerst zelf te bedenken.</span>
+      <span>Sinds 24 november: rekent ze een uitleg zelf goed terwijl haar antwoord veel korter is dan dat uit de app (zoals '1. omdat 2. omdat'), dan staat hij oranje gemarkeerd en telt hij niet mee als goed.</span>
       <span>Rondes met iets opvallends staan open. Een oranje streep markeert de vraag.</span></div></details>
-    ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}${(t=>t?` ${t} zelf goed gerekend zonder echt antwoord.`:'')(V2.reduce((a,v)=>a+v.ga,0))}</p></div>`:''}
+    ${V2.length?`<div class="card stack"><span class="tag">Samen</span><p style="margin:0">${tot} ${tot===1?'vraag':'vragen'} beantwoord, ${V2.reduce((a,v)=>a+v.goed,0)} in één keer goed.${totS?` <span class="iz-snel">${totS} snel beantwoord.</span>`:' Niets opvallend snel.'}${totZ?` ${totZ} zelf goed gerekend zonder iets in te typen.`:''}${(t=>t?` <span class="iz-snel">${t} zelf goed gerekend zonder volledig antwoord; die tellen hier niet als goed.</span>`:'')(V2.reduce((a,v)=>a+v.ga,0))}</p></div>`:''}
     ${V2.map(v=>`<h3 style="margin:16px 0 6px">${esc(v.D.naam)}</h3>
       <p class="sub" style="margin:0 0 8px;font-size:.9rem">${o.min&&o.min[v.id]?`${Math.round(o.min[v.id])} min actief in de app · `:''}${v.n} ${v.n===1?'vraag':'vragen'}, ${v.goed} in één keer goed${v.kaart?` · ${v.kaart} begrippen-kaartjes`:''}${v.snel?` · <span class="iz-snel">${v.snel} snel</span>`:''}</p>
       <div class="stack">${v.rs.map(r=>ronde(v,r)).join('')}</div>`).join('')}
@@ -1170,7 +1180,7 @@ window.Oefen=(()=>{
     el.querySelector('#back').onclick=terug;el.querySelector('#izterug').onclick=terug;scrollTo(0,0)}
   return {ctx:null,cur:null,
     /* inzet voor de ouder: samenvatting van een dag, en de hele pagina */
-    inzetSamen(dag){const V2=inzetDag(dag);return {vakken:V2.map(v=>({id:v.id,naam:v.D.naam,n:v.n,goed:v.goed,snel:v.snel,zelf:v.zelf})),n:V2.reduce((a,v)=>a+v.n,0),goed:V2.reduce((a,v)=>a+v.goed,0),snel:V2.reduce((a,v)=>a+v.snel,0),zelf:V2.reduce((a,v)=>a+v.zelf,0)}},
+    inzetSamen(dag){const V2=inzetDag(dag);return {vakken:V2.map(v=>({id:v.id,naam:v.D.naam,n:v.n,goed:v.goed,snel:v.snel,zelf:v.zelf,ga:v.ga})),ga:V2.reduce((a,v)=>a+v.ga,0),n:V2.reduce((a,v)=>a+v.n,0),goed:V2.reduce((a,v)=>a+v.goed,0),snel:V2.reduce((a,v)=>a+v.snel,0),zelf:V2.reduce((a,v)=>a+v.zelf,0)}},
     inzet:inzetView,
     /* t = de toets waarvoor ze oefent (alleen bij mode 'toets'): {naam, stof:[par], norm:75} */
     vakHome(target,id,par,mode,t){el=target;load(id);focusPar=par||null;focusMode=mode||null;

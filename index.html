@@ -449,7 +449,7 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="huiswerk.js?v=202611241700"></script>
 <script src="pto.js?v=202611241640"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611241545"></script>
+<script src="oefen/engine.js?v=202611241800"></script>
 <script src="oefen/reken.js?v=202611241530"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
 <script src="vakken/na.js?v=202611151500"></script>
@@ -1146,7 +1146,7 @@ function verwerkNakijk(){if(isOuder()||!GELADEN.nakijk||!GELADEN.oefen)return;
 function inzetHw(d){const nd=volgendeSchooldag(d);return HW().filter(h=>h.app&&window.VAKDATA&&VAKDATA[h.app]&&((hwLog(h.id)||{}).d===d||h.d===nd))}
 function inzetKaart(d){if(!window.Oefen||!Oefen.inzetSamen)return '';const z=Oefen.inzetSamen(d),oud=inzetHw(d).some(h=>{const st=OEF[h.app]||{};return st.hwAns&&st.hwAns[h.id]&&Object.keys(st.hwAns[h.id]).length});
   if(!z.n&&!oud)return '';
-  return `<div class="note"><b>Zo werkte ze${d===today()?' vandaag':''}</b><span>${z.n?`${z.n} ${z.n===1?'vraag':'vragen'} in de app (${z.vakken.map(v=>esc(v.naam)).join(', ')}), ${z.goed} in één keer goed.${z.snel?` <b>${z.snel} snel beantwoord.</b>`:' Niets opvallend snel.'}${z.zelf?` ${z.zelf} zelf goed gerekend zonder iets in te typen.`:''}`:'Haar antwoorden op het huiswerk (tijden bewaart de app pas sinds 12 november).'}</span><button class="btn ghost" id="izv">Bekijk haar antwoorden</button></div>`}
+  return `<div class="note"><b>Zo werkte ze${d===today()?' vandaag':''}</b><span>${z.n?`${z.n} ${z.n===1?'vraag':'vragen'} in de app (${z.vakken.map(v=>esc(v.naam)).join(', ')}), ${z.goed} in één keer goed.${z.snel?` <b>${z.snel} snel beantwoord.</b>`:' Niets opvallend snel.'}${z.zelf?` ${z.zelf} zelf goed gerekend zonder iets in te typen.`:''}${z.ga?` <b>${z.ga} zelf goed gerekend zonder volledig antwoord.</b>`:''}`:'Haar antwoorden op het huiswerk (tijden bewaart de app pas sinds 12 november).'}</span><button class="btn ghost" id="izv">Bekijk haar antwoorden</button></div>`}
 function openInzet(d){show('oefenen');const min={};VAK.forEach(v=>{const m=autoMin(d,v.id);if(m)min[v.id]=m});
   Oefen.inzet($('#v-oefenen'),d,{titel:nice(d),min,hw:inzetHw(d),terug:()=>{tab='vandaag';try{localStorage.setItem('tab',tab)}catch(e){};render()}})}
 function openNakijk(){show('oefenen');Oefen.cur='nakijk';rNakijk()}
