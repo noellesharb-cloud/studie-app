@@ -424,8 +424,10 @@ window.Oefen=(()=>{
       if(ok||R.exam){R.cleared.add(q.id);hwMark(q.id)}
       else R.terug=nogEens(q,it)
       const ul=uitl(q),fb=el.querySelector('#fb');
+      /* typische fout per vakje (q.in[j].fx = [[fout getal, uitleg], …]), bijv. een minteken dat verdween (24 nov 2026) */
+      const mis=[...new Set(val.map((v,j)=>goed[j]?null:((q.in[j].fx||[]).find(e=>zelfde(v,e[0]))||[])[1]).filter(Boolean))];
       fb.innerHTML=ok?`<div class="fb ok"><div class="head">Goed!</div>${R.helped[q.id]||!ul?'':`<div>Zo zit het:</div>${ul}`}</div>`
-        :`<div class="fb bad"><div class="head">Niet goed</div><div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
+        :`<div class="fb bad"><div class="head">Niet goed</div>${mis.length?`<div><b>Dit ging er mis:</b></div><div class="mistake">${fmt(mis.join('<br>'))}</div>`:''}<div><b>Het goede antwoord is:</b></div><div class="res">${fmt(q.a)}</div>${ul?`<div><b>Zo zit het:</b></div>${ul}`:''}
           ${R.exam?'':R.terug?'<p class="why" style="margin-top:10px">Deze soort som komt zo nog een keer terug, met andere getallen.</p>':laterTxt}</div>`;
       fb.insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn" id="next">Volgende</button></div>');
       fb.querySelector('#next').onclick=()=>{R.i++;ask()};fb.scrollIntoView({behavior:smooth,block:'start'})};
@@ -1037,8 +1039,10 @@ window.Oefen=(()=>{
       if(kind==='reken'){const RK=window.REKEN;cur=RK.volgende(cur&&cur.k);const t0=Date.now();
         const toon=v=>typeof v==='number'?RK.k(Math.round(v*100)/100):v;
         const klaar=(ok,skip)=>{RK.uitslag(cur.k,ok,Date.now()-t0);ok?S.good++:skip?S.skip=(S.skip||0)+1:S.bad++;
-          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">${skip?'Overgeslagen. ':''}Het was ${toon(cur.a)} ${cur.e&&cur.e!=='euro'?cur.e:''}${cur.e==='euro'?'euro':''}</div></div>`;
-          el.querySelectorAll('#sf input,#sf button,[data-o]').forEach(x=>x.disabled=true);setTimeout(next,ok?300:1300)};
+          el.querySelector('#sfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">${skip?'Overgeslagen. ':''}Het was ${toon(cur.a)} ${cur.e&&cur.e!=='euro'?cur.e:''}${cur.e==='euro'?'euro':''}</div>${cur.u?`<div>${fmt(cur.u)}</div><div style="margin-top:8px"><button class="btn" id="sfv" type="button">Verder</button></div>`:''}</div>`;
+          el.querySelectorAll('#sf input,#sf button,[data-o]').forEach(x=>x.disabled=true);
+          /* met uitleg (mingetallen, 24 nov 2026): wachten tot ze 'Verder' tikt, zodat ze de uitleg kan lezen */
+          if(!ok&&cur.u){const v=el.querySelector('#sfv');v.focus();v.onclick=next}else setTimeout(next,ok?300:1300)};
         el.innerHTML=head+`<div class="card q"><small class="sub">${cur.naam} · niveau ${cur.l}</small><div style="font-size:1.25rem;margin-top:4px">${fmt(cur.q)}</div></div>`+
           (cur.opts?`<div class="opts" id="sf">${cur.opts.map(o=>`<button class="opt" data-o="${o}" style="font-size:1.4rem">${o}</button>`).join('')}</div>`
           :`<form id="sf" class="row"><input id="sa" class="cell" style="width:140px;font-size:1.2rem" inputmode="decimal" autocomplete="off" aria-label="Antwoord"> <span>${cur.e||''}</span><button class="btn">OK</button></form>`)+

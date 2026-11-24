@@ -4,7 +4,9 @@
    rekentekens lager, vooral door veel lege antwoorden (tempo), niet door fouten.
    Elke soort heeft niveau 1 t/m 3. Het niveau gaat omhoog na 3 keer goed op rij
    en omlaag na een fout; het niveau per soort wordt op dit apparaat onthouden.
-   Een generator geeft {q, a, e?} (getal intypen) of {q, a, opts} (knoppen, a = tekst).
+   Een generator geeft {q, a, e?, u?} (getal intypen) of {q, a, opts} (knoppen, a = tekst). u = korte uitleg bij een fout.
+   24 nov 2026: mingetallen gaan bij haar nog vaak mis (ook in tabellen: −x met x = −1 werd −1). Daarom de soort
+   'Mingetallen invullen' en extra gewicht voor 'neg' en 'invul' zolang die nog niet op niveau 3 staan (FOCUS).
    ============================================================ */
 window.REKEN=(()=>{
 const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -34,9 +36,28 @@ const SOORTEN=[
    return {q:`$${k(p)}$% van $${m}$ =`,a:m*p/100}}},
  {id:'neg',naam:'Negatieve getallen',gen:l=>{
    const a=R(-12,12)||-5,b=R(-12,12)||7;
-   if(l===1)return Math.random()<.5?{q:`$${k(a)} + ${n(b)}$ =`,a:a+b}:{q:`$${k(-R(1,9))} + ${R(1,15)}$ =`,a:null};
-   if(l===2)return Math.random()<.5?{q:`$${k(a)} − ${n(b)}$ =`,a:a-b}:{q:`$${n(a)} × ${n(b)}$ =`,a:a*b};
-   const c=R(2,6)*(Math.random()<.5?-1:1),d=R(2,9)*(Math.random()<.5?-1:1);return Math.random()<.5?{q:`$${k(c*d)} : ${n(c)}$ =`,a:d}:{q:`$${k(a)} − ${n(b)} + ${n(c)}$ =`,a:a-b+c}}},
+   const T=b<0?' Plus een negatief getal is min.':'',M=b<0?' Min een negatief getal is plus.':'',X=(p,q)=>(p<0)!==(q<0)?' Eén minteken: negatief.':p<0?' Twee mintekens: positief.':'';
+   if(l===1){if(Math.random()<.5)return {q:`$${k(a)} + ${n(b)}$ =`,a:a+b,u:`Denk aan een thermometer: begin bij ${k(a)}.${T}`};const c=R(1,9),d=R(1,15);return {q:`$${k(-c)} + ${d}$ =`,a:d-c,u:`Thermometer: begin bij ${k(-c)} en ga ${d} omhoog.`}}
+   if(l===2)return Math.random()<.5?{q:`$${k(a)} − ${n(b)}$ =`,a:a-b,u:b<0?`$${k(a)} − ${n(b)} = ${k(a)} + ${k(-b)}$.${M}`:`Thermometer: begin bij ${k(a)} en ga ${b} omlaag.`}:{q:`$${n(a)} × ${n(b)}$ =`,a:a*b,u:`$${Math.abs(a)} × ${Math.abs(b)} = ${Math.abs(a*b)}$.${X(a,b)}`};
+   const c=R(2,6)*(Math.random()<.5?-1:1),d=R(2,9)*(Math.random()<.5?-1:1);return Math.random()<.5?{q:`$${k(c*d)} : ${n(c)}$ =`,a:d,u:`$${Math.abs(c*d)} : ${Math.abs(c)} = ${Math.abs(d)}$.${X(c*d,c)}`}:{q:`$${k(a)} − ${n(b)} + ${n(c)}$ =`,a:a-b+c,u:`Van links naar rechts.${M}`}}},
+ {id:'invul',naam:'Mingetallen invullen',gen:l=>{
+   /* zoals in een tabel: een negatieve x invullen in een formule */
+   const x=-R(1,l===1?6:9),c=R(1,9);
+   const L1=[()=>({q:`$-x$ bij $x = ${k(x)}$ =`,a:-x,u:`$-x = -(${k(x)}) = ${k(-x)}$. Twee mintekens: plus.`}),
+     ()=>({q:`$(${k(x)})^2$ =`,a:x*x,u:`$${n(x)} × ${n(x)} = ${x*x}$: min keer min is plus.`}),
+     ()=>({q:`$-${-x}^2$ =`,a:-x*x,u:`Het kwadraat hoort alleen bij de ${-x}: $${-x}^2 = ${x*x}$, dan het minteken ervoor: ${k(-x*x)}.`}),
+     ()=>({q:`$${c} − x$ bij $x = ${k(x)}$ =`,a:c-x,u:`$${c} − (${k(x)}) = ${c} + ${-x} = ${c-x}$. Min een negatief getal is plus.`})];
+   const L2=[()=>({q:`$-x + ${c}$ bij $x = ${k(x)}$ =`,a:c-x,u:`$-(${k(x)}) + ${c} = ${-x} + ${c} = ${c-x}$.`}),
+     ()=>({q:`$x^2$ bij $x = ${k(x)}$ =`,a:x*x,u:`$(${k(x)})^2 = ${x*x}$: met haakjes invullen, min keer min is plus.`}),
+     ()=>({q:`$-x^2$ bij $x = ${k(x)}$ =`,a:-x*x,u:`$-(${k(x)})^2$: eerst het kwadraat (${x*x}), dan het minteken: ${k(-x*x)}.`}),
+     ()=>{const a=R(2,5);return {q:`$${a}x + ${c}$ bij $x = ${k(x)}$ =`,a:a*x+c,u:`$${a} × ${n(x)} = ${k(a*x)}$, dan $+ ${c}$: ${k(a*x+c)}.`}},
+     ()=>{const a=R(2,5);return {q:`$-${a}x$ bij $x = ${k(x)}$ =`,a:-a*x,u:`$-${a} × ${n(x)} = ${a*-x}$. Twee mintekens: positief.`}}];
+   const L3=[()=>{const r=R(1,4),p=R(-3,3),xx=p-r*r;return {q:`$√{-x ${p<0?'−':'+'} ${Math.abs(p)}}$ bij $x = ${k(xx)}$ =`.replace(' + 0','').replace(' − 0',''),a:r,u:`Onder de wortel: $-(${k(xx)})${p?(p<0?' − ':' + ')+Math.abs(p):''} = ${r*r}$, en $√{${r*r}} = ${r}$.`}},
+     ()=>{const b=R(2,5);return {q:`$x^2 + ${b}x$ bij $x = ${k(x)}$ =`,a:x*x+b*x,u:`$(${k(x)})^2 = ${x*x}$ en $${b} × ${n(x)} = ${k(b*x)}$. Samen ${k(x*x+b*x)}.`}},
+     ()=>{const p=R(1,5);return {q:`$(x − ${p})^2$ bij $x = ${k(x)}$ =`,a:(x-p)**2,u:`Eerst de haakjes: $${k(x)} − ${p} = ${k(x-p)}$. Dan $(${k(x-p)})^2 = ${(x-p)**2}$.`}},
+     ()=>{const a=R(2,3);return {q:`$-${a}x^2$ bij $x = ${k(x)}$ =`,a:-a*x*x,u:`Eerst het kwadraat: $(${k(x)})^2 = ${x*x}$. Dan $-${a} × ${x*x} = ${k(-a*x*x)}$.`}},
+     ()=>{const d=pick([2,3,4,6]),m=R(1,4);return {q:`$[[${d*m}|x]]$ bij $x = ${k(-d)}$ =`,a:-m,u:`$${d*m} : ${n(-d)} = ${k(-m)}$. Eén minteken: negatief.`}}];
+   return pick([L1,L2,L3][l-1])()}},
  {id:'meet',naam:'Omrekenen',gen:l=>{
    const L=[
     [()=>{const x=R(1,40)/2;return {q:`$${k(x)}$ km = … m`,a:x*1000,e:'m'}},()=>{const x=R(1,60)*50;return {q:`$${x}$ g = … kg`,a:x/1000,e:'kg'}},()=>{const x=R(1,12)*250;return {q:`$${x}$ mL = … L`,a:x/1000,e:'L'}},()=>{const x=R(2,9);return {q:`$${x}$ m = … cm`,a:x*100,e:'cm'}}],
@@ -96,10 +117,11 @@ const KEY='rekensprint-niveau';
 let NV={};try{NV=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){NV={}}
 const bewaar=()=>{try{localStorage.setItem(KEY,JSON.stringify(NV))}catch(e){}};
 const nv=id=>NV[id]?.l||1;
+const FOCUS=['neg','invul'];   /* vaker zolang niveau 3 nog niet gehaald is */
 
 function volgende(laatste){
   // soorten met meer fouten komen vaker; nooit twee keer dezelfde soort achter elkaar
-  const kand=SOORTEN.filter(s=>s.id!==laatste),w=kand.map(s=>1+Math.min(3,NV[s.id]?.f||0));
+  const kand=SOORTEN.filter(s=>s.id!==laatste),w=kand.map(s=>(1+Math.min(3,NV[s.id]?.f||0))*(FOCUS.includes(s.id)&&nv(s.id)<3?3:1));
   let r=Math.random()*w.reduce((a,b)=>a+b,0),s=kand[0];
   for(let i=0;i<kand.length;i++){r-=w[i];if(r<=0){s=kand[i];break}}
   const o=fix(s.gen(nv(s.id)));o.k=s.id;o.l=nv(s.id);o.naam=s.naam;return o}
