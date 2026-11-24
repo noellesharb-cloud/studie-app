@@ -240,6 +240,27 @@ window.Oefen=(()=>{
   function terugblik(p){const ids=terugIds(p);if(!ids.length)return home();
     if(!ST.tbIntro)return tbIntro(()=>terugblik(p));
     start('oefen',ids,'Terugblik · '+V.naam,null,p);R.tb=1}
+  function introScherm(I,verder){
+    const leesG=v=>lees(v);let fout=0;
+    el.innerHTML=`${top(V.naam,'Eerst even dit')}
+    <h2>${I.titel}</h2>
+    <div class="card stack">${fmt(I.html)}</div>
+    <div class="card stack"><span class="tag">Snap je het? Probeer deze twee</span>
+      ${I.check.map((c,i)=>`<form class="stack" data-c="${i}"><div>${fmt(c.q)}</div><div class="row"><input class="cell" style="width:90px;font-size:1.1rem" inputmode="text" autocomplete="off" aria-label="antwoord"><button class="btn sm">Controleer</button></div><div class="cfb"></div></form>`).join('')}
+    </div><div id="introv"></div>`;
+    el.querySelector('#back').onclick=home;
+    const forms=[...el.querySelectorAll('[data-c]')],klaar=new Set();
+    const verderKnop=()=>{if(klaar.size<I.check.length)return;const v=el.querySelector('#introv');
+      v.innerHTML=`${fout?`<div class="card stack"><span class="tag">Nog één keer, rustig</span>${fmt(I.nog||I.html)}</div>`:'<div class="fb ok"><div class="head">Allebei goed. Je kent de regel!</div></div>'}
+        <div style="margin-top:10px"><button class="btn" id="introb">Begin met oefenen</button></div>`;
+      v.querySelector('#introb').onclick=()=>{ST.introGezien=ST.introGezien||{};ST.introGezien[I.id]={d:new Date().toISOString().slice(0,10),fout};save();verder()};
+      v.scrollIntoView({behavior:smooth,block:'start'})};
+    forms.forEach(f=>f.onsubmit=e=>{e.preventDefault();const c=I.check[+f.dataset.c],inp=f.querySelector('input');if(!inp.value.trim())return;
+      const x=leesG(inp.value),ok=zelfde(x,c.v),w=(c.fout||[]).find(e=>zelfde(x,e[0]));
+      inp.readOnly=true;inp.classList.add(ok?'ok':'bad');f.querySelector('button').remove();if(!ok)fout++;
+      f.querySelector('.cfb').innerHTML=ok?'<div class="fb ok"><div class="head">Goed!</div></div>':`<div class="fb bad"><div class="head">Het is ${fmt('$'+c.v+'$')}</div><div>${fmt(w?w[1]:c.u)}</div></div>`;
+      klaar.add(f.dataset.c);verderKnop()});
+    const f0=el.querySelector('[data-c] input');if(f0)f0.focus();scrollTo(0,0)}
   function tbIntro(verder){
     el.innerHTML=`${top(V.naam,'Nieuw')}
     <h2>Terugblik: oude stof ophalen</h2>
@@ -353,6 +374,10 @@ window.Oefen=(()=>{
     el.querySelector('#tvbegin').onclick=()=>{ST.tvIntro=1;save();verder()};scrollTo(0,0)}
   function start(mode,ids,title,sec,par,hw){
     if((mode==='ptoets'||mode==='toets')&&(V.toetsvorm||tvVak())&&!ST.tvIntro)return tvIntro(()=>start(mode,ids,title,sec,par,hw));
+    /* uitleg vooraf (24 nov 2026): V.intro = [{id, o:[onderdelen], titel, html, check:[{q, v, fout:[[getal, uitleg]]}], nog}].
+       De eerste keer dat een ronde vragen uit die onderdelen heeft: eerst de regel lezen en twee controlesommetjes. Eén keer. */
+    if(V.intro&&!(Oefen.ctx.ouder&&Oefen.ctx.ouder())){const I=V.intro.find(x=>!(ST.introGezien||{})[x.id]&&ids.some(id=>QM[id]&&x.o.includes(QM[id].o)));
+      if(I)return introScherm(I,()=>start(mode,ids,title,sec,par,hw))}
     if(mode==='fout'&&ids.length>FOUT_MAX)ids=ids.slice(0,FOUT_MAX);
     const was=new Set(ST.wrong),exam=mode==='toets'||mode==='ptoets'||mode==='ttoets'||mode==='diag';
     R={rid:exam?Date.now().toString(36):null,nk:0,mode,exam,title,sec,par,ids,was,queue:ids.map(id=>({id,retry:false,alt:!exam&&was.has(id)&&!!QM[id].v,old:!exam&&was.has(id)})),i:0,first:{},cleared:new Set(),total:ids.length,helped:{},stepErr:{},hw,tStart:Date.now()};

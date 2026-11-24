@@ -291,4 +291,14 @@ V.PN.tg='Oefenblok: tabellen en snijpunten';
 V.leer=['tg',...(V.leer||[]).filter(p=>p!=='tg')];
 V.custom=Object.assign(V.custom||{},{snij:drawSnij});
 V.GENT={K,G,SN,TB,FE,SQ};
+/* uitleg vooraf, de eerste keer (afspraak 24 nov 2026): de minregel lezen en twee controlesommetjes */
+V.intro=(V.intro||[]).concat([{id:'tg-min',o:SECS.map(s=>s.id),titel:'De minregel: −x met een negatief getal',
+ html:`<p><b>$-x$ betekent: het tegenovergestelde van x.</b> Is x positief, dan wordt $-x$ negatief. Is x negatief, dan wordt $-x$ positief.</p>
+  <p>$x = 3$ → $-x = -3$<br>$x = -3$ → $-x = -(-3) = 3$ &nbsp;(twee mintekens: plus)</p>
+  <p><b>Vul daarom altijd in mét haakjes.</b> $-x + 1$ met $x = -3$ wordt $-(-3) + 1 = 3 + 1 = 4$.<br>Zonder haakjes schrijf je snel $-3 + 1$, en dan verdwijnt er een minteken. Dat gebeurde bij je oefenopdracht.</p>
+  <p><b>Een vergelijking met $-x$:</b> $-x + 1 = 0$ → $-x = -1$ → $x = 1$. Het laatste minteken draait het om. Controleer door in te vullen: $-1 + 1 = 0$ ✓.</p>
+  <p><b>Kwadraat:</b> $(-3)^2 = 9$, maar $-3^2 = -9$. En $-x^2$ met $x = -3$ is $-(-3)^2 = -9$: eerst het kwadraat, dan het minteken.</p>`,
+ check:[{q:'Reken uit: $-x$ bij $x = -4$.',v:4,u:'$-x = -(-4) = 4$. Twee mintekens: plus.',fout:[[-4,'Je schreef de $-4$ gewoon over. Maar $-x$ is het tegenovergestelde: $-(-4) = 4$.']]},
+  {q:'Voor welke x is $-x + 1 = 0$?',v:1,u:'$-x = -1$, dus $x = 1$. Controle: $-1 + 1 = 0$ ✓.',fout:[[-1,'Vul $x = -1$ in: $-(-1) + 1 = 1 + 1 = 2$. Geen 0. Bij $-x = -1$ hoort $x = 1$.']]}],
+ nog:`<p>Zie $-x$ als: <b>draai het teken van x om</b>.</p><p>$x = -4$: draai om → $4$.<br>$x = 5$: draai om → $-5$.</p><p>Schrijf bij het invullen altijd haakjes: $-(-4)$. Dan zie je de twee mintekens staan, en twee mintekens worden plus.</p><p>Bij $-x = -1$: draai beide kanten om → $x = 1$.</p>`}]);
 })();
