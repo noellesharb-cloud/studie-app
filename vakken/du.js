@@ -120,9 +120,9 @@ const SECS=[
  {id:'p3',par:'ab',nr:'3',name:'Berichten: Siri',c:'--c6',sub:'Arbeitsbuch blz. 26 · opdracht 3 · zinnen voor je schrift',
   rules:[['die Katze = sie, der Hund = er','Over een die-woord zeg je sie, over een der-woord er','Die Katze heißt Mux. Sie ist schwarz.'],
    ['Leeftijd: sein, niet haben','Sie ist 13 Jahre alt.','Niet: Sie hat 13 Jahre.']]},
- {id:'w19',par:'ab',nr:'19',name:'Woorden blz. 19',c:'--c5',sub:'Deine Wörter 2 + bijlage Wörter E2 · Duits-Nederlands en Nederlands-Duits',
+ {id:'w19',par:'ex',nr:'E2',name:'Woorden Einheit 2 (AB blz. 19)',c:'--c5',sub:'Niet voor de toets van 7 dec · Deine Wörter 2 + bijlage Wörter E2 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Kuli, die Schere, das Heft','']].concat(AB19.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
- {id:'w27',par:'ab',nr:'27',name:'Woorden blz. 27',c:'--c4',sub:'Deine Wörter 3 + bijlage Wörter E3 · Duits-Nederlands en Nederlands-Duits',
+ {id:'w27',par:'ab',nr:'E3',name:'Woorden Einheit 3 (AB blz. 27)',c:'--c4',sub:'Deine Wörter 3 + bijlage Wörter E3 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das, en het meervoud','die Stadt, die Städte','']].concat(AB27.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
  {id:'o6',par:'ws',nr:'6',name:'Verben mit Akkusativ',c:'--c4',sub:'Opdracht 6 · zinnen aanvullen met het goede werkwoord',
   rules:[['Kies uit','lerne – lese – hasse – habe – kenne – schreibe – höre','Elk werkwoord gebruik je één keer.'],
@@ -426,9 +426,9 @@ const W4B=[ /* Seite 38 t/m 41, de week en de schoolvakken */
  ['Erdkunde','aardrijkskunde',''],['Religion','godsdienst',''],['Sport','gym, lo (schoolvak)',''],['Englisch','Engels',''],['Naturwissenschaft','natuurwetenschappen (zoals NaSk)',''],
  ['Französisch','Frans',''],['Geschichte','geschiedenis','']];
 SECS.push(
- {id:'w4a',par:'k4',nr:'39a',name:'Woorden blz. 39 t/m „zu Hause sein”',c:'--c5',sub:'Deine Wörter 4 · Seite 35 en 36 · Duits-Nederlands en Nederlands-Duits',
+ {id:'w4a',par:'k4',nr:'E4a',name:'Woorden Einheit 4, deel 1: t/m „zu Hause sein”',c:'--c5',sub:'Deine Wörter 4 · Seite 35 en 36 · Duits-Nederlands en Nederlands-Duits',
   rules:[['Leer zelfstandige naamwoorden mét der, die of das','der Wecker, die Freizeit','']].concat(W4A.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))},
- {id:'w4b',par:'k4',nr:'39b',name:'Woorden blz. 39: de rest',c:'--c6',sub:'Deine Wörter 4 · Seite 38–41, de week en de schoolvakken',
+ {id:'w4b',par:'k4',nr:'E4b',name:'Woorden Einheit 4, deel 2: de rest',c:'--c6',sub:'Deine Wörter 4 · Seite 38–41, de week en de schoolvakken',
   rules:[['Dagen zijn der-woorden','der Montag … der Sonntag','montags = op maandag, elke maandag']].concat(W4B.map(v=>[v[0],v[1],v[2]?'meervoud: '+v[2]:'']))});
 [['w4a','k',W4A,'blz. 39'],['w4b','m',W4B,'blz. 39']].forEach(([o,p,L,bl])=>{
   L.forEach((v,i)=>{
@@ -777,15 +777,15 @@ SECS.unshift(
   rules:[['Tageszeiten','am Morgen / morgens · am Vormittag / vormittags · am Mittag / mittags','am Nachmittag / nachmittags · am Abend / abends · in der Nacht / nachts'],
    ['Deinen Tagesablauf beschreiben','Wann beginnt der Unterricht? – Um halb neun. · Wann ist der Unterricht zu Ende? – Um 16 Uhr / Um vier Uhr nachmittags.','Um wie viel Uhr kommst du nach Hause? – Um fünf. · Wann hast du Mathe? – Montags, mittwochs und freitags. / Am Montag, am Mittwoch und am Freitag.'],
    ['Position 2: Verb','Der Unterricht beginnt um 8 Uhr 30. · Montags und freitags habe ich Musik.','Wann hast du Mathe?'],
-   ['Präpositionen: Zeit','um acht · von Montag bis Freitag · am Samstag · gegen 16 Uhr (= rond)',''],['Uhrzeiten','zie Kapitel 4 · Uhrzeit: extra klokken','']]});
+   ['Präpositionen: Zeit','um acht · von Montag bis Freitag · am Samstag · gegen 16 Uhr (= rond)',''],['Uhrzeiten','zie Einheit 4 · Uhrzeit: extra klokken','']]});
 SNAP.zahl=[['Waarom zeg je de eenheden eerst?','Net als in het Nederlands: drie-en-twintig = drei-und-zwanzig. Schrijf het als één woord.']];
 SNAP.jn=[['kein of nicht?','Staat er een zelfstandig naamwoord met ein of zonder lidwoord? Dan <b>kein</b>: Ich habe keinen Hund. Ich habe keine Zeit. Anders <b>nicht</b>: Er ist nicht groß. Ich wohne nicht in Berlin.']];
 SNAP.ap=[['Hoe onthoud ik de Akkusativ?','Tip uit het boek (SB blz. 28): <b>Maskulinum mit -en</b>. Alleen bij der-woorden zie je de Akkusativ: einen Hund, keinen Hund, den Hund. Bij das, die en meervoud blijft alles hetzelfde: ein Pferd, eine Katze, — Katzen / keine Katzen.'],['Waarom ein bij „Das ist” en einen bij „Ich habe”?','Na <b>sein</b> (ist, sind) zeg je wat iets ís: dat is geen lijdend voorwerp, dus 1e naamval: Das ist <b>ein</b> Hund. Bij haben heb je iets: lijdend voorwerp, Akkusativ: Ich habe <b>einen</b> Hund.']];
 
 const LOG=[['ma 26 okt','Werkblad blz. 32','opdracht 6, 7 en 8a'],['vr 6 nov','Arbeitsbuch blz. 19, 24, 26 en 27','woorden Deine Wörter 2 en 3, opdracht 12 (blz. 24), opdracht 1, 2 en 3 (blz. 26)'],['di 10 nov','Kapitel 4 Mein Tag: Arbeitsbuch blz. 32 en 39','opdracht 1a, 1b en 2a (blz. 32), woorden Deine Wörter 4 (blz. 39), extra klokken'],['za 14 nov','Toetsweek 2: stofoverzicht en Grammatikübersicht','Zahlen bis 100, Personalpronomen und Verben, W-Fragen, Ja/Nein-Fragen, Artikel en Nominativ/Akkusativ, Redemittel SB blz. 12, 20, 28 en 42']];
 const LIJST=[];[...T21,...W4A,...W4B,...AB19,...AB27,...VOC].forEach(v=>{if(!LIJST.some(w=>w[0]===v[0]))LIJST.push([v[0],v[1]])});
-return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Toetsweek 2 (SB blz. 12, 20, 28, 42) · Kapitel 4 Mein Tag (AB blz. 32 en 39) · Arbeitsbuch blz. 19, 24, 26 en 27 · Haustiere',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
+return {woorden:{taal:'Duits',typen:true,lijst:LIJST},id:'du',naam:'Duits',afk:'DU',kop:'Toets 7 dec: lesboek (SB) blz. 12, 16–17, 20, 21, 28, 42 · woorden Einheit 3 en 4 · plus extra oefenstof',log:LOG,SECS,SNAP,BEG:VOC.map(v=>[v[0],v[1],'ex']),Q,snapHtml,
   leer:['tw','k4','ab','ws','ex'],reken:false,snapInVraag:false,toetsvorm:true,hoofdletters:true,tvCustom:['zin'],
   custom:{rij:drawRij,zin:drawZin,volg:drawVolg},
-  PN:{tw:'Toetsweek 2 · Zahlen, Grammatik en Redemittel (SB blz. 12, 20, 28, 42)',k4:'Kapitel 4 Mein Tag · AB blz. 32 en woorden blz. 39',ab:'Arbeitsbuch blz. 19, 24, 26 en 27 · woorden en opdrachten',ws:'Werkblad blz. 32 · opdracht 6, 7 en 8a',ex:'Extra: Akkusativ en woordjes',mix:'Door elkaar'}};
+  PN:{tw:'Toets · Grammatik, Redemittel, Zahlen en Tiere (lesboek blz. 12, 16–17, 20, 21, 28, 42)',k4:'Toets · Einheit 4 Mein Tag: woorden (Deine Wörter 4) en Arbeitsbuch blz. 32',ab:'Toets · Einheit 3: woorden (Deine Wörter 3) en Arbeitsbuch blz. 24 en 26',ws:'Niet voor de toets · werkblad blz. 32 Haustiere',ex:'Niet voor de toets · woorden Einheit 2, Akkusativ extra, Haustiere-woordjes',mix:'Door elkaar'}};
 })();

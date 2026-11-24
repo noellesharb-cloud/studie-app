@@ -55,7 +55,7 @@ window.PTO={
    {t:'H6: Hoe gaat Nederland om met klimaatverandering?',k:/H6|klimaat/i}]},
   {p:5,stof:[{t:'H7: Wat zijn de overeenkomsten en verschillen tussen Noord- en Zuid-Korea?',k:/H7|korea/i},
    {t:'H8: Wat zijn de aardrijkskundige kenmerken van de poolgebieden?',k:/H8|pool/i}]}],
- du:[{p:2,stof:[{t:'Hoofdstuk 1-4 (PTO). Stofoverzicht van de docent: woorden Einheit 3 en 4, Redemittel en Grammatik SB blz. 12, 20, 28 en 42, Zahlen bis 100',app:'Staat in de app: Toetsweek 2, Kapitel 4 en Arbeitsbuch'}]},{p:3,stof:[{t:'Hoofdstuk 5-8'}]},{p:4,stof:[{t:'Hoofdstuk 9-11'}]},{p:5,stof:[{t:'Hoofdstuk 12-14'}]}],
+ du:[{p:2,stof:[{t:'Hoofdstuk 1-4 (PTO). Stofoverzicht van de docent: Dieren SB blz. 21, woorden Einheit 3 en 4, Redemittel en Grammatik SB blz. 12, 20, 28 en 42, Zahlen bis 100',app:'Staat in de app: de drie onderdelen met Toets ervoor (lesboek, Einheit 3, Einheit 4)'}]},{p:3,stof:[{t:'Hoofdstuk 5-8'}]},{p:4,stof:[{t:'Hoofdstuk 9-11'}]},{p:5,stof:[{t:'Hoofdstuk 12-14'}]}],
  en:[{p:1,stof:[{t:'Unit 1 en 2'}]},{p:2,stof:[{t:'Leesvaardigheid'}]},{p:3,stof:[{t:'Unit 6 en 7'}]},{p:4,stof:[{t:'Hollywood project'}]},{p:5,stof:[{t:'Unit 8 en 9'}]}],
  fa:[{p:1,stof:[{t:'H0, H1 en H2'}]},{p:2,stof:[{t:'Praktische opdracht H3'}]},{p:3,stof:[{t:'H5'}]},{p:4,stof:[{t:'H6'}]},{p:5,stof:[{t:'H7'}]}],
  gs:[{p:1,stof:[{t:'Reformatie en Opstand'}]},{p:2,stof:[{t:'Gouden Eeuw',app:'H2 De Gouden Eeuw staat in de app'}]},
