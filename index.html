@@ -562,7 +562,8 @@ function inToetsweek(s){if(!TWC){TWC={};Object.entries(toetsDagen()).forEach(([d
 function volgendeSchooldag(s){let d=addDays(s,1);while(!schooldag(d))d=addDays(d,1);return d}
 /* ---------- huiswerk uit SOMtoday (huiswerk.js) ---------- */
 const HW=()=>window.HUISWERK||[];
-const hwCompleet=d=>!!window.HUISWERK_COMPLEET_TOT&&d<=window.HUISWERK_COMPLEET_TOT;
+/* 27 nov: de ouder kan per dag zelf zeggen dat er geen ander huiswerk is (SET.dagen[d].hwAf): dan geen leeg 'kijk in SOMtoday'-blok */
+const hwCompleet=d=>!!window.HUISWERK_COMPLEET_TOT&&d<=window.HUISWERK_COMPLEET_TOT||!!(SET.dagen&&SET.dagen[d]&&SET.dagen[d].hwAf);
 const hwVoor=d=>HW().filter(h=>h.d===d);
 /* 22 nov: huiswerk met toetsLeren (bijv. 'leer heel H3') ÍS toetsvoorbereiding. Die dag geen extra toetsvoorbereiding voor dat vak
    (anders werd het 90+ min wiskunde op één avond), en de minuten tellen mee als gedaan voor de toets. */
@@ -1073,6 +1074,10 @@ function rVandaag(){
   ${isOuder()&&nkOpen().length&&isToday?`<div class="note"><b>${nkOpen().length} ${nkOpen().length===1?'antwoord':'antwoorden'} om na te kijken</b><span>Bij een toets in de app rekende ze ${nkOpen().length===1?'dit antwoord':'deze antwoorden'} zelf goed. Kijk even mee.</span><button class="btn ghost" id="nkv">Nakijken</button></div>`:''}
   ${!isOuder()&&nkFoutNieuw().length&&isToday?`<div class="note"><b>Je ouder heeft je toets nagekeken</b><span>${nkFoutNieuw().length===1?'Eén antwoord was':nkFoutNieuw().length+' antwoorden waren'} toch fout.</span><button class="btn ghost" id="nkv">Bekijk</button></div>`:''}
   ${isOuder()&&dag<=today()?inzetKaart(dag):''}
+  ${(()=>{if(!isOuder()||!canWrite||dag<today()||vrijZa(dag)||vrijDag(dag))return '';const nd=volgendeSchooldag(dag),af=SET.dagen&&SET.dagen[nd]&&SET.dagen[nd].hwAf;
+    if(af)return `<div class="note"><b>Geen ander huiswerk voor ${esc(nice(nd))}</b><span>Je hebt aangegeven dat al het huiswerk voor die dag in de app staat.</span><button class="link" id="hwaf-terug">Terugzetten</button></div>`;
+    if(!B.some(b=>/^hw\d/.test(b.key)))return '';
+    return `<div class="note"><b>Staat al het huiswerk voor ${esc(nice(nd))} in de app?</b><span>Dan kun je de lege huiswerkblokken ('kijk in SOMtoday') weghalen. De tijd gaat dan naar toetsvoorbereiding of oefenen.</span><button class="btn ghost" id="hwaf">Ja, lege blokken weghalen</button></div>`})()}
   ${isOuder()&&canWrite&&!gehaald(dag)&&dag>=today()&&B.some(b=>schuifKnop(b))?`<div class="note"><b>Weinig tijd vandaag?</b><span>Je kunt bij elk blok behalve het huiswerk op Doorschuiven tikken. Dat blok hoeft dan vandaag niet af voor haar reeks. Heeft het vak een komende toets, dan komen de minuten erbij bij de toetsvoorbereiding van dat vak, verdeeld over de dagen tot de toets (in het blok dat dat vak al heeft, niet als los extra blok). Zonder komende toets wordt het een inhaalblok op de eerstvolgende vrijdag of zaterdag waar nog ruimte is. Is de toets morgen, dan is er geen dag meer om in te halen. Opwarmen vervalt.</span></div>`:''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
@@ -1126,6 +1131,8 @@ function rVandaag(){
     const n=schuifNaar(b);if(n||k==='prep'||schuifToets(b)){if(n)e.naar=n;e.dyn=1;e.van=schuifVan(dag);e.inh={vid:b.auto||b.vak,app:!!b.auto,par:b.par||null,mode:b.mode||null,min:Math.max(10,Math.round((b.min-(b.prog||0))/5)*5),titel:b.titel.replace(/^Inhalen: /,'')};
       if(b.prep)e.inh.prep={vid:b.prep.vid,tid:b.prep.tid,zwaar:!!b.prep.zwaar}}
     SCHED=null;addLog(e)});
+  const hwa=$('#hwaf');if(hwa)hwa.onclick=()=>zetDag(volgendeSchooldag(dag),{hwAf:1});
+  const hwt=$('#hwaf-terug');if(hwt)hwt.onclick=()=>zetDag(volgendeSchooldag(dag),{hwAf:0});
   const vok=$('#vrij-ok');if(vok)vok.onclick=()=>zetDag(dag,{vrij:1,reden:($('#vrij-r').value||'').trim()||'Vrije dag'});
   const vwg=$('#vrijweg');if(vwg)vwg.onclick=()=>zetDag(dag,{vrij:0});
   document.querySelectorAll('[data-ontschuif]').forEach(x=>x.onclick=ev=>{ev.stopPropagation();SCHED=null;delLog(dag,'schuif-'+x.dataset.ontschuif)});
@@ -1325,7 +1332,7 @@ function vakHtml(v,c,i){
 /* leertijd per dag (afspraak 20 nov): vrijdag, zaterdag en zondag van de komende weken */
 let DG_OPEN=false;
 function zetDag(d,x){const D=SET.dagen=JSON.parse(JSON.stringify(SET.dagen||{})),o=Object.assign({},D[d]||{},x);
-  if(o.min==null)delete o.min;if(!o.vrij){delete o.vrij;delete o.reden}
+  if(o.min==null)delete o.min;if(!o.vrij){delete o.vrij;delete o.reden}if(!o.hwAf)delete o.hwAf;
   Object.keys(D).forEach(k=>{if(k<addDays(today(),-60))delete D[k]});
   if(Object.keys(o).length)D[d]=o;else delete D[d];SCHED=null;INH=null;saveSet(['dagen']);render()}
 function dagenKaart(dis){const R=[];for(let d=today(),k=0;k<42;d=addDays(d,1),k++){const g=pd(d).getDay();if((g===5||g===6||g===0)&&!(vakantieVan(d)&&!eigenVrij(d)&&vrijDag(d)))R.push(d)}
