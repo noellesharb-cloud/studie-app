@@ -1200,6 +1200,10 @@ function rNakijk(){
   const gz=$('#nkgezien');if(gz)gz.onclick=()=>{fout.forEach(x=>nkPatch(x.id,{gezien:true}));rNakijk()};
   scrollTo(0,0);
 }
+/* 27 nov: 'x van y paragrafen gehaald' telt alleen de paragrafen die bij de eerstvolgende toets zijn aangevinkt in Cijfers
+   (zoals de toetsvoorbereiding in beheersing()). Zonder toets of zonder vinkjes: alle paragrafen van het vak. */
+function toetsPars(id){const al=Oefen.pars(id),v=vakOf(id),t=(v?.toetsen||[]).filter(t=>t.datum&&t.datum>=today()&&num(t.cijfer)==null).sort((a,b)=>a.datum<b.datum?-1:1)[0];
+  return t&&t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al}
 function rOefenen(){
   if(Oefen.cur)return; /* niet midden in een ronde opnieuw tekenen */
   const sp=OEF.sprints||{};
@@ -1209,7 +1213,7 @@ function rOefenen(){
   ${!isOuder()&&nkF.length?`<button class="sec" id="nkgo"><span class="sq" style="background:var(--bad);color:var(--bg)">${nkF.length}</span><span><b>Nagekeken door je ouder</b><small>${nkF.length===1?'Eén antwoord was':nkF.length+' antwoorden waren'} toch fout. Bekijk waarom.</small></span></button>`:''}
   ${!isOuder()&&!nkF.length&&nkO.length?`<p class="sub" style="font-size:.9rem">${nkO.length} ${nkO.length===1?'antwoord wacht':'antwoorden wachten'} nog op nakijken door je ouder.</p>`:''}
   <span class="tag">Vakken in deze app</span>
-  ${APPS().map(id=>{const V=VAKDATA[id],st=OEF[id]||{},ps=Oefen.pars(id),ok=ps.filter(p=>(st.ptoets||{})[p]&&st.ptoets[p].best>=7).length,v=vakOf(id);
+  ${APPS().map(id=>{const V=VAKDATA[id],st=OEF[id]||{},ps=toetsPars(id),ok=ps.filter(p=>(st.ptoets||{})[p]&&st.ptoets[p].best>=7).length,v=vakOf(id);
     return `<button class="sec" data-vak="${id}"><span class="sq" style="background:var(${COL[(v?.volgorde??0)%COL.length]})">${esc(V.afk)}</span><span><b>${esc(V.naam)}</b><small>${esc(V.kop)} · ${ok} van ${ps.length} paragrafen gehaald${(st.wrong||[]).length?` · <span style="color:var(--bad)">${st.wrong.length} fout</span>`:''}${(s=>s?`<br><span style="color:var(--ok)">★ Gelukt op school: ${esc(nice(s.d))}</span>`:'')(sucLijst().find(s=>s.vak===id))}</small></span></button>`}).join('')}
   <span class="tag">Sprints</span>
   <div class="row"><button class="btn" data-sprint="reken">Rekensprint</button><button class="btn ghost" data-sprint="woord">Woordjessprint</button></div>
