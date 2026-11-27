@@ -459,6 +459,6 @@ const OPEN={
 Q.forEach(q=>{if(OPEN[q.id])q.open=OPEN[q.id]});
 
 return {id:'lv',naam:'Levensbeschouwing',afk:'LV',kop:'Hoofdstuk 6 De islam · §1 t/m §4',SECS,SNAP:{},BEG,Q,snapHtml:()=>'',
-  leer:['1','2','3','4'],reken:false,volledig:false,
+  leer:['1','2','3','4'],reken:false,
   PN:{'1':'§1 Het ontstaan van de islam','2':'§2 De levensbeschouwing van de moslim','3':'§3 De vijf plichten (zuilen) van de islam','4':'§4 De Koran en de sharia','mix':'Door elkaar'}};
 })();
