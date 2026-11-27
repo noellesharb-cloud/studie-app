@@ -470,6 +470,7 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="vakken/gr5.js?v=202611232000"></script>
 <script src="vakken/lv.js?v=202611241730"></script>
 <script src="vakken/lv-ko.js?v=202611241730"></script>
+<script src="vakken/lv-h4.js?v=202611271000"></script>
 <script src="vakken/du.js?v=202611241700"></script>
 <script src="vakken/ne.js?v=202611172110"></script>
 <script src="vakken/ne2.js?v=202611192210"></script>
@@ -811,7 +812,7 @@ function volgendePar(vid){const st=OEF[vid]||{},p=stofPars(vid,toetsVan(vid,toda
    Een les op vrijdag komt op zondag in het plan (vrijdag en zaterdag: alleen een sprint). Past het niet binnen 3 uur, dan vervalt het die dag. */
 const LESDAGEN={gs:[2,5],lv:[2,3]},LES_VAN='2026-11-17',LES_MIN=10;
 const planDag=L=>{const g=pd(L).getDay();return g===5?addDays(L,2):g===6?addDays(L,1):L};
-function lesDagen(vid,t){const R=[];for(let d=LES_VAN,k=0;d<t.datum&&k<200;d=addDays(d,1),k++)if(LESDAGEN[vid].includes(pd(d).getDay())&&schooldag(d)&&planDag(d)<t.datum&&!vrijDag(planDag(d)))R.push(d);return R}
+function lesDagen(vid,t){const R=[];for(let d=LES_VAN,k=0;d<t.datum&&k<200;d=addDays(d,1),k++)if(LESDAGEN[vid].includes(pd(d).getDay())&&schooldag(d)&&planDag(d)<t.datum&&!vrijDag(planDag(d))&&inPeriode(t,d))R.push(d);return R}
 const LESC={};
 function lesBlokken(s){if(LESC[s])return LESC[s];const R=[];
   if(!vrijDag(s)&&!vrijZa(s)&&!inToetsweek(s)&&window.VAKDATA)Object.keys(LESDAGEN).forEach(vid=>{if(!VAKDATA[vid])return;const t=toetsVan(vid,s);if(!t||t.stofOnbekend)return;
