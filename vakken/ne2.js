@@ -461,6 +461,8 @@ Object.assign(V.SNAP,{
 const ORDE=['4','z3','z5','vz','b5','s4','s11','mix'];
 V.SECS.sort((a,b)=>ORDE.indexOf(a.par)-ORDE.indexOf(b.par));
 V.leer=ORDE.filter(p=>p!=='mix');
+/* 27 nov: met §3, vaste voorzetsels, beeldspraak en §11 staat het hele PTO van de repetitie (9 dec) in de app; behaalde paragrafen maken de toetsvoorbereiding nu korter */
+V.volledig=true;
 Object.assign(V.PN,{z3:'Grammatica zinsdelen §3 · gezegde en lv bij wederkerende werkwoorden',vz:'Woordenlijst · werkwoorden met vaste voorzetsels',b5:'Taal §5 · beeldspraak',s11:'Spelling §11 · Engelse werkwoorden'});
 V.kop='Grammatica §3, §4, §5 · vaste voorzetsels · beeldspraak · spelling §4 en §11';
 V.log.unshift(['di 17 nov','Toegevoegd: stappenplan zinsdelen, zinsdelen §3, woordenlijst vaste voorzetsels 1–120, Taal §5 beeldspraak, spelling §11 Engelse werkwoorden','§3: opdracht 1 t/m 5 · beeldspraak: opdracht 1 t/m 4 · spelling §11: opdracht 1 t/m 7']);
