@@ -730,7 +730,7 @@ function schedule(){
 /* 20 nov: toetsvoorbereiding alleen in dezelfde periode als de toets (na de vorige toetsweek). Eerder kon geschiedenis van 12 feb
    in de toetsweek van december belanden, omdat het plan tot 70 dagen terug zocht naar ruimte. */
 const inPeriode=(t,d)=>t.datum<=periodeEind(d);
-const MAX_VAK_VRIJ=3,MAX_VAK_HW=2,STAP_VRIJ=40;
+const MAX_VAK_VRIJ=3,MAX_VAK_HW=2,STAP_VRIJ=40,SPREID={wi:3},OEF_VRIJ=60;
 function maakSchedule(van,credit,zonderSeed){
   /* 22 nov: de vaste tijd per dag (huiswerk, opwarmen, bijhouden, les- en inhaalblokken) verandert niet tijdens het plannen.
      Eerst werd die bij elke poging opnieuw uitgerekend (tienduizenden keren); daardoor duurde terugklikken naar Vandaag seconden. */
@@ -785,6 +785,23 @@ function maakSchedule(van,credit,zonderSeed){
            (anders bleef er op zaterdag 35 min leeg terwijl geschiedenis niet helemaal paste) */
         if(!e&&room>=(vrijZa(d)?Math.max(15,Math.min(STAP_VRIJ,o.tot,Math.max(STAP,capDag(d)-used(d)))):15)){(A[d]=A[d]||[]).push({v:o.v,t:o.t,min:room,zwaar:o.z,n:diffDays(d,o.t.datum)});o.tot-=room;bezig=true;break}
         o.d=addDays(d,-1);o.k++}}}
+  /* 28 nov (afspraak met de ouder): wiskunde vaker in kleine stukjes. In de laatste AFTEL dagen voor de toets staat er minstens elke
+     SPREID[vak] dagen een blok van dat vak. Het blok (20–25 min) gaat af van het grootste latere blok van die toets (er komt geen tijd bij), of komt erbij op een dag met nog minstens een uur ruimte.
+     Om de paar dagen herhalen blijft beter hangen dan alles vlak voor de toets. */
+  Object.entries(SPREID).forEach(([vid,gap])=>{const o=Q.find(x=>x.v.id===vid&&x.t.datum>van);if(!o)return;const t=o.t,w0=addDays(t.datum,-AFTEL);
+    const heeft=d=>(A[d]||[]).some(x=>x.t===t),dag=d=>!vrijDag(d)&&inPeriode(t,d)&&d>=van;
+    let last=null;for(let d=addDays(w0,-gap),k=0;d<w0&&k<20;d=addDays(d,1),k++)if(d>=van&&heeft(d))last=d;
+    for(let d=w0<van?van:w0,k=0;d<t.datum&&k<40;d=addDays(d,1),k++){if(heeft(d)){last=d;continue}if(!dag(d))continue;
+      if(last&&diffDays(last,d)<gap)continue;
+      /* nergens tot de toets meer een blok binnen gap dagen? dan hier (of de dag erna met ruimte) */
+      let next=null;for(let x=addDays(d,1);x<t.datum;x=addDays(x,1))if(heeft(x)){next=x;break}
+      if(next&&diffDays(d,next)<gap&&last)continue;
+      const room=capDag(d)+(vrijZa(d)?0:(SET.rekMin??DEF.rekMin))-used(d);/* een 4e vak op een dag mag alleen voor dit korte blok, en alleen op een dag met nog minstens een uur ruimte (bijv. zondag 4 uur) */
+      if(room<20||geenPrep(vid,d)||!magVak(d,vid)&&room<60)continue;
+      const don=Object.keys(A).filter(x=>x[0]!=='_'&&x>d&&x<t.datum).map(x=>(A[x]||[]).find(e=>e.t===t&&!e.vast)).filter(e=>e&&e.min>=50).sort((a,b)=>b.min-a.min)[0];
+      /* geen later blok meer om van af te halen: op een dag met nog minstens een uur ruimte mag het blok er gewoon bij */
+      const m=don?Math.min(25,room,don.min-30):room>=60?25:0;if(m<20)continue;if(don)don.min-=m;
+      (A[d]=A[d]||[]).push({v:o.v,t,min:m,zwaar:o.z,n:diffDays(d,t.datum),spreid:1});last=d}});
   Q.forEach(({v,t,z,tot})=>{if(tot>0)over.push({v,t,z,tot})});
   /* tweede ronde (afspraak 10 nov): wat niet binnen het maximum past, mag op een schooldag tot rekMin minuten over het maximum heen
      (150 + 30 = 3 uur). Eerst de rustigste dagen, eerste toets eerst. Pas wat dan nog overblijft, geeft de melding 'Niet alles past'. */
@@ -955,8 +972,12 @@ function blokken(s){
      dan gaat het volgende inhaalblok naar de volgende vrijdag of zaterdag (inhaalPlan). */
   const room=capDag(s)-B.reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
   if(!B.some(b=>b.auto&&b.soort!=='opwarm'&&!b.inh)&&metToets.length&&room>=10){
-    const vid=metToets.sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],par=volgendePar(vid,s);
-    B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:wk?room:Math.min(SET.oefenMin,room),par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`});
+    /* 28 nov (afspraak met de ouder): op vrijdag/zaterdag niet de hele leertijd één vak. Hooguit OEF_VRIJ min per vak: eerst het vak met
+       de eerstvolgende toets, dan het vak met de meeste open toetsvoorbereiding (hooguit MAX_VAK_VRIJ vakken). */
+    const T=SC._tot||{},open=id=>Object.entries(T).filter(([k])=>k.startsWith(id+'|')).reduce((a,[,x])=>a+(x.nog||0),0);
+    const eerst=metToets.slice().sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],volg=wk?[eerst,...metToets.filter(id=>id!==eerst).sort((a,b)=>open(b)-open(a))]:[eerst];
+    let r=room;for(const vid of volg.slice(0,MAX_VAK_VRIJ)){if(r<(wk?20:10))break;const par=volgendePar(vid,s),m=wk?Math.min(r,OEF_VRIJ):Math.min(SET.oefenMin,r);r-=m;
+      B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:m,par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`})}
   }
   if(!B.length)B.push({key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint.'});
   return B;
