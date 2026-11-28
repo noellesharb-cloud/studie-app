@@ -425,6 +425,40 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 .suc-c{font-size:1.2rem;color:var(--ok)}
 .suc-o{background:var(--tip);border-radius:10px;padding:8px 10px;font-size:.92rem}
 .suc-hoe{font-size:.95rem}
+
+/* aftelkaart (28 nov) */
+.aftel .af-in{font-size:.9rem}
+.af-leg{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:.8rem;color:var(--soft)}
+.af-leg i{margin-right:-6px}
+.af-r{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line,rgba(127,127,127,.25))}
+.af-r .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.af-h{display:block}
+.af-meer summary{cursor:pointer;font-weight:700;padding:10px 0 4px;border-top:1px solid var(--line)}
+.af-f{display:inline-block;margin-left:4px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 7px;border-radius:999px;background:var(--okbg);color:var(--ok);vertical-align:middle}
+.af-f.laat{background:var(--warnbg);color:var(--warn)}
+.af-dr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:4px}
+.af-d{display:inline-flex;gap:4px}
+.af-d i,.af-leg i{display:inline-block;width:14px;height:14px;border-radius:4px}
+i.af-ok{background:var(--ok)} i.af-laag{background:var(--warn)} i.af-niet{background:transparent;border:2px solid var(--soft);opacity:.6}
+.af-nx{font-size:.88rem;margin-top:4px}
+small.tl{display:block;margin-top:4px;font-size:.85rem;color:var(--warn)}
+/* oefentoets op papier (28 nov) */
+#pv{position:fixed;inset:0;z-index:1000;overflow:auto;background:#fff;color:#111;-webkit-overflow-scrolling:touch}
+body.pv-aan{overflow:hidden}
+.pv-bar{position:sticky;top:0;background:#f3f4f7;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border-bottom:1px solid #ddd}
+.pv-bar small{flex-basis:100%;color:#555}
+.pv-knop{display:flex;gap:6px;flex-wrap:wrap}
+.pv-blad{max-width:760px;margin:0 auto;padding:20px 18px 60px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.45}
+.pv-blad h1{font-size:22px;margin:0 0 4px}.pv-blad h2{font-size:19px;margin:0 0 6px}
+.pv-sub{color:#444;margin:0 0 10px}.pv-naam{margin:12px 0}.pv-uitleg{font-style:italic;color:#333}
+.pv-lijst{padding-left:24px}.pv-lijst>li{margin:14px 0;break-inside:avoid}
+.pv-o{list-style:none;padding-left:4px;margin:6px 0}.pv-o li{margin:2px 0}
+.pv-l span{display:block;height:26px;border-bottom:1px solid #bbb}
+.pv-ant{margin-top:36px;border-top:2px solid #333;padding-top:14px}
+.pv-k{margin:4px 0;padding-left:18px}.pv-st{margin:4px 0;padding-left:18px;color:#333}
+.pv-p{display:block;color:#666;font-size:12px;margin-top:2px}.pv-score{margin-top:20px;font-weight:700}
+.pv-blad svg{max-width:100%;height:auto}
+@media print{body.pv-aan>*:not(#pv){display:none!important}#pv{position:static;overflow:visible}.pv-bar{display:none}.pv-ant{break-before:page;border-top:0;margin-top:0}.pv-blad{padding:0}}
 </style>
 
 </head>
@@ -449,9 +483,10 @@ small.tijd{display:block;margin:3px 0 2px;font-weight:700;color:var(--ink,inheri
 <script src="huiswerk.js?v=202611271910"></script>
 <script src="pto.js?v=202611241640"></script>
 <script src="oefen/gate.js?v=202611151500"></script>
-<script src="oefen/engine.js?v=202611241800"></script>
+<script src="oefen/engine.js?v=202611281000"></script>
 <script src="oefen/reken.js?v=202611241530"></script>
 <script src="oefen/woord.js?v=202611042008"></script>
+<script src="oefen/print.js?v=202611281000"></script>
 <script src="vakken/na.js?v=202611151500"></script>
 <script src="vakken/wi.js?v=202611250735"></script>
 <script src="vakken/wi-var.js?v=202611042008"></script>
@@ -577,7 +612,7 @@ function hwRow(h,b,kort){const v=hwVak(h.vak),done=hwDone(h),naam=v?v.naam:h.vak
   const wat=(h.wat||[]).length?`<details class="hwd"><summary>Wat moet je doen?</summary><ul>${h.wat.map(l=>l.startsWith('# ')?`<li class="kop">${esc(l.slice(2))}</li>`:`<li>${esc(l)}</li>`).join('')}</ul></details>`:'';
   const app=h.app&&LOSSE[h.app]?`<a class="link" href="${LOSSE[h.app].url}" target="_blank" rel="noopener">Open ${esc(LOSSE[h.app].naam)}</a>`:h.app&&window.VAKDATA&&VAKDATA[h.app]?`${hwKnop(h)}${h.lpar&&h.lpar.length?`<span class="row" style="flex-wrap:wrap;gap:4px 12px">${h.lpar.map(p=>`<button class="link" data-go="${h.app}" data-par="${esc(p)}">Leren: ${esc((VAKDATA[h.app].PN||{})[p]||'§'+p)} in de app</button>`).join('')}</span>`:heeftToets(h.app,today())?`<button class="link" data-go="${h.app}" data-par="${esc(h.par||'')}" data-mode="bijhouden">Oefen in de app</button>`:''}`:'';
   return `<div class="blk${done?' done':''}"><button class="ck" data-hwt="${esc(h.id)}" data-min="${h.min}" data-vak="${v?v.id:'hw'}" aria-pressed="${done}" aria-label="${done?'Afgevinkt':'Afvinken'}: ${esc(naam)}, ${esc(h.t)}" ${canWrite&&!h.klaar?'':'disabled'}>${done?'✓':''}</button>${chip}
-    <span class="tx"><b class="hn">${esc(naam)}</b>${esc(h.t)}<small>${kort?nice(h.d)+' · ':'Voor '+nice(h.d)+' · '}${h.klaar?'al afgevinkt in SOMtoday':done?'gedaan':'tik het vakje af als het af is'}</small>${!done&&hwAfgewezen(h.id)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}${wat}${app}${afwKnop(hwLog(h.id),h.klaar)}</span><span class="mn">${h.min} min</span></div>`}
+    <span class="tx"><b class="hn">${esc(naam)}</b>${esc(h.t)}<small>${kort?nice(h.d)+' · ':'Voor '+nice(h.d)+' · '}${h.klaar?'al afgevinkt in SOMtoday':done?'gedaan':'tik het vakje af als het af is'}</small>${!done&&hwAfgewezen(h.id)?'<small class="afw">Je ouder heeft dit afgewezen. Maak het af en vink het opnieuw af.</small>':''}${h.toetsLeren&&!done?`<small class="tl">Dit is leren voor de toets. Al gemaakt in je werkboek? Maak het dan nu zonder boek, uit je hoofd${h.app?' in de app':''}. Zo zie je wat je echt weet.</small>`:''}${wat}${app}${afwKnop(hwLog(h.id),h.klaar)}</span><span class="mn">${h.min} min</span></div>`}
 /* huiswerk dat in de app staat: knop die precies die opgaven opent, stap voor stap */
 function hwKnop(h){if(!(h.opg&&h.opg.length)&&!(h.leer&&h.leer.length))return '';const n=Oefen.hwStand(h.app,h.id);
   return `<span class="row" style="margin:8px 0 4px"><button class="btn sm" data-hwapp="${esc(h.id)}" data-stop>${n?'Verder met je huiswerk in de app':'Maak je huiswerk stap voor stap'}</button><span class="sub" style="font-size:.85rem">${[(h.opg||[]).length?(VAKDATA[h.app]&&VAKDATA[h.app].reken===false?'opdracht':'opgave')+' '+h.opg.join(', '):'',...(h.leer||[]).map(l=>l.titel.charAt(0).toLowerCase()+l.titel.slice(1))].filter(Boolean).join(' + ')}${n?` · ${n} vragen klaar`:''}</span></span>`}
@@ -736,7 +771,9 @@ function maakSchedule(van,credit,zonderSeed){
         if(e&&e.vast||geenPrep(o.v.id,d)||!e&&!magVak(d,o.v.id)){o.d=addDays(d,-1);o.k++;continue}
         const room=Math.min((o.z?60:45)-(e?e.min:0),capDag(d)-used(d),o.tot,!e&&vrijZa(d)?STAP_VRIJ:STAP);
         if(e&&room>=5){e.min+=room;o.tot-=room;bezig=true;break}
-        if(!e&&room>=(vrijZa(d)?Math.max(15,Math.min(STAP_VRIJ,o.tot)):15)){(A[d]=A[d]||[]).push({v:o.v,t:o.t,min:room,zwaar:o.z,n:diffDays(d,o.t.datum)});o.tot-=room;bezig=true;break}
+        /* 28 nov: op vrijdag/zaterdag begint een nieuw blok met 40 min, maar heeft de dag nog maar 30–39 min over, dan mag het blok zo lang zijn
+           (anders bleef er op zaterdag 35 min leeg terwijl geschiedenis niet helemaal paste) */
+        if(!e&&room>=(vrijZa(d)?Math.max(15,Math.min(STAP_VRIJ,o.tot,Math.max(STAP,capDag(d)-used(d)))):15)){(A[d]=A[d]||[]).push({v:o.v,t:o.t,min:room,zwaar:o.z,n:diffDays(d,o.t.datum)});o.tot-=room;bezig=true;break}
         o.d=addDays(d,-1);o.k++}}}
   Q.forEach(({v,t,z,tot})=>{if(tot>0)over.push({v,t,z,tot})});
   /* tweede ronde (afspraak 10 nov): wat niet binnen het maximum past, mag op een schooldag tot rekMin minuten over het maximum heen
@@ -814,11 +851,15 @@ function volgendePar(vid){const st=OEF[vid]||{},p=stofPars(vid,toetsVan(vid,toda
    Elke lesdag één nieuwe paragraaf (uitleg + korte ronde); zijn ze allemaal geweest, dan herhalen (bijhouden met terugblik) van de zwakste.
    Een les op vrijdag komt op zondag in het plan (vrijdag en zaterdag: alleen een sprint). Past het niet binnen 3 uur, dan vervalt het die dag. */
 const LESDAGEN={gs:[2,5],lv:[2,3]},LES_VAN='2026-11-17',LES_MIN=10;
+/* aftellen (afspraak 28 nov): vanaf 10 dagen voor een toets staat hij op de aftelkaart en vervallen de les-blokjes */
+const AFTEL=10;
 const planDag=L=>{const g=pd(L).getDay();return g===5?addDays(L,2):g===6?addDays(L,1):L};
 function lesDagen(vid,t){const R=[];for(let d=LES_VAN,k=0;d<t.datum&&k<200;d=addDays(d,1),k++)if(LESDAGEN[vid].includes(pd(d).getDay())&&schooldag(d)&&planDag(d)<t.datum&&!vrijDag(planDag(d))&&inPeriode(t,d))R.push(d);return R}
 const LESC={};
 function lesBlokken(s){if(LESC[s])return LESC[s];const R=[];
   if(!vrijDag(s)&&!vrijZa(s)&&!inToetsweek(s)&&window.VAKDATA)Object.keys(LESDAGEN).forEach(vid=>{if(!VAKDATA[vid])return;const t=toetsVan(vid,s);if(!t||t.stofOnbekend)return;
+    /* 28 nov (afspraak met de ouder): in de laatste AFTEL dagen voor de toets geen losse blokjes van 10 min meer; die tijd zit in de toetsvoorbereiding */
+    if(diffDays(s,t.datum)<=AFTEL)return;
     const Ls=lesDagen(vid,t),i=Ls.findIndex(L=>planDag(L)===s);if(i<0)return;
     const P=stofPars(vid,t),st=OEF[vid]||{},nieuw=i<P.length,par=nieuw?P[i]:(P.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||P[P.length-1]);
     R.push({vid,t,par,nieuw,L:Ls[i],min:LES_MIN})});
@@ -826,6 +867,46 @@ function lesBlokken(s){if(LESC[s])return LESC[s];const R=[];
   while(R.length&&R.length*LES_MIN>vrij)R.pop();
   return LESC[s]=R}
 const lesMin=s=>lesBlokken(s).reduce((a,x)=>a+x.min,0);
+/* ---------- aftellen naar de toetsen (afspraak met de ouder, 28 nov) ----------
+   Eén kaart bovenaan Vandaag voor alle toetsen in de komende AFTEL dagen. Per toets: hoeveel dagen nog, per onderdeel van de toetsstof
+   gehaald (paragraaftoets 7+), onder de 7 of nog niet gemeten, en de volgende stap. Doel: ze maakt de paragraaftoetsen óók als ze denkt
+   dat ze het nog niet kan (de data liet zien dat ze na een laag cijfer wel doorzet, maar bij veel vakken niet begint). Daarom: wat een
+   7+ scheelt in haar plan (beheersing: elke gehaalde paragraaf haalt leertijd × 0,5 / aantal onderdelen af), dat een laag cijfer het plan
+   niet langer maakt, en haar eigen beste herkansing. Laatste 3 dagen: alleen nog wat niet lukt. De ouder kan hier een oefentoets printen. */
+function aftelLijst(s){const tw=TOETSWEKEN.find(w=>w[1]>=s),twIn=tw&&diffDays(s,tw[0])<=AFTEL,L=[];
+  /* zodra de toetsweek binnen AFTEL dagen begint, staan alle toetsen van die week op de kaart */
+  VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(!t.datum||num(t.cijfer)!=null||dubbelVan(v,t))return;const n=diffDays(s,t.datum);if(n>=1&&(n<=AFTEL||twIn&&t.datum<=tw[1]))L.push({v,t,n})}));
+  return L.sort((a,b)=>a.n-b.n||(a.v.volgorde??0)-(b.v.volgorde??0))}
+function aftelInfo(v,t){const D=window.VAKDATA&&VAKDATA[v.id];if(!D||!window.Oefen)return null;const e=toetsVan(v.id,today());if(!e||e.id!==t.id)return null;
+  const al=Oefen.allePars(v.id),ps=t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al,pt=(OEF[v.id]||{}).ptoets||{};
+  const P=ps.map(p=>{const r=pt[p];return {p,naam:(D.PN||{})[p]||p,c:r?r.best:null,st:!r?'niet':r.best>=7?'ok':'laag'}});
+  const scheelt=D.volledig!==false&&eigenLT(t)==null&&ps.length?Math.round(leertijd(v,t)*0.5/ps.length/5)*5:0;return {P,scheelt}}
+/* haar beste herkansing: eerst onder de 5,5, later 7 of hoger in dezelfde paragraaftoets */
+function herkansing(){let b=null;Object.entries(OEF).forEach(([vid,st])=>{const D=window.VAKDATA&&VAKDATA[vid];if(!D||!st||!st.ptoets)return;
+  Object.entries(st.ptoets).forEach(([p,o])=>{const cs=(o.rondes||[]).map(r=>r.c).filter(c=>c!=null),i=cs.findIndex(c=>c<5.5);if(i<0)return;const hi=Math.max(-1,...cs.slice(i+1));
+    if(hi>=7&&(!b||hi-cs[i]>b.w))b={w:hi-cs[i],van:cs[i],naar:hi,vak:D.naam,par:(D.PN||{})[p]||p}})});return b}
+function aftelKaart(){const L=aftelLijst(today());if(!L.length)return '';const f1=x=>x.toFixed(1).replace('.',','),ouder=isOuder(),je=ouder?'ze':'je',jouw=ouder?'haar':'je';
+  const tw=TOETSWEKEN.find(w=>w[1]>=today()),twN=tw&&tw[0]>today()?diffDays(today(),tw[0]):null,hk=herkansing();
+  const chip=v=>`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`;
+  const rij=({v,t,n})=>{const I=aftelInfo(v,t),laat=n<=3;let tekst='',dots='';
+    if(I&&I.P.length){const g=I.P.filter(x=>x.st==='ok').length,niet=I.P.filter(x=>x.st==='niet'),laag=I.P.filter(x=>x.st==='laag').sort((a,b)=>a.c-b.c);
+      dots=`<span class="af-d" aria-label="${g} van ${I.P.length} onderdelen gehaald">${I.P.map(x=>`<i class="af-${x.st}" title="${esc(x.naam)}${x.c!=null?' · '+f1(x.c):' · nog niet gemeten'}"></i>`).join('')}</span><small class="sub">${g} van ${I.P.length} gehaald${laag.length?` · ${laag.length} onder de 7`:''}${niet.length?` · ${niet.length} nog niet gemeten`:''}</small>`;
+      tekst=niet.length?(laat?`Nog ${niet.length} ${niet.length===1?'onderdeel':'onderdelen'} niet gemeten. Maak eerst die paragraaftoets${niet.length===1?'':'en'}, te beginnen met <b>${esc(niet[0].naam)}</b>: dan weet ${je} waar ${je} ${jouw} laatste dagen aan besteedt.`
+          :`Volgende stap: paragraaftoets <b>${esc(niet[0].naam)}</b>.${I.scheelt?` Een 7 of hoger maakt ${jouw} plan <b>${I.scheelt} min korter</b>.`:''}`)
+        :laag.length?`Volgende stap: <b>${esc(laag[0].naam)}</b> (${f1(laag[0].c)}). Leer wat fout ging met de uitleg en de kaartjes, en maak de paragraaftoets opnieuw.${I.scheelt&&!laat?` Een 7 scheelt ${I.scheelt} minuten.`:''}`
+        :`Alle onderdelen gehaald. Maak de proeftoets en ${jouw} foute vragen.`}
+    else tekst=/lees/i.test(t.naam||'')?'Niet in de app: maak een oefentekst leesvaardigheid en kijk hem na.':D_GEEN;
+    const app=I&&I.P.length;
+    return `<div class="af-r">${chip(v)}<span class="tx"><span class="af-h"><b>${n===1?'Morgen':'Nog '+n+' dagen'}</b> · ${esc(v.naam)} <span class="af-f${laat?' laat':''}">${laat?'laatste dagen':'leren en meten'}</span></span>
+      <small class="sub">${esc(nice(t.datum))} · ${esc(tNaam(v,t))}</small>${dots?`<span class="af-dr">${dots}</span>`:''}<small class="af-nx">${tekst}</small>
+      ${app?`<span class="row" style="margin-top:6px;gap:8px"><button class="btn sm" data-go="${v.id}" data-mode="toets" data-tid="${esc(t.id)}">Oefenen</button>${ouder?`<button class="btn ghost sm" data-print="${v.id}" data-tid="${esc(t.id)}">Oefentoets printen</button>`:''}</span>`:''}</span></div>`};
+  return `<div class="card stack aftel"><span class="tag">${twN!=null&&twN<=AFTEL?`Nog ${twN} ${twN===1?'dag':'dagen'} tot de toetsweek`:'Aftellen naar '+jouw+' toetsen'}</span>
+    <span class="sub af-in">${ouder?'Zo werkt ze':'Zo werk je'}: eerst leren met de uitleg, de begrippen en de kaartjes. Dan de paragraaftoets maken, ook als ${je} denkt dat ${je} het nog niet goed kent. Een laag cijfer is geen ramp: ${jouw} plan wordt er niet langer door, en ${je} weet precies wat ${je} nog moet leren. In de laatste 3 dagen voor een toets doe${ouder?'t':''} ${je} alleen nog wat niet lukt.${hk?` <b>${ouder?'Ze kan het':'Jij kunt dat'}:</b> bij ${esc(hk.vak)} (${esc(hk.par)}) ging ${je} van een ${f1(hk.van)} naar een ${f1(hk.naar)}.`:''}</span>
+    <span class="af-leg"><i class="af-ok"></i>gehaald <i class="af-laag"></i>onder de 7 <i class="af-niet"></i>nog niet gemeten</span>
+    ${L.slice(0,3).map(rij).join('')}${L.length>3?`<details class="af-meer"${AF_OPEN?' open':''}><summary>Nog ${L.length-3} ${L.length-3===1?'toets':'toetsen'}: ${L.slice(3).map(x=>esc(x.v.afk)).join(', ')}</summary>${L.slice(3).map(rij).join('')}</details>`:''}</div>`}
+let AF_OPEN=false;
+const D_GEEN='Dit vak zit niet in de app: leer met je boek en overhoor jezelf.';
+
 function blokken(s){
   const B=[],split=m=>{const r=[];let left=m;while(left>0){const x=Math.min(SET.blok,left);r.push(x);left-=x}return r};
   if(vrijDag(s))return [];
@@ -1068,6 +1149,7 @@ function rVandaag(){
   </div>
   ${(()=>{if(!isToday)return '';const r=sucLijst().filter(s=>s.d>=addDays(today(),-1));if(!r.length)return '';
     return `<div class="card stack"><span class="tag">Gelukt!</span>${r.map(sucKaart).join('')}<span class="sub" style="font-size:.85rem">${isOuder()?'Ze vindt':'Je vindt'} ${r.length===1?'deze':'ze'} ook bij Cijfers onder <b>${isOuder()?'Wat ze al kon':'Wat ik al kon'}</b>.</span></div>`})()}
+  ${isToday?aftelKaart():''}
   ${(()=>{if(!isToday||vrijDag(dag))return '';const m=addDays(dag,1);if(vrijDag(m))return '';
     const BM=blokStatus(m).filter(b=>!b.later),open=BM.filter(b=>!b.done).reduce((a,b)=>a+b.min,0),max=capDag(m)+(vrijZa(m)?0:(SET.rekMin??DEF.rekMin));
     if(!(open>max&&open>=60))return '';const kan=BM.filter(b=>b.hwt&&!b.done&&!b.hwt.klaar).sort((a,b)=>a.min-b.min);if(!kan.length)return '';
@@ -1119,6 +1201,8 @@ function rVandaag(){
   document.querySelectorAll('#v-vandaag details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
   $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
   sucBind($('#v-vandaag'));
+  const afm=$('#v-vandaag .af-meer');if(afm)afm.ontoggle=()=>{AF_OPEN=afm.open};
+  document.querySelectorAll('#v-vandaag [data-print]').forEach(b=>b.onclick=()=>{const v=vakOf(b.dataset.print),t=v&&(v.toetsen||[]).find(x=>x.id===b.dataset.tid);if(t)PrintToets.toon(v.id,t,OEF[v.id]||{},{toets:tNaam(v,t),datum:nice(t.datum)})});
   const keys=new Set(L.map(e=>e.key));
   document.querySelectorAll('[data-blk]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-stop]'))return;const k=b.dataset.blk;if(B.find(x=>x.key===k)?.ok)return;
     if(keys.has(k))delLog(dag,k);else addLog({d:dag,key:k,vak:b.dataset.vak,soort:b.dataset.soort,min:+b.dataset.min,t:Date.now()})});
