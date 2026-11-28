@@ -18,7 +18,7 @@ window.PrintToets=(()=>{
   const lijst=k=>Array.isArray(k)&&k.length?`<ul class="pv-k">${k.map(x=>`<li>${F(x)}</li>`).join('')}</ul>`:'';
   /* hoe een vraag op papier komt; null = alleen in de app */
   function vorm(q){
-    if(q.type||q.tvIn||q.in)return null;
+    if(q.type||q.tvIn)return null;
     if(/\(plaatje\)/.test(q.q||''))return null;
     if(q.open&&q.open.k)return {q:q.open.q||q.q,soort:'open',ant:lijst(q.open.k)};
     if(q.t==='open')return {q:q.q,soort:'open',ant:lijst(q.k)+(q.vb&&q.vb[0]?`<p class="pv-vb"><i>Voorbeeld:</i> ${F(q.vb[0])}</p>`:'')};
@@ -29,22 +29,27 @@ window.PrintToets=(()=>{
     const tekst=q.tv||q.q;
     return {q:tekst,soort:st?'reken':String(q.a||'').replace(/<[^>]+>/g,'').length>45?'open':'kort',ant:F(q.a)+st};
   }
-  function kies(vid,t,st){const V=VAKDATA[vid];if(!V)return [];
+  function kies(vid,t,st){const V=VAKDATA[vid];if(!V)return [];if(typeof V.vers==='function')V.vers();
     const al=Oefen.allePars(vid),ps=t&&t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al;
-    const S=V.SECS.filter(s=>s.par!=='mix'&&ps.includes(s.par)&&!(V.basis&&s.par===V.basis.par)),si=new Map(S.map((s,i)=>[s.id,i]));
+    let S=V.SECS.filter(s=>s.par!=='mix'&&ps.includes(s.par)&&!(V.basis&&s.par===V.basis.par));
+    /* V.printPar (wiskunde: 'ot', de oefentoets zoals bij de docent): heeft een vak een onderdeel dat precies de vorm van de toets heeft, dan alleen dat */
+    if(V.printPar&&S.some(s=>s.par===V.printPar))S=S.filter(s=>s.par===V.printPar);
+    const si=new Map(S.map((s,i)=>[s.id,i]));
     const pool=V.Q.filter(q=>si.has(q.o)).map(q=>({q,v:vorm(q)})).filter(x=>x.v);
-    const N=REKEN[vid]?12:20,uit=[],neem=x=>{if(x&&!uit.includes(x)&&uit.length<N)uit.push(x)};
+    const N=V.printN||(REKEN[vid]?12:20),uit=[],soort=x=>x.q.id.replace(/\d+$/,''),neem=x=>{if(x&&!uit.includes(x)&&uit.length<N)uit.push(x)};
     const fout=new Set(st&&st.wrong||[]);
     shuf(pool.filter(x=>fout.has(x.q.id))).slice(0,6).forEach(neem);
     /* uit elk onderdeel minstens één, met voorkeur voor een open vraag (op de toets de meeste punten) */
     S.forEach(s=>{if(uit.some(x=>x.q.o===s.id))return;const l=shuf(pool.filter(x=>x.q.o===s.id&&!uit.includes(x)));neem(l.find(x=>x.v.soort==='open')||l[0])});
+    /* daarna eerst soorten die er nog niet in zitten (gegenereerde sommen: ot2top1, ot2top2 … zijn dezelfde soort) */
+    shuf(pool.filter(x=>!uit.includes(x))).sort((a,b)=>uit.some(y=>soort(y)===soort(a))-uit.some(y=>soort(y)===soort(b))).forEach(x=>{if(!uit.some(y=>soort(y)===soort(x)))neem(x)});
     shuf(pool.filter(x=>!uit.includes(x))).forEach(neem);
     return uit.sort((a,b)=>si.get(a.q.o)-si.get(b.q.o)).map(x=>Object.assign({},x,{fout:fout.has(x.q.id),par:(secOf(V,x.q.o)||{}).par}))}
   const secOf=(V,id)=>V.SECS.find(s=>s.id===id);
   const regels=n=>`<div class="pv-l">${'<span></span>'.repeat(n)}</div>`;
   const LET='abcdef';
-  function html(vid,t,lijstQ,o){const V=VAKDATA[vid],PN=V.PN||{},min=Math.max(30,Math.min(60,Math.round(lijstQ.reduce((a,x)=>a+({open:3,reken:5,kort:1.5,mc:1}[x.v.soort]||2),0)/5)*5));
-    const vr=lijstQ.map((x,i)=>`<li class="pv-v"><div class="pv-q">${F(x.v.q)}</div>${x.v.soort==='mc'?`<ol class="pv-o">${x.v.opts.map((op,j)=>`<li><b>${LET[j]}</b> ${F(op)}</li>`).join('')}</ol>`:''}${regels({open:4,reken:6,kort:1,mc:0}[x.v.soort]??2)}</li>`).join('');
+  function html(vid,t,lijstQ,o){lijstQ=lijstQ.concat(o.extra||[]);const V=VAKDATA[vid],PN=V.PN||{},min=Math.max(30,Math.min(60,Math.round(lijstQ.reduce((a,x)=>a+({open:3,reken:5,kort:1.5,mc:1,teken:6}[x.v.soort]||2),0)/5)*5));
+    const vr=lijstQ.map((x,i)=>`<li class="pv-v"><div class="pv-q">${F(x.v.q)}</div>${x.v.soort==='mc'?`<ol class="pv-o">${x.v.opts.map((op,j)=>`<li><b>${LET[j]}</b> ${F(op)}</li>`).join('')}</ol>`:''}${x.v.soort==='teken'?'<div class="pv-g"></div>':regels({open:4,reken:6,kort:1,mc:0}[x.v.soort]??2)}</li>`).join('');
     const an=lijstQ.map((x,i)=>`<li><div class="pv-a">${x.v.ant}</div><small class="pv-p">${esc(PN[x.par]||x.par||'')}${x.fout?' · stond bij je foute vragen':''}</small></li>`).join('');
     return `<div class="pv-bar"><b>Oefentoets ${esc(V.naam)}</b><span class="pv-knop"><button class="btn" id="pv-print">Printen</button><button class="btn ghost" id="pv-nieuw">Andere vragen</button><button class="btn ghost" id="pv-dicht">Sluiten</button></span>
       <small>Print hem, of gebruik hem om haar te overhoren: vragen bovenaan, antwoorden op de laatste bladzijde. Elke keer andere vragen; haar foute vragen komen eerst.</small></div>
@@ -59,7 +64,7 @@ window.PrintToets=(()=>{
         <ol class="pv-lijst">${an}</ol>
         <p class="pv-score">Goed: ______ van ${lijstQ.length}</p></div>
     </div>`}
-  function toon(vid,t,st,o){const L=kies(vid,t,st);if(!L.length){alert('Voor dit vak zijn er (nog) geen vragen die op papier kunnen.');return}
+  function toon(vid,t,st,o){const L=kies(vid,t,st),V=VAKDATA[vid];o=Object.assign({},o,{extra:typeof V.printExtra==='function'?V.printExtra().map(e=>({q:{id:'x',o:''},v:Object.assign({},e,{ant:F(e.ant)}),par:e.par})):[]});if(!L.length){alert('Voor dit vak zijn er (nog) geen vragen die op papier kunnen.');return}
     let el=document.getElementById('pv');if(!el){el=document.createElement('div');el.id='pv';document.body.appendChild(el)}
     el.innerHTML=html(vid,t,L,o||{});document.body.classList.add('pv-aan');el.scrollTop=0;scrollTo(0,0);
     el.querySelector('#pv-print').onclick=()=>window.print();

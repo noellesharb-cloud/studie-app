@@ -166,7 +166,7 @@ window.Oefen=(()=>{
       start('oefen',[...fout,...shuf(al.filter(id=>!fout.includes(id)))].slice(0,X.n),X.titel)};
     if(q('#tv-f'))q('#tv-f').onclick=()=>{if(WR().length)start('fout',shuf(WR()),'Mijn foute vragen')};
     if(q('#tv-t'))q('#tv-t').onclick=()=>start('toets',toetsIds(),'Proeftoets');
-    el.querySelector('#toets').onclick=()=>start('toets',toetsIds(),'Proeftoets');
+    el.querySelector('#toets').onclick=()=>{vers();start('toets',toetsIds(),'Proeftoets')};
     if(q('#tvboek'))q('#tvboek').onclick=()=>start('tvorm',tvIds(),'Oefentoets uit het boek');
     el.querySelectorAll('[data-tvp]').forEach(b=>b.onclick=()=>start('tvorm',tvParIds(b.dataset.tvp),'Toetsvorm '+(V.PN[b.dataset.tvp]||b.dataset.tvp),null,b.dataset.tvp));
     el.querySelector('#fouten').onclick=()=>{if(WR().length)start('fout',shuf(WR()),'Mijn foute vragen')};
@@ -278,12 +278,14 @@ window.Oefen=(()=>{
      Is de paragraaftoets al eens gehaald, of heeft de paragraaf te weinig meerkeuzevragen, dan is er geen tussentoets nodig. */
   const mcVraag=q=>!q.type&&q.t!=='open'&&!q.in&&Array.isArray(q.f)&&q.f.length>=1;
   const ttPool=p=>V.Q.filter(q=>secOf(q.o).par===p&&mcVraag(q));
-  const ttHeeft=p=>ttPool(p).length>=3;
+  const ttHeeft=p=>ttPool(p).length>=3&&!((VF||V).geenTT||[]).includes(p);
   const ttGehaald=p=>((ST.ttoets||{})[p]||0)>=7||!!(ST.ptoets[p]&&ST.ptoets[p].best>=7);
   const ttNodig=p=>ttHeeft(p)&&!ttGehaald(p);
   function ttoets(p){const pool=ttPool(p),pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(pool.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
     const rest=shuf(pool.map(q=>q.id).filter(id=>!pick.includes(id)));start('ttoets',shuf([...shuf(pick).slice(0,6),...rest].slice(0,6)),'Tussentoets '+(V.PN[p]||p),null,p)}
-  function ptoets(p){if(ttNodig(p))return ttoets(p);const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
+  /* vers (28 nov): een vak met gegenereerde sommen (wiskunde, oefentoets zoals bij Van Neck) maakt voor elke toets nieuwe getallen */
+  const vers=()=>{const f=(VF||V).vers;if(typeof f==='function')f()};
+  function ptoets(p){if(ttNodig(p))return ttoets(p);vers();const pick=[];V.SECS.filter(s=>s.par===p).forEach(s=>{const l=shuf(V.Q.filter(q=>q.o===s.id));if(l.length)pick.push(l[0].id)});
     const rest=shuf(parIds(p).filter(id=>!pick.includes(id)));let no=0;
     const ids=[...pick,...rest].filter(id=>{if(QM[id].t!=='open')return true;return ++no<=3});
     start('ptoets',shuf(ids.slice(0,10)),'Paragraaftoets '+(V.PN[p]||p),null,p)}
