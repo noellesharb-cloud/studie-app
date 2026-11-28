@@ -260,6 +260,19 @@ input.nm{width:100%}
 .dot.on{background:var(--flame);border-color:var(--flame);color:#1D2842;font-weight:700}
 .dot.now{outline:2px solid var(--ink);outline-offset:1px}
 .dot.vak{border-style:dashed;color:var(--soft);background:transparent}
+.sk-knop{margin-top:10px;font-size:.9rem}
+.sk-kal{margin-top:10px;display:flex;flex-direction:column;gap:14px}
+.sk-st{display:flex;gap:18px;flex-wrap:wrap;font-size:.92rem}.sk-st b{font-family:var(--display);font-size:1.4rem;margin-right:4px}
+.sk-m>b{display:block;margin-bottom:6px;text-transform:capitalize}
+.sk-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px;text-align:center}
+.sk-h{font-size:.72rem;color:var(--soft)}
+.sk-d{display:flex;flex-direction:column;align-items:center;min-height:38px;font-size:.68rem;color:var(--soft)}
+.sk-d small{line-height:1}
+.kf{width:20px;height:26px}
+.kf.aan path{fill:var(--flame)}.kf.aan .kf2{fill:var(--flame2)}
+.kf.uit path,.kf.uit .kf2{fill:var(--line)}
+.kf.half path{fill:none;stroke:var(--flame);stroke-width:1.5;stroke-dasharray:2 2}.kf.half .kf2{display:none}
+.sk-d.nu small{font-weight:700;color:var(--ink)}
 .vkr{display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:center;margin-top:6px}.vkr .nm{grid-column:1/3;width:100%;text-align:left}.vkr input[type=date]{width:100%;min-width:0}
 div.blk{cursor:default}
 button.ck{background:transparent;padding:0;cursor:pointer;width:32px!important;height:32px!important;font-size:1.05rem}
@@ -1109,6 +1122,22 @@ function schuifRij(b){const e=b.schuif,v=vakOf(b.vak||b.cv),k=schuifSoort(b),pt=
   const nd=e.inh&&inhaalDag(e),fd=e.inh&&!e.inh.prep&&inhFold(e),waar=nd?`Inhalen op ${nice(nd)}.`:fd?`De minuten komen erbij bij de toetsvoorbereiding van ${v?v.naam.toLowerCase():'dit vak'}, verdeeld over de dagen tot de toets, zodra deze dag af is.`:k==='prep'?(pt&&pt.n<=1?'Let op: de toets is morgen, er is geen dag meer om dit in te halen.':`Wordt verdeeld over de dagen tot de toets${pt?' ('+nice(pt.t.datum)+')':''}, zodra deze dag af is.`):'Vervalt vandaag.';
   return `<div class="blk done schuif"><span class="ck">→</span>${v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:''}<span class="tx">${esc(b.titel)}<small>Doorgeschoven door je ouder. Hoeft vandaag niet af voor je reeks. ${waar}${b.prog?` Wat je al deed (${b.prog} min) telt wel.`:''}</small>${isOuder()&&canWrite?`<span class="row" style="margin-top:6px"><button class="link" data-ontschuif="${esc(b.key)}" data-stop>Terugzetten</button></span>`:''}</span><span class="mn"><s>${b.min} min</s></span></div>`}
 /* ---------- tab: vandaag ---------- */
+/* ---------- reeks uitklappen (afspraak 28 nov 2026, zoals bij Duolingo) ----------
+   Alle dagen sinds de start als vlammetjes per maand. Oranje = gehaald, en ook een vrije dag of vakantie: dan heeft ze niets gedaan
+   waardoor ze haar reeks verliest (de ouder gaf haar vrij, bijv. voor een optreden). Het getal 'dagen op rij' telt alleen dagen dat ze
+   echt iets deed; vrije dagen breken de reeks niet. Grijs = niet gehaald, gestippeld = vandaag nog bezig, leeg = nog niet. */
+let SK_OPEN=false;
+function dagStand(d){const st=startDag();if(!st||d<st||d>today())return d>today()?'later':'voor';if(vrijDag(d))return 'vrij';if(gehaald(d))return 'on';return d===today()?'bezig':'mis'}
+const KF=c=>`<svg viewBox="0 0 24 32" class="kf ${c}" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z"/><path class="kf2" d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z"/></svg>`;
+function skKalender(){const st=startDag(),t=today();if(!st)return '';const MND=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  let on=0,lang=0,cur=0;for(let d=st;d<=t;d=addDays(d,1)){const x=dagStand(d);if(x==='on')on++;if(x==='on'||x==='vrij'){if(x==='on')cur++}else if(x==='mis')cur=0;lang=Math.max(lang,cur)}
+  const maanden=[];for(let m=st.slice(0,7);m<=t.slice(0,7);){maanden.push(m);const [y,mm]=m.split('-').map(Number);m=mm===12?`${y+1}-01`:`${y}-${String(mm+1).padStart(2,'0')}`}
+  const titel={on:'gehaald',vrij:'vrij gekregen: telt niet tegen je reeks',mis:'niet gehaald',bezig:'vandaag: nog bezig',later:'',voor:''};
+  return `<div class="sk-kal"><div class="sk-st"><span><b>${on}</b> dagen gehaald</span><span><b>${Math.max(lang,SET.record||0)}</b> langste reeks</span></div>
+    ${maanden.map(m=>{const [y,mm]=m.split('-').map(Number),eerste=`${m}-01`,leeg=(pd(eerste).getDay()+6)%7,n=new Date(y,mm,0).getDate();
+      return `<div class="sk-m"><b>${MND[mm-1]} ${y}</b><div class="sk-g">${['ma','di','wo','do','vr','za','zo'].map(x=>`<span class="sk-h">${x}</span>`).join('')}${'<span></span>'.repeat(leeg)}${[...Array(n)].map((_,i)=>{const d=`${m}-${String(i+1).padStart(2,'0')}`,x=dagStand(d);
+        return `<span class="sk-d ${x}${d===t?' nu':''}" title="${esc(nice(d))}${titel[x]?' · '+titel[x]:''}${x==='vrij'?' ('+esc(vrijNaam(d))+')':''}">${x==='on'||x==='vrij'?KF('aan'):x==='mis'?KF('uit'):x==='bezig'?KF('half'):''}<small>${i+1}</small></span>`}).join('')}</div></div>`}).join('')}
+    <span class="sub" style="font-size:.82rem">Oranje: gehaald. Ook een vrije dag of vakantie is oranje: dan ${isOuder()?'heeft ze':'heb je'} niets gedaan waardoor ${isOuder()?'haar':'je'} reeks stopt.</span></div>`}
 const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
 /* ---------- successen (afspraak 19 nov 2026): wat haar op school lukte, in haar eigen woorden, naast hoeveel ze daarvoor oefende.
    Zo ziet ze zelf het verband tussen oefenen en resultaat. Opslag: oefen/successen = {lijst:[{id,d,vak,wat,cijfer,hoe,t,door}],seed}.
@@ -1171,7 +1200,9 @@ function rVandaag(){
   <div class="card streak">
     <div class="row" style="gap:14px;flex-wrap:nowrap">${FLAME}<div style="flex:1;min-width:0"><b class="sn">${n}</b> <span>${n===1?'dag':'dagen'} op rij</span>
       <div class="sub" style="font-size:.9rem">${vrijDag(today())?`${esc(vrijNaam(today()))}: je reeks staat op pauze. Hij gaat gewoon verder${eigenVrij(today())?'':' na de vakantie'}.`:gehaald(today())?'Vandaag gehaald. Morgen weer!':open.length&&isToday?`Nog ${open.length} ${open.length===1?'blok':'blokken'} voor je reeks vandaag.`:'Maak vandaag je dagplan af voor je reeks.'}${SET.record?` · record ${SET.record}`:''}</div></div></div>
-    <div class="dots">${week.map(d=>`<span class="dot${vrijDag(d)?' vak':st&&d>=st&&gehaald(d)?' on':''}${d===today()?' now':''}" title="${nice(d)}${vrijDag(d)?' · '+esc(vrijNaam(d)):''}">${DAGEN[pd(d).getDay()]}</span>`).join('')}</div>
+    <div class="dots">${week.map(d=>`<span class="dot${dagStand(d)==='on'||dagStand(d)==='vrij'?' on':vrijDag(d)?' vak':''}${d===today()?' now':''}" title="${nice(d)}${vrijDag(d)?' · '+esc(vrijNaam(d)):''}">${DAGEN[pd(d).getDay()]}</span>`).join('')}</div>
+    <button class="link sk-knop" id="sk-open" aria-expanded="${SK_OPEN}">${SK_OPEN?'Minder tonen ▴':`Alle dagen sinds ${esc(nice(st).replace(/^\S+ /,''))} ▾`}</button>
+    ${SK_OPEN?skKalender():''}
   </div>
   <div class="card stack">
     <div class="daynav"><button class="btn ghost" id="prev" aria-label="Vorige dag">←</button><b>${isToday?'Vandaag, ':''}${nice(dag)}</b><button class="btn ghost" id="next" aria-label="Volgende dag">→</button></div>
@@ -1232,6 +1263,7 @@ function rVandaag(){
   document.querySelectorAll('#v-vandaag details.stof').forEach(d=>d.ontoggle=()=>{d.open?STOF_OPEN.add(d.dataset.k):STOF_OPEN.delete(d.dataset.k)});
   $('#prev').onclick=()=>{dag=addDays(dag,-1);render()};$('#next').onclick=()=>{dag=addDays(dag,1);render()};
   sucBind($('#v-vandaag'));
+  {const b=$('#sk-open');if(b)b.onclick=()=>{SK_OPEN=!SK_OPEN;render()}}
   const afm=$('#v-vandaag .af-meer');if(afm)afm.ontoggle=()=>{AF_OPEN=afm.open};
   document.querySelectorAll('#v-vandaag [data-print]').forEach(b=>b.onclick=()=>{const v=vakOf(b.dataset.print),t=v&&(v.toetsen||[]).find(x=>x.id===b.dataset.tid);if(t)PrintToets.toon(v.id,t,OEF[v.id]||{},{toets:tNaam(v,t),datum:nice(t.datum)})});
   const keys=new Set(L.map(e=>e.key));
