@@ -659,7 +659,15 @@ function dagenTotToets(vid,s){let best=1e9;(vakOf(vid)?.toetsen||[]).forEach(t=>
    eerstvolgende toetsweek, dus in deze periode. Een toets in een latere periode telt nog niet mee (bijv. Latijn H7/H8 in februari). */
 const TOETSWEKEN=[['2026-12-07','2026-12-11'],['2027-02-08','2027-02-12'],['2027-04-12','2027-04-16'],['2027-06-21','2027-06-29']];
 const periodeEind=s=>(TOETSWEKEN.find(w=>w[1]>=s)||[null,'9999-12-31'])[1];
-const heeftToets=(vid,s)=>{const e=periodeEind(s);return (vakOf(vid)?.toetsen||[]).some(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>0&&t.datum<=e)};
+/* 28 nov: hoort de oefenapp van een vak bij toets t? Met vinkjes in Cijfers: als minstens één aangevinkt onderdeel in de app staat.
+   Zonder vinkjes: alleen de eerste echte toets (geen D-toets) sinds de app er is (SET.streakStart). Aanleiding: na de toetsweek van
+   december gaf de app oefenblokken wiskunde H3 voor de toets van februari (H2 en H7), die nog niet in de app staat, en (bij vooruitkijken
+   vóór 12 dec) levensbeschouwing islam voor de toets hindoeïsme. Staat de stof van een volgende toets in de app, vink hem dan aan in Cijfers. */
+function appDekt(vid,t){if(!t||!window.VAKDATA||!VAKDATA[vid]||!window.Oefen)return false;const al=Oefen.allePars(vid),eigen=x=>Array.isArray(x.stof)&&x.stof.length;
+  if(eigen(t))return t.stof.some(p=>al.includes(p));
+  const start=SET.streakStart||DEF.streakStart;
+  return !(vakOf(vid)?.toetsen||[]).some(x=>x!==t&&x.datum&&x.datum>=start&&x.datum<t.datum&&!isD(x)&&!(eigen(x)&&!x.stof.some(p=>al.includes(p))))}
+const heeftToets=(vid,s)=>{const e=periodeEind(s);return (vakOf(vid)?.toetsen||[]).some(t=>t.datum&&num(t.cijfer)==null&&diffDays(s,t.datum)>0&&t.datum<=e&&appDekt(vid,t))};
 /* opwarmen (zondag t/m donderdag): eerst rekenen (3 min rekensprint + 5 sommen rekenregels van vandaag), daarna per vak
    met een oefenapp en een komende toets 3 vragen uit eerdere paragrafen, vóór het huiswerk van dat vak (ongeveer 2 min) */
 const RR=()=>!!(window.VAKDATA&&VAKDATA.wi&&VAKDATA.wi.basis);
@@ -667,14 +675,14 @@ const opwarmRekenMin=()=>SET.sprintMin+(RR()?5:0);
 const WARM_MIN=2;
 function warmVakken(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchooldag(s),seen=new Set(),R=[];
   hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||h.klaar||!APPS().includes(v.id)||!heeftToets(v.id,s)||seen.has(v.id))return;
-    const par=h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id);if(!Oefen.warmPool(v.id,par).length)return;
+    const par=h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id,s);if(!Oefen.warmPool(v.id,par).length)return;
     seen.add(v.id);R.push({vid:v.id,par,h})});return R}
 const opwarmMin=s=>vrijZa(s)||vrijDag(s)?0:opwarmRekenMin()+WARM_MIN*warmVakken(s).length;
 /* bijhouden: direct na het huiswerk van een vak met een oefenapp en een komende toets, 20 minuten dezelfde paragraaf in de app */
 /* geenBij:true bij een huiswerk = die dag geen bijhouden voor dat vak: het leerwerk (leer, lpar) komt ervoor in de plaats (afspraak 10 nov) */
 function bijhouden(s){if(vrijZa(s)||vrijDag(s))return [];const nd=volgendeSchooldag(s),seen=new Set(),R=[];
   hwVoor(nd).forEach(h=>{const v=hwVak(h.vak);if(!v||h.geenBij||!APPS().includes(v.id)||!heeftToets(v.id,s)||seen.has(v.id)||(h.min||0)<10)return;seen.add(v.id);
-    R.push({vid:v.id,par:h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id),h})});
+    R.push({vid:v.id,par:h.par&&Oefen.pars(v.id).includes(h.par)?h.par:volgendePar(v.id,s),h})});
   /* past het niet binnen het maximum, dan wordt elk bijhoudblok even korter (niet korter dan 10 min). Is er daarvoor geen ruimte,
      dan vallen de vakken met de verste toets af; is het huiswerk alleen al te veel, dan is er die dag geen bijhouden (afspraak 9 nov) */
   const room=capDag(s)-huiswerkMin(s)-opwarmMin(s);
@@ -758,7 +766,7 @@ function maakSchedule(van,credit,zonderSeed){
   const Q=[];
   L.forEach(({v,t})=>{const z=zwaarT(v,t),vol=leertijd(v,t);
     /* de oefenapp hoort bij de eerstvolgende toets van dat vak; alleen daar telt beheersing mee */
-    const app=APPS().includes(v.id)&&!eerste.has(v.id)&&t.datum>=today();if(app)eerste.add(v.id);
+    const app=APPS().includes(v.id)&&appDekt(v.id,t)&&!eerste.has(v.id)&&t.datum>=today();if(app)eerste.add(v.id);
     const bh=app&&VAKDATA[v.id].volledig!==false&&eigenLT(t)==null?beheersing(v.id,t):null; /* eigen leertijd = vast, niet korter door paragraaftoetsen */let tot=bh?Math.round(vol*bh.f/5)*5:vol,d=addDays(t.datum,-1),k=0;
     tot=Math.max(0,tot)+(FOLD[v.id+'|'+t.id]||0);(A._tot=A._tot||{})[v.id+'|'+t.id]={vol,tot,bh,nog:Math.max(0,tot-(credit[v.id+'|'+t.id]||0))};tot=Math.max(0,tot-(credit[v.id+'|'+t.id]||0)-(seed[v.id+'|'+t.id]||0)-hwPrepMin(v.id,t));
     Q.push({v,t,z,tot,d,k});});
@@ -845,7 +853,7 @@ function toetsVan(vid,s){const e=periodeEind(s);return (vakOf(vid)?.toetsen||[])
 /* paragrafen in de app die bij de toetsstof horen (vinkjes bij de toets in Cijfers; niets aangevinkt = alles) */
 function stofPars(vid,t){const P=Oefen.pars(vid),st=t&&Array.isArray(t.stof)?t.stof.filter(p=>P.includes(p)):[];return st.length?P.filter(p=>st.includes(p)):P}
 /* welke paragraaf is aan de beurt: de eerste zonder gehaalde paragraaftoets, alleen uit de toetsstof (17 nov: aardrijkskunde alleen §3.1–3.3) */
-function volgendePar(vid){const st=OEF[vid]||{},p=stofPars(vid,toetsVan(vid,today()));return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
+function volgendePar(vid,s){const st=OEF[vid]||{},p=stofPars(vid,toetsVan(vid,s||today()));return p.find(x=>!((st.ptoets||{})[x]&&st.ptoets[x].best>=7))||p[0]}
 /* ---------- les-huiswerk (afspraak 17 nov 2026) ----------
    Geschiedenis en levensbeschouwing geven geen huiswerk. Daarom na elke les 10 minuten in de app, zodat de stof niet pas bij de
    toetsvoorbereiding voor het eerst langskomt. De toetsstof (vinkjes in Cijfers, anders alles) wordt in volgorde over de lesdagen tot de
@@ -859,7 +867,7 @@ const planDag=L=>{const g=pd(L).getDay();return g===5?addDays(L,2):g===6?addDays
 function lesDagen(vid,t){const R=[];for(let d=LES_VAN,k=0;d<t.datum&&k<200;d=addDays(d,1),k++)if(LESDAGEN[vid].includes(pd(d).getDay())&&schooldag(d)&&planDag(d)<t.datum&&!vrijDag(planDag(d))&&inPeriode(t,d))R.push(d);return R}
 const LESC={};
 function lesBlokken(s){if(LESC[s])return LESC[s];const R=[];
-  if(!vrijDag(s)&&!vrijZa(s)&&!inToetsweek(s)&&window.VAKDATA)Object.keys(LESDAGEN).forEach(vid=>{if(!VAKDATA[vid])return;const t=toetsVan(vid,s);if(!t||t.stofOnbekend)return;
+  if(!vrijDag(s)&&!vrijZa(s)&&!inToetsweek(s)&&window.VAKDATA)Object.keys(LESDAGEN).forEach(vid=>{if(!VAKDATA[vid])return;const t=toetsVan(vid,s);if(!t||t.stofOnbekend||!appDekt(vid,t))return;
     /* 28 nov (afspraak met de ouder): in de laatste AFTEL dagen voor de toets geen losse blokjes van 10 min meer; die tijd zit in de toetsvoorbereiding */
     if(diffDays(s,t.datum)<=AFTEL)return;
     const Ls=lesDagen(vid,t),i=Ls.findIndex(L=>planDag(L)===s);if(i<0)return;
@@ -879,7 +887,7 @@ function aftelLijst(s){const tw=TOETSWEKEN.find(w=>w[1]>=s),twIn=tw&&diffDays(s,
   /* zodra de toetsweek binnen AFTEL dagen begint, staan alle toetsen van die week op de kaart */
   VAK.forEach(v=>(v.toetsen||[]).forEach(t=>{if(!t.datum||num(t.cijfer)!=null||dubbelVan(v,t))return;const n=diffDays(s,t.datum);if(n>=1&&(n<=AFTEL||twIn&&t.datum<=tw[1]))L.push({v,t,n})}));
   return L.sort((a,b)=>a.n-b.n||(a.v.volgorde??0)-(b.v.volgorde??0))}
-function aftelInfo(v,t){const D=window.VAKDATA&&VAKDATA[v.id];if(!D||!window.Oefen)return null;const e=toetsVan(v.id,today());if(!e||e.id!==t.id)return null;
+function aftelInfo(v,t){const D=window.VAKDATA&&VAKDATA[v.id];if(!D||!window.Oefen)return null;const e=toetsVan(v.id,today());if(!e||e.id!==t.id||!appDekt(v.id,t))return null;
   const al=Oefen.allePars(v.id),ps=t.stof&&t.stof.some(p=>al.includes(p))?al.filter(p=>t.stof.includes(p)):al,pt=(OEF[v.id]||{}).ptoets||{};
   const P=ps.map(p=>{const r=pt[p];return {p,naam:(D.PN||{})[p]||p,c:r?r.best:null,st:!r?'niet':r.best>=7?'ok':'laag'}});
   const scheelt=D.volledig!==false&&eigenLT(t)==null&&ps.length?Math.round(leertijd(v,t)*0.5/ps.length/5)*5:0;return {P,scheelt}}
@@ -935,7 +943,7 @@ function blokken(s){
       uit:`Les-huiswerk${vr?' van de les van vrijdag':''}: voor ${V.naam.toLowerCase()} krijg je geen huiswerk, dus zo blijft de stof bij tot de toets van ${nice(x.t.datum)}. `+
         (x.nieuw?`Lees de uitleg van ${pn} en doe een korte ronde. Is het in de les nog niet geweest, dan leer je het zo alvast.`:`Alle stof is langs geweest. Begin met de terugblik, dan de herhaalronde van ${pn}.`)+` ${x.min} minuten. De tijd telt vanzelf mee.`})});
   const SC=schedule();
-  prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
+  prepVoor(s).forEach(p=>{const app=APPS().includes(p.v.id)&&appDekt(p.v.id,p.t),ps=app?[p.min]:split(p.min),info=(SC._tot||{})[p.v.id+'|'+p.t.id],bh=info&&info.bh;
     const pto=window.ptoVan?ptoVan(p.v.id,p.t):null;
     ps.forEach((m,i)=>B.push({key:`${p.v.id}-${p.t.id}-${i}`,tijd:tijdRegel(info),prep:{vid:p.v.id,tid:p.t.id,zwaar:p.zwaar},pto,vak:p.v.id,soort:app?'oefenen':'leren',auto:app?p.v.id:null,mode:app?'toets':null,min:m,par:null,
       titel:`${p.v.naam}: ${app?'toetsvoorbereiding in de app':'leren'} voor ${tNaam(p.v,p.t)}${ps.length>1?` · blok ${i+1} van ${ps.length}`:''}`,
@@ -947,7 +955,7 @@ function blokken(s){
      dan gaat het volgende inhaalblok naar de volgende vrijdag of zaterdag (inhaalPlan). */
   const room=capDag(s)-B.reduce((a,b)=>a+b.min,0),metToets=APPS().filter(id=>heeftToets(id,s));
   if(!B.some(b=>b.auto&&b.soort!=='opwarm'&&!b.inh)&&metToets.length&&room>=10){
-    const vid=metToets.sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],par=volgendePar(vid);
+    const vid=metToets.sort((a,b)=>dagenTotToets(a,s)-dagenTotToets(b,s))[0],par=volgendePar(vid,s);
     B.push({key:'oefen-'+vid,vak:vid,soort:'oefenen',auto:vid,min:wk?room:Math.min(SET.oefenMin,room),par,titel:`${VAKDATA[vid].naam}: oefenen in de app`,uit:`Volgende stap: ${VAKDATA[vid].PN[par]||par}. Werk de onderdelen door en sluit af met de paragraaftoets. De tijd telt vanzelf mee.`});
   }
   if(!B.length)B.push({key:'sprint',soort:'sprint',auto:'sprint',min:SET.sprintMin,titel:'Sprint',uit:'Een rekensprint of woordjessprint.'});
