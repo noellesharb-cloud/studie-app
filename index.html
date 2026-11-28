@@ -262,17 +262,20 @@ input.nm{width:100%}
 .dot.vak{border-style:dashed;color:var(--soft);background:transparent}
 .sk-knop{margin-top:10px;font-size:.9rem}
 .sk-kal{margin-top:10px;display:flex;flex-direction:column;gap:14px}
-.sk-st{display:flex;gap:18px;flex-wrap:wrap;font-size:.92rem}.sk-st b{font-family:var(--display);font-size:1.4rem;margin-right:4px}
+.sk-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sk-st b{font-family:var(--display)}
 .sk-m>b{display:block;margin-bottom:6px;text-transform:capitalize}
-.sk-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px;text-align:center}
-.sk-h{font-size:.72rem;color:var(--soft)}
-.sk-d{display:flex;flex-direction:column;align-items:center;min-height:38px;font-size:.68rem;color:var(--soft)}
-.sk-d small{line-height:1}
-.kf{width:20px;height:26px}
-.kf.aan path{fill:var(--flame)}.kf.aan .kf2{fill:var(--flame2)}
-.kf.uit path,.kf.uit .kf2{fill:var(--line)}
-.kf.half path{fill:none;stroke:var(--flame);stroke-width:1.5;stroke-dasharray:2 2}.kf.half .kf2{display:none}
-.sk-d.nu small{font-weight:700;color:var(--ink)}
+.sk-g{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px;column-gap:0;text-align:center}
+.sk-h{font-size:.72rem;color:var(--soft);padding-bottom:2px}
+.sk-d{position:relative;display:flex;justify-content:center;align-items:center;height:36px}
+.sk-d i{position:relative;z-index:1;font-style:normal;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--soft);font-variant-numeric:tabular-nums}
+.sk-d.on i,.sk-d.vrij i{background:var(--flame);color:#fff;font-weight:800}
+.sk-d.l::before,.sk-d.r::after{content:'';position:absolute;top:2px;height:32px;background:var(--flame);z-index:0}
+.sk-d.l::before{left:0;right:50%}.sk-d.r::after{left:50%;right:0}
+.sk-d.mis i{color:var(--soft);background:var(--grid,#eee)}
+.sk-d.bezig i{border:2px dashed var(--flame);color:var(--ink);font-weight:700}
+.sk-d.nu i{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--flame)}
+.sk-box{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:14px;padding:8px 10px;font-size:.78rem;color:var(--soft);min-width:0}
+.sk-box b{color:var(--ink);font-size:1.4rem;margin:0}
 .vkr{display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:center;margin-top:6px}.vkr .nm{grid-column:1/3;width:100%;text-align:left}.vkr input[type=date]{width:100%;min-width:0}
 div.blk{cursor:default}
 button.ck{background:transparent;padding:0;cursor:pointer;width:32px!important;height:32px!important;font-size:1.05rem}
@@ -591,7 +594,7 @@ const druk=v=>{const c=calc(v);if(!c.Wd||!c.Wr)return false;return c.nodig(SET.d
 const vakantieVan=s=>(SET.vakanties||[]).find(v=>v&&v.van&&v.tot&&s>=v.van&&s<=v.tot);
 /* leertijd per dag en vrije dagen (afspraak 20 nov 2026): de ouder kan per dag de leertijd zetten (bijv. 3 uur op de vrijdag en zaterdag
    vóór de toetsweek) en een hele dag vrij geven (ziek, optreden). SET.dagen = {'2026-11-21':{min:180} | {vrij:1,reden:'Optreden'}}.
-   Een vrije dag is zoals een vakantiedag: niets op het plan, reeks op pauze. Toetsvoorbereiding verdeelt zich vanzelf over de dagen die
+   Een vrije dag is zoals een vakantiedag: niets op het plan, de dag telt mee voor de reeks (sinds 28 nov; daarvoor: reeks op pauze). Toetsvoorbereiding verdeelt zich vanzelf over de dagen die
    er nog zijn; inhaalblokken gaan naar de eerstvolgende vrijdag of zaterdag met ruimte (inhaalPlan). */
 const dagSet=s=>(SET.dagen||{})[s]||null;
 const eigenVrij=s=>{const x=dagSet(s);return x&&x.vrij?x:null};
@@ -1063,8 +1066,10 @@ const gedaanMin=s=>Math.round(logDag(s).filter(e=>!NIETMEE.includes(e.soort)).re
 const isOuder=()=>!!(window.CONFIG&&CONFIG.ouder&&window.WIE&&[].concat(CONFIG.ouder).some(e=>String(e).toLowerCase()===String(WIE).toLowerCase()));
 const planMin=s=>blokStatus(s).filter(b=>!b.later&&!b.schuif).reduce((a,b)=>a+b.min,0);
 function startDag(){return SET.streakStart||DEF.streakStart}
-function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(!vrijDag(d)&&gehaald(d))n++;d=addDays(d,-1);
-  while(d>=st&&(vrijDag(d)||gehaald(d))){if(!vrijDag(d))n++;d=addDays(d,-1)}return n}
+/* 28 nov (afspraak met de ouder): elke oranje dag telt, ook een vrije dag of vakantie. Alleen een dag waarop ze had moeten werken
+   en het niet deed, breekt de reeks. */
+function streak(){const st=startDag();if(!st||today()<st)return 0;let n=0,d=today();if(vrijDag(d)||gehaald(d))n++;d=addDays(d,-1);
+  while(d>=st&&(vrijDag(d)||gehaald(d))){n++;d=addDays(d,-1)}return n}
 
 /* ---------- opslaan ---------- */
 let chain=Promise.resolve();
@@ -1122,22 +1127,25 @@ function schuifRij(b){const e=b.schuif,v=vakOf(b.vak||b.cv),k=schuifSoort(b),pt=
   const nd=e.inh&&inhaalDag(e),fd=e.inh&&!e.inh.prep&&inhFold(e),waar=nd?`Inhalen op ${nice(nd)}.`:fd?`De minuten komen erbij bij de toetsvoorbereiding van ${v?v.naam.toLowerCase():'dit vak'}, verdeeld over de dagen tot de toets, zodra deze dag af is.`:k==='prep'?(pt&&pt.n<=1?'Let op: de toets is morgen, er is geen dag meer om dit in te halen.':`Wordt verdeeld over de dagen tot de toets${pt?' ('+nice(pt.t.datum)+')':''}, zodra deze dag af is.`):'Vervalt vandaag.';
   return `<div class="blk done schuif"><span class="ck">→</span>${v?`<span class="sq s" style="background:var(${COL[(v.volgorde??0)%COL.length]})">${esc(v.afk)}</span>`:''}<span class="tx">${esc(b.titel)}<small>Doorgeschoven door je ouder. Hoeft vandaag niet af voor je reeks. ${waar}${b.prog?` Wat je al deed (${b.prog} min) telt wel.`:''}</small>${isOuder()&&canWrite?`<span class="row" style="margin-top:6px"><button class="link" data-ontschuif="${esc(b.key)}" data-stop>Terugzetten</button></span>`:''}</span><span class="mn"><s>${b.min} min</s></span></div>`}
 /* ---------- tab: vandaag ---------- */
-/* ---------- reeks uitklappen (afspraak 28 nov 2026, zoals bij Duolingo) ----------
-   Alle dagen sinds de start als vlammetjes per maand. Oranje = gehaald, en ook een vrije dag of vakantie: dan heeft ze niets gedaan
-   waardoor ze haar reeks verliest (de ouder gaf haar vrij, bijv. voor een optreden). Het getal 'dagen op rij' telt alleen dagen dat ze
-   echt iets deed; vrije dagen breken de reeks niet. Grijs = niet gehaald, gestippeld = vandaag nog bezig, leeg = nog niet. */
+/* ---------- reeks uitklappen (afspraak 28 nov 2026, zoals de kalender van Duolingo) ----------
+   Per maand de dagen als rondjes; aaneengesloten oranje dagen vormen één band. Oranje = gehaald, en ook een vrije dag of vakantie:
+   dan heeft ze niets gemist (de ouder gaf haar vrij, bijv. voor een optreden). Die dagen tellen ook mee in 'dagen op rij'.
+   Grijs rondje = niet gehaald (breekt de reeks), gestippeld = vandaag nog bezig, alleen het getal = nog niet. */
 let SK_OPEN=false;
 function dagStand(d){const st=startDag();if(!st||d<st||d>today())return d>today()?'later':'voor';if(vrijDag(d))return 'vrij';if(gehaald(d))return 'on';return d===today()?'bezig':'mis'}
 const KF=c=>`<svg viewBox="0 0 24 32" class="kf ${c}" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z"/><path class="kf2" d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z"/></svg>`;
 function skKalender(){const st=startDag(),t=today();if(!st)return '';const MND=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
-  let on=0,lang=0,cur=0;for(let d=st;d<=t;d=addDays(d,1)){const x=dagStand(d);if(x==='on')on++;if(x==='on'||x==='vrij'){if(x==='on')cur++}else if(x==='mis')cur=0;lang=Math.max(lang,cur)}
+  let wk=0,vr=0,lang=0,cur=0;for(let d=st;d<=t;d=addDays(d,1)){const x=dagStand(d);if(x==='on')wk++;if(x==='vrij')vr++;if(x==='on'||x==='vrij'){cur++;lang=Math.max(lang,cur)}else if(x==='mis')cur=0}
   const maanden=[];for(let m=st.slice(0,7);m<=t.slice(0,7);){maanden.push(m);const [y,mm]=m.split('-').map(Number);m=mm===12?`${y+1}-01`:`${y}-${String(mm+1).padStart(2,'0')}`}
-  const titel={on:'gehaald',vrij:'vrij gekregen: telt niet tegen je reeks',mis:'niet gehaald',bezig:'vandaag: nog bezig',later:'',voor:''};
-  return `<div class="sk-kal"><div class="sk-st"><span><b>${on}</b> dagen gehaald</span><span><b>${Math.max(lang,SET.record||0)}</b> langste reeks</span></div>
+  const oranje=d=>{const x=dagStand(d);return x==='on'||x==='vrij'};
+  const titel={on:'gehaald',vrij:'vrij gekregen: telt mee voor je reeks',mis:'niet gehaald',bezig:'vandaag: nog bezig',later:'',voor:''};
+  return `<div class="sk-kal"><div class="sk-st"><span class="sk-box"><b>${wk}</b>dagen gewerkt</span><span class="sk-box"><b>${vr}</b>vrij gekregen</span><span class="sk-box"><b>${Math.max(lang,SET.record||0)}</b>langste reeks</span></div>
     ${maanden.map(m=>{const [y,mm]=m.split('-').map(Number),eerste=`${m}-01`,leeg=(pd(eerste).getDay()+6)%7,n=new Date(y,mm,0).getDate();
-      return `<div class="sk-m"><b>${MND[mm-1]} ${y}</b><div class="sk-g">${['ma','di','wo','do','vr','za','zo'].map(x=>`<span class="sk-h">${x}</span>`).join('')}${'<span></span>'.repeat(leeg)}${[...Array(n)].map((_,i)=>{const d=`${m}-${String(i+1).padStart(2,'0')}`,x=dagStand(d);
-        return `<span class="sk-d ${x}${d===t?' nu':''}" title="${esc(nice(d))}${titel[x]?' · '+titel[x]:''}${x==='vrij'?' ('+esc(vrijNaam(d))+')':''}">${x==='on'||x==='vrij'?KF('aan'):x==='mis'?KF('uit'):x==='bezig'?KF('half'):''}<small>${i+1}</small></span>`}).join('')}</div></div>`}).join('')}
-    <span class="sub" style="font-size:.82rem">Oranje: gehaald. Ook een vrije dag of vakantie is oranje: dan ${isOuder()?'heeft ze':'heb je'} niets gedaan waardoor ${isOuder()?'haar':'je'} reeks stopt.</span></div>`}
+      return `<div class="sk-m"><b>${MND[mm-1]} ${y}</b><div class="sk-g">${['ma','di','wo','do','vr','za','zo'].map(x=>`<span class="sk-h">${x}</span>`).join('')}${'<span></span>'.repeat(leeg)}${[...Array(n)].map((_,i)=>{const d=`${m}-${String(i+1).padStart(2,'0')}`,x=dagStand(d),dow=(pd(d).getDay()+6)%7,o=oranje(d);
+        /* aaneengesloten oranje dagen worden één band, zoals bij Duolingo */
+        const l=o&&dow>0&&i>0&&oranje(addDays(d,-1)),r=o&&dow<6&&i<n-1&&d<t&&oranje(addDays(d,1));
+        return `<span class="sk-d ${x}${l?' l':''}${r?' r':''}${d===t?' nu':''}" title="${esc(nice(d))}${titel[x]?' · '+titel[x]:''}${x==='vrij'?' ('+esc(vrijNaam(d))+')':''}"><i>${i+1}</i></span>`}).join('')}</div></div>`}).join('')}
+    <span class="sub" style="font-size:.82rem">Oranje: je reeks liep door. Een vrije dag of vakantie is ook oranje en telt mee: ${isOuder()?'ze heeft':'je hebt'} dan niets gemist.</span></div>`}
 const FLAME='<svg viewBox="0 0 24 32" width="40" height="52" aria-hidden="true"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-5 3-7 4-11 1 3 2 4 3 4-1-4 0-8 1-11z" fill="var(--flame)"/><path d="M12 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-3 2-4 3-6 0 1 1 2 1 2z" fill="var(--flame2)"/></svg>';
 /* ---------- successen (afspraak 19 nov 2026): wat haar op school lukte, in haar eigen woorden, naast hoeveel ze daarvoor oefende.
    Zo ziet ze zelf het verband tussen oefenen en resultaat. Opslag: oefen/successen = {lijst:[{id,d,vak,wat,cijfer,hoe,t,door}],seed}.
@@ -1199,7 +1207,7 @@ function rVandaag(){
   $('#v-vandaag').innerHTML=`
   <div class="card streak">
     <div class="row" style="gap:14px;flex-wrap:nowrap">${FLAME}<div style="flex:1;min-width:0"><b class="sn">${n}</b> <span>${n===1?'dag':'dagen'} op rij</span>
-      <div class="sub" style="font-size:.9rem">${vrijDag(today())?`${esc(vrijNaam(today()))}: je reeks staat op pauze. Hij gaat gewoon verder${eigenVrij(today())?'':' na de vakantie'}.`:gehaald(today())?'Vandaag gehaald. Morgen weer!':open.length&&isToday?`Nog ${open.length} ${open.length===1?'blok':'blokken'} voor je reeks vandaag.`:'Maak vandaag je dagplan af voor je reeks.'}${SET.record?` · record ${SET.record}`:''}</div></div></div>
+      <div class="sub" style="font-size:.9rem">${vrijDag(today())?`${esc(vrijNaam(today()))}: vandaag hoef je niets te doen, en deze dag telt gewoon mee voor je reeks.`:gehaald(today())?'Vandaag gehaald. Morgen weer!':open.length&&isToday?`Nog ${open.length} ${open.length===1?'blok':'blokken'} voor je reeks vandaag.`:'Maak vandaag je dagplan af voor je reeks.'}${SET.record?` · record ${SET.record}`:''}</div></div></div>
     <div class="dots">${week.map(d=>`<span class="dot${dagStand(d)==='on'||dagStand(d)==='vrij'?' on':vrijDag(d)?' vak':''}${d===today()?' now':''}" title="${nice(d)}${vrijDag(d)?' · '+esc(vrijNaam(d)):''}">${DAGEN[pd(d).getDay()]}</span>`).join('')}</div>
     <button class="link sk-knop" id="sk-open" aria-expanded="${SK_OPEN}">${SK_OPEN?'Minder tonen ▴':`Alle dagen sinds ${esc(nice(st).replace(/^\S+ /,''))} ▾`}</button>
     ${SK_OPEN?skKalender():''}
@@ -1227,8 +1235,8 @@ function rVandaag(){
   ${isOuder()&&canWrite&&!gehaald(dag)&&dag>=today()&&B.some(b=>schuifKnop(b))?`<div class="note"><b>Weinig tijd vandaag?</b><span>Je kunt bij elk blok behalve het huiswerk op Doorschuiven tikken. Dat blok hoeft dan vandaag niet af voor haar reeks. Heeft het vak een komende toets, dan komen de minuten erbij bij de toetsvoorbereiding van dat vak, verdeeld over de dagen tot de toets (in het blok dat dat vak al heeft, niet als los extra blok). Zonder komende toets wordt het een inhaalblok op de eerstvolgende vrijdag of zaterdag waar nog ruimte is. Is de toets morgen, dan is er geen dag meer om in te halen. Opwarmen vervalt.</span></div>`:''}
   ${isOuder()&&zelf.length?`<div class="note"><b>${zelf.length} ${zelf.length===1?'blok heeft':'blokken heeft'} ze zelf afgevinkt</b><span>Dat kan de app niet controleren. Klopt er iets niet? Tik dan bij dat blok op Afwijzen. Het vinkje gaat weg en de dag telt pas weer als het opnieuw af is.</span></div>`:''}
   ${isOuder()&&B.some(b=>b.vraag)?`<div class="note"><b>${B.filter(b=>b.vraag).length} ${B.filter(b=>b.vraag).length===1?'blok wacht':'blokken wachten'} op jouw goedkeuring</b><span>Ze zegt dat ze dit wel gedaan heeft, maar niet in de app. Keur goed of wijs af bij het blok.</span></div>`:''}
-  ${vrijDag(dag)?(eigenVrij(dag)?`<div class="note"><b>${vrijNaam(dag)==='Vrije dag'?'Vrije dag':esc(vrijNaam(dag))+': vrije dag'}</b><span>${dag===today()?'Vandaag':'Deze dag'} staat er niets op het plan en ${isOuder()?'haar':'je'} reeks staat op pauze. Wat er voor toetsen nog moet, verdeelt de app vanzelf over de dagen die er nog zijn. Oefenen in de app mag altijd.</span>${isOuder()&&canWrite?'<button class="btn ghost" id="vrijweg" style="align-self:flex-start">Toch geen vrije dag</button>':''}</div>`
-    :`<div class="note"><b>${esc(vrijNaam(dag))}</b><span>Vandaag staat er niets op het plan. Je reeks staat op pauze: hij gaat niet verloren en loopt na de vakantie gewoon door. Oefenen in de app mag altijd.</span></div>`):''}
+  ${vrijDag(dag)?(eigenVrij(dag)?`<div class="note"><b>${vrijNaam(dag)==='Vrije dag'?'Vrije dag':esc(vrijNaam(dag))+': vrije dag'}</b><span>${dag===today()?'Vandaag':'Deze dag'} staat er niets op het plan en telt de dag gewoon mee voor ${isOuder()?'haar':'je'} reeks. Wat er voor toetsen nog moet, verdeelt de app vanzelf over de dagen die er nog zijn. Oefenen in de app mag altijd.</span>${isOuder()&&canWrite?'<button class="btn ghost" id="vrijweg" style="align-self:flex-start">Toch geen vrije dag</button>':''}</div>`
+    :`<div class="note"><b>${esc(vrijNaam(dag))}</b><span>Vandaag staat er niets op het plan. Je reeks gaat gewoon door: elke vakantiedag telt mee. Oefenen in de app mag altijd.</span></div>`):''}
   ${isOuder()&&canWrite&&!vrijDag(dag)&&dag>=today()&&!stempel(dag)?`<details class="note" id="vrij-f"><summary style="cursor:pointer"><b>Kan ze ${dag===today()?'vandaag':'deze dag'} niets doen?</b></summary><span>Ziek, een optreden, iets anders dat voorgaat: maak er een vrije dag van. Dan staat er niets op het plan en blijft haar reeks staan. Toetsvoorbereiding verdeelt de app opnieuw over de dagen die er nog zijn; inhaalblokken gaan naar de eerstvolgende vrijdag of zaterdag met ruimte. Meer tijd geven op een vrijdag, zaterdag of zondag kan bij Week → Leertijd per dag.</span>
     <span class="row" style="margin-top:6px"><input class="nm" id="vrij-r" placeholder="Reden (bijv. optreden)" style="flex:1;min-width:0"><button class="btn" id="vrij-ok">Vrije dag maken</button></span></details>`:''}
   <div class="stack">${B.map((b,i)=>(b.later&&!(B[i-1]||{}).later?`<div class="note"><b>Bijgekomen nadat je dag al af was</b><span>Je had alles van ${dag===today()?'vandaag':'deze dag'} al gedaan toen dit erbij kwam. Het hoeft ${dag===today()?'vandaag':'die dag'} niet meer en je reeks blijft staan. Doe je het toch, dan telt het als extra.</span></div>`:'')+(b=>{if(b.schuif)return schuifRij(b);const v=vakOf(b.vak),gk=goedkeur(b)+schuifKnop(b);
@@ -1526,7 +1534,7 @@ function rWeek(){
       <label for="s-sm">Lengte van een sprint (min)</label><input class="in" id="s-sm" data-s="sprintMin" inputmode="numeric" value="${SET.sprintMin}" ${dis}>
     </div>
     <div style="margin-top:16px"><b>Vakanties en vrije dagen</b>
-      <p class="sub" style="font-size:.9rem;margin:4px 0 0">Ingevuld voor regio Midden (Rotterdam), schooljaar 2026-2027. Een studiedag of afwijkende vakantie van school kun je zelf toevoegen. In de vakantie staat er niets op het plan en staat de reeks op pauze. De laatste vakantiedag is een gewone dag, voor het huiswerk van de eerste schooldag.</p>
+      <p class="sub" style="font-size:.9rem;margin:4px 0 0">Ingevuld voor regio Midden (Rotterdam), schooljaar 2026-2027. Een studiedag of afwijkende vakantie van school kun je zelf toevoegen. In de vakantie staat er niets op het plan en telt elke dag mee voor de reeks. De laatste vakantiedag is een gewone dag, voor het huiswerk van de eerste schooldag.</p>
       ${(SET.vakanties||[]).map((v,i)=>`<div class="vkr"><input class="in nm" data-vk="${i}" data-vf="naam" value="${esc(v.naam||'')}" placeholder="Naam" aria-label="Naam" ${dis}><span></span>
         <input class="in" type="date" data-vk="${i}" data-vf="van" value="${esc(v.van||'')}" aria-label="Van" ${dis}><input class="in" type="date" data-vk="${i}" data-vf="tot" value="${esc(v.tot||'')}" aria-label="Tot en met" ${dis}>
         <button class="x" data-vkdel="${i}" aria-label="Verwijder ${esc(v.naam||'')}" ${dis}>×</button></div>`).join('')}
